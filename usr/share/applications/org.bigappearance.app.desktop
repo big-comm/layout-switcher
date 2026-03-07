@@ -1,0 +1,18 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Community Layout Switcher
+Name[pt_BR]=Seletor de Layouts
+Name[es]=Selector de Diseños
+Comment=Manage GNOME layouts, extensions and themes
+Comment[pt_BR]=Gerencie layouts, extensões e temas do GNOME
+Comment[es]=Administra diseños, extensiones y temas de GNOME
+Exec=community-layout-switcher
+Icon=comm-layout-switcher
+Terminal=false
+Categories=Settings;DesktopSettings;GTK;GNOME;
+Keywords=layout;theme;extension;gnome;desktop;appearance;switcher;
+Keywords[pt_BR]=layout;tema;extensão;gnome;desktop;aparência;
+StartupNotify=true
+StartupWMClass=community-layout-switcher
+X-GNOME-UsesNotifications=false

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# community-layout-switcher — Launcher para /usr/bin/
+#
+# Instale em:  /usr/bin/community-layout-switcher
+# Permissões: chmod +x /usr/bin/community-layout-switcher
+#
+# Localização do pacote Python (em ordem de preferência):
+#   1. /usr/share/community-layout-switcher/
+#   2. /usr/local/share/community-layout-switcher/
+#   3. ~/.local/share/community-layout-switcher/
+#
+# O arquivo main.py deve estar em um dos diretórios acima.
+
+set -euo pipefail
+
+# ── Localiza o diretório do app ───────────────────────────────────────────────
+APP_DIRS=(
+    "/usr/share/community-layout-switcher"
+    "/usr/local/share/community-layout-switcher"
+    "${HOME}/.local/share/community-layout-switcher"
+)
+
+APP_DIR=""
+for dir in "${APP_DIRS[@]}"; do
+    if [[ -f "${dir}/main.py" ]]; then
+        APP_DIR="${dir}"
+        break
+    fi
+done
+
+if [[ -z "${APP_DIR}" ]]; then
+    echo "Erro: community-layout-switcher não encontrado em nenhum dos diretórios:" >&2
+    for dir in "${APP_DIRS[@]}"; do
+        echo "  ${dir}" >&2
+    done
+    echo "" >&2
+    echo "Instale o pacote ou copie os arquivos para um dos diretórios acima." >&2
+    exit 1
+fi
+
+# ── Executa ───────────────────────────────────────────────────────────────────
+exec python3 "${APP_DIR}/main.py" "$@"
