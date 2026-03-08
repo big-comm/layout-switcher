@@ -1,9 +1,8 @@
 # Maintainer: Tales A. Mendonça <talesam@gmail.com>
 
-pkgname=pkgbuild-template-translate
-pkgdesc="Package template for BigCommunity"
-# Uncomment and edit the following lines as needed
-#depends=('')
+pkgname=layout-switcher
+pkgdesc="Manage GNOME layouts, extensions and themes"
+depends=('python' 'python-gobject' 'gtk4' 'libadwaita' 'gnome-shell')
 #makedepends=('')
 #optdepends=('')
 #conflicts=('')
