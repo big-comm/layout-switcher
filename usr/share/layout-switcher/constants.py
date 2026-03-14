@@ -18,11 +18,11 @@ gettext.textdomain("layout-switcher")
 tr = gettext.gettext      # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
-APP_ID       = "org.bigappearance.app"
-APP_VERSION  = "2.2.0"
+APP_ID       = "org.communitybig.layout-switcher"
+APP_VERSION  = "2.2.1"
 APP_LICENSE  = "MIT"
 APP_NAME     = "Community Layout Switcher"
-ICON_NAME    = "comm-layout-switcher"   # SVG em icons/comm-layout-switcher.svg
+ICON_NAME    = "layout-switcher"   # SVG em icons/layout-switcher.svg
 
 # ── Diretórios de dados ───────────────────────────────────────────────────────
 # Instalação em /usr/share ou ~/.local/share
@@ -97,7 +97,8 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "uuid":         "desktop-cube@schneegans.github.com",
         "ego_id":       4648,
         "pkg":          "gnome-shell-extension-desktop-cube",
-        "icon":         "view-3d-symbolic",
+        "icon":         "desktop-cube-symbolic",
+        "author":       "Simon Schneegans",
         "has_settings": False,
     },
     {
@@ -107,6 +108,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "ego_id":       3740,
         "pkg":          "gnome-shell-extension-compiz-alike-magic-lamp-effect",
         "icon":         "view-paged-symbolic",
+        "author":       "hermes83",
         "has_settings": False,
     },
     {
@@ -116,6 +118,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "ego_id":       3210,
         "pkg":          "gnome-shell-extension-compiz-windows-effect",
         "icon":         "window-symbolic",
+        "author":       "hermes83",
         "has_settings": False,
     },
     {
@@ -125,6 +128,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "ego_id":       2087,
         "pkg":          "gnome-shell-extension-desktop-icons-ng",
         "icon":         "user-desktop-symbolic",
+        "author":       "Rastersoft",
         "has_settings": True,
     },
 ]

@@ -167,6 +167,17 @@ class ExtensionsPage(Gtk.Box):
         dl.set_wrap(True)
         dl.set_max_width_chars(30)
         tc.append(dl)
+
+        # Autor
+        author = ext.get("author", "")
+        if author:
+            al = Gtk.Label(label=f"by {author}")
+            al.add_css_class("caption")
+            al.add_css_class("dim-label")
+            al.set_halign(Gtk.Align.START)
+            al.set_margin_top(2)
+            tc.append(al)
+
         hdr.append(tc)
         inner.append(hdr)
         inner.append(Gtk.Separator())
@@ -235,6 +246,30 @@ class ExtensionsPage(Gtk.Box):
             )
             row.append(ib)
             inner.append(row)
+
+            # Link para extensions.gnome.org
+            ego_id = ext.get("ego_id", 0)
+            if ego_id > 0:
+                ego_btn = Gtk.Button()
+                ego_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                ego_ico = Gtk.Image.new_from_icon_name("web-browser-symbolic")
+                ego_ico.set_pixel_size(14)
+                ego_box.append(ego_ico)
+                ego_lbl = Gtk.Label(label=tr("View on GNOME Extensions"))
+                ego_lbl.add_css_class("caption")
+                ego_box.append(ego_lbl)
+                ego_btn.set_child(ego_box)
+                ego_btn.add_css_class("flat")
+                ego_btn.set_halign(Gtk.Align.START)
+                ego_btn.set_margin_top(4)
+                ego_btn.connect(
+                    "clicked",
+                    lambda b, _id=ego_id: run_cmd(
+                        ["xdg-open", f"https://extensions.gnome.org/extension/{_id}/"],
+                        timeout=5,
+                    ),
+                )
+                inner.append(ego_btn)
 
         card.append(inner)
 

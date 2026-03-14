@@ -12,32 +12,32 @@ from extension_manager import ExtMgr
 
 
 class TestEnabledList:
-    @patch("utils.gsettings_get", return_value="['ext-a@foo.com', 'ext-b@bar.com']")
+    @patch("extension_manager.gsettings_get", return_value="['ext-a@foo.com', 'ext-b@bar.com']")
     def test_normal_list(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == ["ext-a@foo.com", "ext-b@bar.com"]
 
-    @patch("utils.gsettings_get", return_value="@as []")
+    @patch("extension_manager.gsettings_get", return_value="@as []")
     def test_empty_gvariant(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == []
 
-    @patch("utils.gsettings_get", return_value="[]")
+    @patch("extension_manager.gsettings_get", return_value="[]")
     def test_empty_brackets(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == []
 
-    @patch("utils.gsettings_get", return_value=None)
+    @patch("extension_manager.gsettings_get", return_value=None)
     def test_none(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == []
 
-    @patch("utils.gsettings_get", return_value="")
+    @patch("extension_manager.gsettings_get", return_value="")
     def test_empty_string(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == []
 
-    @patch("utils.gsettings_get", return_value="@as[]")
+    @patch("extension_manager.gsettings_get", return_value="@as[]")
     def test_gvariant_no_space(self, mock_gs):
         result = ExtMgr.enabled_list()
         assert result == []
@@ -47,13 +47,13 @@ class TestIsInstalled:
     def test_user_dir(self, tmp_path):
         ext_dir = tmp_path / "test-ext@foo.com"
         ext_dir.mkdir()
-        with patch("constants.EXT_USER_DIR", tmp_path), \
-             patch("constants.EXT_SYS_DIR", tmp_path / "sys"):
+        with patch("extension_manager.EXT_USER_DIR", tmp_path), \
+             patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"):
             assert ExtMgr.is_installed("test-ext@foo.com") is True
 
     def test_not_installed(self, tmp_path):
-        with patch("constants.EXT_USER_DIR", tmp_path), \
-             patch("constants.EXT_SYS_DIR", tmp_path / "sys"):
+        with patch("extension_manager.EXT_USER_DIR", tmp_path), \
+             patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"):
             assert ExtMgr.is_installed("nonexistent@foo.com") is False
 
 
@@ -70,15 +70,15 @@ class TestIsEnabled:
 
 
 class TestAllGloballyEnabled:
-    @patch("utils.dconf_read", return_value=None)
+    @patch("extension_manager.dconf_read", return_value=None)
     def test_default_enabled(self, mock_read):
         assert ExtMgr.all_globally_enabled() is True
 
-    @patch("utils.dconf_read", return_value="true")
+    @patch("extension_manager.dconf_read", return_value="true")
     def test_disabled(self, mock_read):
         assert ExtMgr.all_globally_enabled() is False
 
-    @patch("utils.dconf_read", return_value="false")
+    @patch("extension_manager.dconf_read", return_value="false")
     def test_explicitly_enabled(self, mock_read):
         assert ExtMgr.all_globally_enabled() is True
 
@@ -89,8 +89,8 @@ class TestListInstalled:
         sys_dir = tmp_path / "sys"
         user_dir.mkdir()
         sys_dir.mkdir()
-        with patch("constants.EXT_USER_DIR", user_dir), \
-             patch("constants.EXT_SYS_DIR", sys_dir), \
+        with patch("extension_manager.EXT_USER_DIR", user_dir), \
+             patch("extension_manager.EXT_SYS_DIR", sys_dir), \
              patch("extension_manager.ExtMgr.enabled_list", return_value=[]):
             result = ExtMgr.list_installed()
             assert result == []
@@ -106,8 +106,8 @@ class TestListInstalled:
         meta = ext_dir / "metadata.json"
         meta.write_text('{"uuid": "test-ext@foo.com", "name": "Test Ext"}')
 
-        with patch("constants.EXT_USER_DIR", user_dir), \
-             patch("constants.EXT_SYS_DIR", sys_dir), \
+        with patch("extension_manager.EXT_USER_DIR", user_dir), \
+             patch("extension_manager.EXT_SYS_DIR", sys_dir), \
              patch("extension_manager.ExtMgr.enabled_list",
                    return_value=["test-ext@foo.com"]):
             result = ExtMgr.list_installed()
@@ -128,8 +128,8 @@ class TestListInstalled:
         meta = ext_dir / "metadata.json"
         meta.write_text("not valid json")
 
-        with patch("constants.EXT_USER_DIR", user_dir), \
-             patch("constants.EXT_SYS_DIR", sys_dir), \
+        with patch("extension_manager.EXT_USER_DIR", user_dir), \
+             patch("extension_manager.EXT_SYS_DIR", sys_dir), \
              patch("extension_manager.ExtMgr.enabled_list", return_value=[]):
             result = ExtMgr.list_installed()
             assert len(result) == 1
@@ -142,7 +142,7 @@ class TestRemove:
         ext_dir.mkdir()
         (ext_dir / "metadata.json").write_text("{}")
 
-        with patch("constants.EXT_USER_DIR", tmp_path), \
+        with patch("extension_manager.EXT_USER_DIR", tmp_path), \
              patch("shell_reloader.ShellReloader.apply_extension_state",
                    return_value=(True, "")), \
              patch("shell_reloader.ShellReloader.reload_all"):
@@ -151,6 +151,6 @@ class TestRemove:
             assert not ext_dir.exists()
 
     def test_remove_nonexistent(self, tmp_path):
-        with patch("constants.EXT_USER_DIR", tmp_path):
+        with patch("extension_manager.EXT_USER_DIR", tmp_path):
             ok, msg = ExtMgr.remove("nonexistent@foo.com")
             assert ok is False

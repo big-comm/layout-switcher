@@ -45,7 +45,7 @@ class TestListThemes:
 
 
 class TestApply:
-    @patch("utils.gsettings_set", return_value=(True, ""))
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
     def test_apply_gtk(self, mock_gs):
         ok, msg = ThemeMgr.apply("gtk", "Adwaita")
         assert ok is True
@@ -53,7 +53,7 @@ class TestApply:
             "org.gnome.desktop.interface", "gtk-theme", "Adwaita"
         )
 
-    @patch("utils.gsettings_set", return_value=(True, ""))
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
     def test_apply_icons(self, mock_gs):
         ok, msg = ThemeMgr.apply("icons", "Papirus")
         assert ok is True
@@ -73,11 +73,11 @@ class TestApply:
 
 
 class TestCurrent:
-    @patch("utils.gsettings_get", return_value="Adwaita")
+    @patch("theme_manager.gsettings_get", return_value="Adwaita")
     def test_current_gtk(self, mock_gs):
         assert ThemeMgr.current("gtk") == "Adwaita"
 
-    @patch("utils.gsettings_get", return_value=None)
+    @patch("theme_manager.gsettings_get", return_value=None)
     def test_current_empty(self, mock_gs):
         assert ThemeMgr.current("gtk") == ""
 
@@ -86,10 +86,10 @@ class TestCurrent:
 
 
 class TestColorScheme:
-    @patch("utils.gsettings_get", return_value="prefer-dark")
+    @patch("theme_manager.gsettings_get", return_value="prefer-dark")
     def test_color_scheme_dark(self, mock_gs):
         assert ThemeMgr.color_scheme() == "prefer-dark"
 
-    @patch("utils.gsettings_get", return_value=None)
+    @patch("theme_manager.gsettings_get", return_value=None)
     def test_color_scheme_default(self, mock_gs):
         assert ThemeMgr.color_scheme() == "prefer-light"

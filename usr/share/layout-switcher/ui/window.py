@@ -59,7 +59,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_size_request(860, 560)
 
         # Registra a pasta ./icons/ local como fonte de ícones.
-        # Isso garante que comm-layout-switcher.svg apareça na janela About
+        # Isso garante que layout-switcher.svg apareça na janela About
         # e na barra de tarefas mesmo antes de instalar no sistema.
         self._register_local_icons()
 
@@ -82,6 +82,15 @@ class MainWindow(Adw.ApplicationWindow):
             if display:
                 theme = Gtk.IconTheme.get_for_display(display)
                 theme.add_search_path(str(icons_dir))
+
+        # Diretório usr/share/icons/ (contém hicolor/) — necessário
+        # em dev para encontrar ícones customizados (como desktop-cube-symbolic)
+        share_icons = Path(__file__).parent.parent.parent / "icons"
+        if share_icons.is_dir() and share_icons != icons_dir:
+            display = Gdk.Display.get_default()
+            if display:
+                theme = Gtk.IconTheme.get_for_display(display)
+                theme.add_search_path(str(share_icons))
 
     # ── Ciclo de vida ─────────────────────────────────────────────────────────
 
@@ -329,7 +338,7 @@ class MainWindow(Adw.ApplicationWindow):
             license_type=Gtk.License.MIT_X11,
             comments=tr("Layouts, effects and themes for your GNOME desktop."),
             website="https://communitybig.org/",
-            issue_url="https://github.com/big-comm/comm-layout-changer/issues",
+            issue_url="https://github.com/BigCommunity/layout-switcher/issues",
             copyright="© 2022–2025 Big Community",
             developers=["Big Community", "Ari Novais"],
         )

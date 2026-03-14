@@ -35,7 +35,7 @@ class TestBackupManager:
         for p in self._patches:
             p.stop()
 
-    @patch("utils.run_cmd")
+    @patch("backup_manager.run_cmd")
     @patch("shell_reloader.ShellReloader.reload_all")
     def test_create_success(self, mock_reload, mock_run):
         mock_run.return_value = (True, "[org/gnome/shell]\n" + "x" * 100)
@@ -44,7 +44,7 @@ class TestBackupManager:
         assert "backup_" in path
         assert Path(path).exists()
 
-    @patch("utils.run_cmd", return_value=(False, "error"))
+    @patch("backup_manager.run_cmd", return_value=(False, "error"))
     def test_create_failure(self, mock_run):
         ok, msg = self.BackupManager.create()
         assert ok is False
@@ -73,7 +73,7 @@ class TestBackupManager:
         # Most recent first
         assert results[0].name > results[-1].name
 
-    @patch("utils.run_cmd", return_value=(True, ""))
+    @patch("backup_manager.run_cmd", return_value=(True, ""))
     @patch("shell_reloader.ShellReloader.reload_all")
     def test_restore_success(self, mock_reload, mock_run):
         f = self.backup_dir / "backup_test.dconf"
@@ -92,7 +92,7 @@ class TestBackupManager:
         assert ok is False
         assert "corrupt" in msg.lower() or "small" in msg.lower()
 
-    @patch("utils.run_cmd")
+    @patch("backup_manager.run_cmd")
     @patch("shell_reloader.ShellReloader.reload_all")
     def test_prune_keeps_n(self, mock_reload, mock_run):
         mock_run.return_value = (True, "[org/gnome/shell]\n" + "x" * 100)

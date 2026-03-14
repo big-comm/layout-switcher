@@ -9,7 +9,6 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
 from typing import Dict, List
-import threading
 
 import gi
 gi.require_version("Gtk",   "4.0")
@@ -224,7 +223,7 @@ class ThemesPage(Gtk.Box):
             names = ThemeMgr.list_themes(kind)
             GLib.idle_add(self._populate_themes, kind, active, names)
 
-        threading.Thread(target=_scan, daemon=True).start()
+        self._pool.submit(_scan)
 
     def _populate_themes(
         self, kind: str, active: str, names: List[str]
@@ -353,4 +352,3 @@ class ThemesPage(Gtk.Box):
 
         d.connect("response", on_r)
         d.present(parent)
-        d.present()

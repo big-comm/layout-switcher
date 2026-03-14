@@ -13,7 +13,7 @@ from layout_applier import LayoutApplier
 
 class TestLayoutApplier:
     @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("utils.run_cmd", return_value=(True, ""))
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
     def test_apply_success(self, mock_run, mock_reload, tmp_path):
         layout = tmp_path / "classic.txt"
         layout.write_text("[org/gnome/shell]\nfavorite-apps=['firefox.desktop']")
@@ -40,7 +40,7 @@ class TestLayoutApplier:
         assert "empty" in msg.lower()
 
     @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("utils.run_cmd", return_value=(False, "dconf error"))
+    @patch("layout_applier.run_cmd", return_value=(False, "dconf error"))
     def test_apply_dconf_failure(self, mock_run, mock_reload, tmp_path):
         layout = tmp_path / "bad.txt"
         layout.write_text("[org/gnome/shell]\ndata=true")
@@ -50,8 +50,8 @@ class TestLayoutApplier:
 
 
 class TestShellReloader:
-    @patch("utils.run_cmd", return_value=(True, ""))
-    @patch("utils.is_wayland", return_value=True)
+    @patch("shell_reloader.run_cmd", return_value=(True, ""))
+    @patch("shell_reloader.is_wayland", return_value=True)
     def test_reload_all_wayland(self, mock_way, mock_run):
         from shell_reloader import ShellReloader
         ShellReloader.reload_all()
@@ -59,8 +59,8 @@ class TestShellReloader:
         calls = [str(c) for c in mock_run.call_args_list]
         assert not any("reexec" in c for c in calls)
 
-    @patch("utils.run_cmd", return_value=(True, ""))
-    @patch("utils.is_wayland", return_value=False)
+    @patch("shell_reloader.run_cmd", return_value=(True, ""))
+    @patch("shell_reloader.is_wayland", return_value=False)
     def test_reload_all_x11(self, mock_way, mock_run):
         from shell_reloader import ShellReloader
         ShellReloader.reload_all()
