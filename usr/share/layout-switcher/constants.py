@@ -19,7 +19,7 @@ tr = gettext.gettext  # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.3.0"
+APP_VERSION = "2.4.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -136,6 +136,13 @@ FEATURED_EXTENSIONS: List[Dict] = [
 # ── Layouts: (name, config_file, icon_svg, icon_fallback, description) ────────
 LAYOUTS: List[Tuple[str, str, str, str, str]] = [
     (
+        "BigGnome",
+        "biggnome.txt",
+        "next-gnome.svg",
+        "view-paged-symbolic",
+        tr("Default Big Gnome layout"),
+    ),
+    (
         "Classic",
         "classic.txt",
         "classic.svg",
@@ -162,13 +169,6 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
         "new.svg",
         "view-paged-symbolic",
         tr("Fresh modern layout"),
-    ),
-    (
-        "Next GNOME",
-        "next-gnome.txt",
-        "next-gnome.svg",
-        "view-paged-symbolic",
-        tr("Preview of upcoming GNOME design"),
     ),
     (
         "Modern",

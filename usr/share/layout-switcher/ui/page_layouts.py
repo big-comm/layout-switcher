@@ -36,18 +36,6 @@ class LayoutsPage(Gtk.Box):
         self._build()
 
     def _build(self) -> None:
-        # ── Cabeçalho ─────────────────────────────────────────────────────────
-        hbox = Gtk.Box()
-        hbox.set_margin_start(26)
-        hbox.set_margin_top(22)
-        hbox.set_margin_bottom(4)
-        title = Gtk.Label(label=tr("Layouts"))
-        title.add_css_class("title-1")
-        title.add_css_class("page-title")
-        title.set_halign(Gtk.Align.START)
-        hbox.append(title)
-        self.append(hbox)
-
         self._status_lbl = Gtk.Label(label=tr("Click a layout to apply"))
         self._status_lbl.add_css_class("dim-label")
         self._status_lbl.set_halign(Gtk.Align.START)
@@ -97,7 +85,6 @@ class LayoutsPage(Gtk.Box):
         is_on = name == self._active_layout
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         card.add_css_class("layout-card")
-        card.add_css_class("card")
         if is_on:
             card.add_css_class("layout-on")
         card.set_size_request(158, 132)
@@ -117,7 +104,6 @@ class LayoutsPage(Gtk.Box):
 
         # Imagem / ícone
         wrap = Gtk.Box()
-        wrap.add_css_class("frame")
         wrap.set_margin_start(10)
         wrap.set_margin_end(10)
         wrap.set_margin_bottom(6)

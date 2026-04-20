@@ -42,15 +42,14 @@ class ExtensionsPage(Gtk.Box):
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         hbox.set_margin_start(26)
         hbox.set_margin_end(22)
-        hbox.set_margin_top(22)
+        hbox.set_margin_top(12)
         hbox.set_margin_bottom(8)
+        hbox.set_hexpand(True)
 
-        title = Gtk.Label(label=tr("Extensions"))
-        title.add_css_class("title-1")
-        title.add_css_class("page-title")
-        title.set_halign(Gtk.Align.START)
-        title.set_hexpand(True)
-        hbox.append(title)
+        # spacer to push global button to the right
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        hbox.append(spacer)
 
         self._global_btn = Gtk.Button()
         self._global_btn.add_css_class("global-btn")
@@ -76,7 +75,6 @@ class ExtensionsPage(Gtk.Box):
             is_default = key == self._ext_sub
             if is_default:
                 btn.add_css_class("sub-on")
-            btn.update_state([Gtk.AccessibleState.SELECTED], [is_default])
             btn.connect("clicked", lambda b, k=key: self._switch_sub(k))
             tab_bar.append(btn)
             self._tab_btns[key] = btn
@@ -99,7 +97,7 @@ class ExtensionsPage(Gtk.Box):
                 btn.add_css_class("sub-on")
             else:
                 btn.remove_css_class("sub-on")
-            btn.update_state([Gtk.AccessibleState.SELECTED], [selected])
+
         if key == "installed":
             GLib.idle_add(self.refresh_installed)
         self._stack.set_visible_child_name(key)

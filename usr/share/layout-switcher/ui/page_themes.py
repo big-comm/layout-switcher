@@ -62,22 +62,6 @@ class ThemesPage(Gtk.Box):
     # ── Construção ────────────────────────────────────────────────────────────
 
     def _build(self) -> None:
-        # ── Cabeçalho ─────────────────────────────────────────────────────────
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox.set_margin_start(26)
-        hbox.set_margin_end(26)
-        hbox.set_margin_top(22)
-        hbox.set_margin_bottom(10)
-
-        title = Gtk.Label(label=tr("Themes"))
-        title.add_css_class("title-1")
-        title.add_css_class("page-title")
-        title.set_halign(Gtk.Align.START)
-        title.set_hexpand(True)
-        hbox.append(title)
-        hbox.append(self._build_scheme_pill())
-        self.append(hbox)
-
         # ── Sub-abas de tipo ──────────────────────────────────────────────────
         self.append(self._build_kind_tabs())
 
@@ -113,46 +97,6 @@ class ThemesPage(Gtk.Box):
 
         self.refresh_themes()
 
-    def _build_scheme_pill(self) -> Gtk.Widget:
-        """Pill com botões ☀ Claro / ☾ Escuro."""
-        pill = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        pill.add_css_class("card")
-        pill.set_valign(Gtk.Align.CENTER)
-
-        is_dark = "dark" in ThemeMgr.color_scheme()
-
-        self._light_btn = Gtk.Button()
-        li = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        li.set_margin_start(4)
-        li.set_margin_end(4)
-        li.append(Gtk.Image.new_from_icon_name("weather-clear-symbolic"))
-        li.append(Gtk.Label(label=tr("Light")))
-        self._light_btn.set_child(li)
-        self._light_btn.add_css_class("scheme-pill")
-        self._light_btn.add_css_class("flat")
-        self._light_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Light mode")])
-        if not is_dark:
-            self._light_btn.add_css_class("s-on")
-        self._light_btn.connect("clicked", lambda b: self._set_scheme(False))
-        pill.append(self._light_btn)
-
-        self._dark_btn = Gtk.Button()
-        di = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        di.set_margin_start(4)
-        di.set_margin_end(4)
-        di.append(Gtk.Image.new_from_icon_name("weather-clear-night-symbolic"))
-        di.append(Gtk.Label(label=tr("Dark")))
-        self._dark_btn.set_child(di)
-        self._dark_btn.add_css_class("scheme-pill")
-        self._dark_btn.add_css_class("flat")
-        self._dark_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Dark mode")])
-        if is_dark:
-            self._dark_btn.add_css_class("s-on")
-        self._dark_btn.connect("clicked", lambda b: self._set_scheme(True))
-        pill.append(self._dark_btn)
-
-        return pill
-
     def _build_kind_tabs(self) -> Gtk.Widget:
         """Sub-abas GTK / Ícones / Shell."""
         kb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
@@ -166,34 +110,10 @@ class ThemesPage(Gtk.Box):
             is_default = kind == "gtk"
             if is_default:
                 btn.add_css_class("kind-on")
-            btn.update_state([Gtk.AccessibleState.SELECTED], [is_default])
             btn.connect("clicked", lambda b, k=kind: self._switch_kind(k))
             kb.append(btn)
             self._kind_btns[kind] = btn
         return kb
-
-    # ── Esquema de cores ──────────────────────────────────────────────────────
-
-    def _set_scheme(self, dark: bool) -> None:
-        def task():
-            ok, err = ThemeMgr.set_color_scheme(dark)
-            if ok:
-                GLib.idle_add(self._update_scheme_buttons, dark)
-                GLib.idle_add(self._toast, tr("Dark mode") if dark else tr("Light mode"))
-            else:
-                GLib.idle_add(self._toast, tr("Error") + f": {err}")
-
-        self._pool.submit(task)
-
-    def _update_scheme_buttons(self, dark: bool) -> None:
-        for btn in (self._light_btn, self._dark_btn):
-            btn.remove_css_class("s-on")
-        (self._dark_btn if dark else self._light_btn).add_css_class("s-on")
-
-    def update_scheme_from_external(self) -> None:
-        """Chamado pelo GSettingsMonitor quando o esquema muda externamente."""
-        is_dark = "dark" in ThemeMgr.color_scheme()
-        self._update_scheme_buttons(is_dark)
 
     # ── Tipo de tema ──────────────────────────────────────────────────────────
 
@@ -206,7 +126,7 @@ class ThemesPage(Gtk.Box):
             else:
                 btn.remove_css_class("kind-on")
             # a11y: announce selected state to screen readers
-            btn.update_state([Gtk.AccessibleState.SELECTED], [selected])
+
         self.refresh_themes()
 
     # ── Lista de temas ────────────────────────────────────────────────────────

@@ -17,7 +17,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
-from constants import APP_ID, APP_VERSION, tr
+from constants import APP_VERSION, ICON_NAME, tr
 from settings_store import GSettingsMonitor, Settings
 from ui.page_extensions import ExtensionsPage
 from ui.page_layouts import LayoutsPage
@@ -131,11 +131,6 @@ class MainWindow(Adw.ApplicationWindow):
             "icon-theme",
             lambda: GLib.idle_add(self._themes_page.refresh_themes),
         )
-        self._monitor.watch(
-            "org.gnome.desktop.interface",
-            "color-scheme",
-            lambda: GLib.idle_add(self._themes_page.update_scheme_from_external),
-        )
 
     def _on_ext_changed(self) -> None:
         """Atualiza abas de extensões quando estado muda externamente."""
@@ -172,8 +167,9 @@ class MainWindow(Adw.ApplicationWindow):
         self._sidebar_btn.connect("toggled", self._on_sidebar_toggled)
         self._content_hdr.pack_start(self._sidebar_btn)
 
-        # Empty title — pages have their own titles
-        self._content_hdr.set_title_widget(Gtk.Label())
+        # Title widget — updated on page switch
+        self._title_widget = Adw.WindowTitle(title=tr("Layouts"))
+        self._content_hdr.set_title_widget(self._title_widget)
 
         # Menu button (right)
         menu_btn = Gtk.MenuButton()
@@ -334,6 +330,10 @@ class MainWindow(Adw.ApplicationWindow):
             GLib.idle_add(self._ext_page.refresh_installed)
         self._stack.set_visible_child_name(key)
 
+        # Update header title
+        titles = {"layouts": tr("Layouts"), "extensions": tr("Extensions"), "themes": tr("Themes")}
+        self._title_widget.set_title(titles.get(key, ""))
+
         # Auto-close sidebar overlay on mobile
         if self._split_view.get_collapsed():
             self._split_view.set_show_sidebar(False)
@@ -344,7 +344,7 @@ class MainWindow(Adw.ApplicationWindow):
     def _show_about(self) -> None:
         about = Adw.AboutDialog(
             application_name=tr("Community Layout Switcher"),
-            application_icon=APP_ID,
+            application_icon=ICON_NAME,
             version=APP_VERSION,
             developer_name="Big Community & Ari Novais",
             license_type=Gtk.License.MIT_X11,

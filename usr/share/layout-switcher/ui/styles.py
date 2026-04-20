@@ -25,6 +25,11 @@ APP_CSS = """
 .layout-card {
     outline: 2px solid transparent;
     outline-offset: -2px;
+    border: none;
+    box-shadow: none;
+    border-radius: 12px;
+    background-color: alpha(@card_bg_color, 1);
+    padding: 6px;
     transition: outline-color 120ms ease, box-shadow 120ms ease;
 }
 .layout-card:hover          { outline-color: alpha(@accent_color, 0.35); }
@@ -52,10 +57,6 @@ APP_CSS = """
 /* ── Lista de temas (boxed-list nativo) ──────────────────────────────── */
 .boxed-list > row.activatable:hover { background-color: alpha(@accent_bg_color, 0.06); }
 .theme-name-active          { color: @accent_color; font-weight: 600; }
-
-/* ── Dark/Light scheme pill ──────────────────────────────────────────── */
-.scheme-pill                { border-radius: 999px; padding: 6px 12px; font-weight: 500; transition: all 100ms ease; }
-.scheme-pill.s-on           { background-color: @accent_bg_color; color: @accent_fg_color; }
 
 /* ── Sub-abas de tipo de tema ────────────────────────────────────────── */
 .kind-tab                   { border-radius: 8px; padding: 5px 14px; font-weight: 500; }
