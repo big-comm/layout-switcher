@@ -1,0 +1,327 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0 -- /home/talesam/Servidor/GitHub/talesam/IHXManager/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/talesam/Servidor/GitHub/BigCommunity/layout-switcher
+collecting ... collected 65 items
+
+tests/test_backup_manager.py::TestBackupManager::test_create_success PASSED [  1%]
+tests/test_backup_manager.py::TestBackupManager::test_create_failure PASSED [  3%]
+tests/test_backup_manager.py::TestBackupManager::test_latest_no_backups PASSED [  4%]
+tests/test_backup_manager.py::TestBackupManager::test_latest_with_backup PASSED [  6%]
+tests/test_backup_manager.py::TestBackupManager::test_list_all_sorted PASSED [  7%]
+tests/test_backup_manager.py::TestBackupManager::test_restore_success PASSED [  9%]
+tests/test_backup_manager.py::TestBackupManager::test_restore_missing_file PASSED [ 10%]
+tests/test_backup_manager.py::TestBackupManager::test_restore_too_small PASSED [ 12%]
+tests/test_backup_manager.py::TestBackupManager::test_prune_keeps_n PASSED [ 13%]
+tests/test_extension_manager.py::TestEnabledList::test_normal_list PASSED [ 15%]
+tests/test_extension_manager.py::TestEnabledList::test_empty_gvariant PASSED [ 16%]
+tests/test_extension_manager.py::TestEnabledList::test_empty_brackets PASSED [ 18%]
+tests/test_extension_manager.py::TestEnabledList::test_none PASSED       [ 20%]
+tests/test_extension_manager.py::TestEnabledList::test_empty_string PASSED [ 21%]
+tests/test_extension_manager.py::TestEnabledList::test_gvariant_no_space PASSED [ 23%]
+tests/test_extension_manager.py::TestIsInstalled::test_user_dir PASSED   [ 24%]
+tests/test_extension_manager.py::TestIsInstalled::test_not_installed PASSED [ 26%]
+tests/test_extension_manager.py::TestIsEnabled::test_enabled PASSED      [ 27%]
+tests/test_extension_manager.py::TestIsEnabled::test_not_enabled PASSED  [ 29%]
+tests/test_extension_manager.py::TestAllGloballyEnabled::test_default_enabled PASSED [ 30%]
+tests/test_extension_manager.py::TestAllGloballyEnabled::test_disabled PASSED [ 32%]
+tests/test_extension_manager.py::TestAllGloballyEnabled::test_explicitly_enabled PASSED [ 33%]
+tests/test_extension_manager.py::TestListInstalled::test_empty_dirs PASSED [ 35%]
+tests/test_extension_manager.py::TestListInstalled::test_with_extensions PASSED [ 36%]
+tests/test_extension_manager.py::TestListInstalled::test_malformed_metadata PASSED [ 38%]
+tests/test_extension_manager.py::TestRemove::test_remove_user_extension PASSED [ 40%]
+tests/test_extension_manager.py::TestRemove::test_remove_nonexistent PASSED [ 41%]
+tests/test_layout_applier.py::TestLayoutApplier::test_apply_success PASSED [ 43%]
+tests/test_layout_applier.py::TestLayoutApplier::test_apply_nonexistent_file PASSED [ 44%]
+tests/test_layout_applier.py::TestLayoutApplier::test_apply_none_path PASSED [ 46%]
+tests/test_layout_applier.py::TestLayoutApplier::test_apply_empty_file PASSED [ 47%]
+tests/test_layout_applier.py::TestLayoutApplier::test_apply_dconf_failure PASSED [ 49%]
+tests/test_layout_applier.py::TestShellReloader::test_reload_all_wayland PASSED [ 50%]
+tests/test_layout_applier.py::TestShellReloader::test_reload_all_x11 PASSED [ 52%]
+tests/test_settings_store.py::TestSettings::test_get_default ERROR       [ 53%]
+tests/test_settings_store.py::TestSettings::test_set_and_get ERROR       [ 55%]
+tests/test_settings_store.py::TestSettings::test_persistence ERROR       [ 56%]
+tests/test_settings_store.py::TestSettings::test_atomic_write ERROR      [ 58%]
+tests/test_settings_store.py::TestSettings::test_corrupted_file ERROR    [ 60%]
+tests/test_settings_store.py::TestSettings::test_delete ERROR            [ 61%]
+tests/test_utils.py::TestRunCmd::test_success PASSED                     [ 63%]
+tests/test_utils.py::TestRunCmd::test_failure_exit_code PASSED           [ 64%]
+tests/test_utils.py::TestRunCmd::test_command_not_found PASSED           [ 66%]
+tests/test_utils.py::TestRunCmd::test_timeout PASSED                     [ 67%]
+tests/test_utils.py::TestRunCmd::test_stdin_text PASSED                  [ 69%]
+tests/test_utils.py::TestRunCmd::test_env_override PASSED                [ 70%]
+tests/test_utils.py::TestGsettings::test_gsettings_get_success PASSED    [ 72%]
+tests/test_utils.py::TestGsettings::test_gsettings_get_failure PASSED    [ 73%]
+tests/test_utils.py::TestGsettings::test_gsettings_set PASSED            [ 75%]
+tests/test_utils.py::TestDconf::test_dconf_read_success PASSED           [ 76%]
+tests/test_utils.py::TestDconf::test_dconf_read_failure PASSED           [ 78%]
+tests/test_utils.py::TestDconf::test_dconf_write PASSED                  [ 80%]
+tests/test_utils.py::TestFindFile::test_find_existing_file PASSED        [ 81%]
+tests/test_utils.py::TestFindFile::test_find_file_none_for_empty PASSED  [ 83%]
+tests/test_utils.py::TestFindFile::test_find_file_not_found PASSED       [ 84%]
+tests/test_utils.py::TestColorFromName::test_known_color PASSED          [ 86%]
+tests/test_utils.py::TestColorFromName::test_known_color_case_insensitive PASSED [ 87%]
+tests/test_utils.py::TestColorFromName::test_unknown_color_returns_hex PASSED [ 89%]
+tests/test_utils.py::TestColorFromName::test_deterministic_hash PASSED   [ 90%]
+tests/test_utils.py::TestGnomeShellVersion::test_normal_version PASSED   [ 92%]
+tests/test_utils.py::TestGnomeShellVersion::test_major_only PASSED       [ 93%]
+tests/test_utils.py::TestGnomeShellVersion::test_failure PASSED          [ 95%]
+tests/test_utils.py::TestIsWayland::test_wayland_session PASSED          [ 96%]
+tests/test_utils.py::TestIsWayland::test_x11_session PASSED              [ 98%]
+tests/test_utils.py::TestIsWayland::test_wayland_display PASSED          [100%]
+
+==================================== ERRORS ====================================
+_______________ ERROR at setup of TestSettings.test_get_default ________________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8cc451310>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_get_default0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+_______________ ERROR at setup of TestSettings.test_set_and_get ________________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8cc451450>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_set_and_get0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+_______________ ERROR at setup of TestSettings.test_persistence ________________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8cc4683e0>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_persistence0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+_______________ ERROR at setup of TestSettings.test_atomic_write _______________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8cc4682b0>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_atomic_write0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+______________ ERROR at setup of TestSettings.test_corrupted_file ______________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8cc5ba9f0>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_corrupted_file0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+__________________ ERROR at setup of TestSettings.test_delete __________________
+
+self = <tests.test_settings_store.TestSettings object at 0x7ff8ccca7f00>
+tmp_path = PosixPath('/tmp/pytest-of-talesam/pytest-0/test_delete0')
+
+    @pytest.fixture(autouse=True)
+    def setup_dirs(self, tmp_path):
+        self.config_dir = tmp_path
+        self.settings_file = tmp_path / "settings.json"
+        self._patches = [
+            patch("constants.CONFIG_DIR", self.config_dir),
+            patch("constants.SETTINGS_FILE", self.settings_file),
+        ]
+        for p in self._patches:
+            p.start()
+    
+        import importlib
+>       import settings_store
+
+tests/test_settings_store.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # SPDX-License-Identifier: MIT
+    """
+    settings_store.py — Persistência de configurações do app e monitor de GSettings.
+    
+    Classes:
+      Settings          : configurações JSON persistentes do aplicativo
+      GSettingsMonitor  : monitora mudanças externas em GSettings em tempo real
+    
+    DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+    """
+    
+    import json
+    from pathlib import Path
+    from typing import Callable, Dict, List, Optional, Tuple
+    
+>   import gi
+E   ModuleNotFoundError: No module named 'gi'
+
+usr/share/layout-switcher/settings_store.py:16: ModuleNotFoundError
+=========================== short test summary info ============================
+ERROR tests/test_settings_store.py::TestSettings::test_get_default - ModuleNo...
+ERROR tests/test_settings_store.py::TestSettings::test_set_and_get - ModuleNo...
+ERROR tests/test_settings_store.py::TestSettings::test_persistence - ModuleNo...
+ERROR tests/test_settings_store.py::TestSettings::test_atomic_write - ModuleN...
+ERROR tests/test_settings_store.py::TestSettings::test_corrupted_file - Modul...
+ERROR tests/test_settings_store.py::TestSettings::test_delete - ModuleNotFoun...
+========================= 59 passed, 6 errors in 1.30s =========================

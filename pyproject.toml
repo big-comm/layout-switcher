@@ -1,0 +1,26 @@
+[project]
+name = "layout-switcher"
+version = "2.2.1"
+description = "GNOME layout switcher — switch desktop layouts, extensions, and themes"
+requires-python = ">=3.10"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["usr/share/layout-switcher"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+# E402: module-level import not at top — unavoidable after gi.require_version()
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+# CSS-in-Python string → long lines unavoidable
+"usr/share/layout-switcher/ui/styles.py" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["usr/share/layout-switcher"]

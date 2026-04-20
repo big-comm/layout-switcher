@@ -11,15 +11,16 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 from typing import Dict, List
 
 import gi
-gi.require_version("Gtk",   "4.0")
-gi.require_version("Adw",   "1")
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 from gi.repository import Adw, GLib, Gtk, Pango
 
 from constants import tr
 from theme_manager import ThemeMgr
-from utils import color_from_name, run_cmd
 from ui.widgets import ColorDot
+from utils import color_from_name, run_cmd
 
 # Largura máxima confortável para a lista de temas
 _LIST_MAX_WIDTH = 620
@@ -51,9 +52,11 @@ class ThemesPage(Gtk.Box):
 
     def __init__(self, pool, toast_cb) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self._pool       = pool
-        self._toast      = toast_cb
+        self._pool = pool
+        self._toast = toast_cb
         self._theme_kind = "gtk"
+        self._cached_names: List[str] = []
+        self._cached_active: str = ""
         self._build()
 
     # ── Construção ────────────────────────────────────────────────────────────
@@ -78,6 +81,15 @@ class ThemesPage(Gtk.Box):
         # ── Sub-abas de tipo ──────────────────────────────────────────────────
         self.append(self._build_kind_tabs())
 
+        # ── Search / filter ───────────────────────────────────────────────────
+        self._search_entry = Gtk.SearchEntry()
+        self._search_entry.set_placeholder_text(tr("Filter themes…"))
+        self._search_entry.set_margin_start(26)
+        self._search_entry.set_margin_end(26)
+        self._search_entry.set_margin_bottom(8)
+        self._search_entry.connect("search-changed", self._on_search_changed)
+        self.append(self._search_entry)
+
         # ── Área de scroll com conteúdo centrado e limitado ───────────────────
         sc = Gtk.ScrolledWindow()
         sc.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -89,9 +101,7 @@ class ThemesPage(Gtk.Box):
         self._clamp.set_tightening_threshold(460)
 
         # Container interno (recriado a cada refresh_themes)
-        self._list_container = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL, spacing=0
-        )
+        self._list_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._list_container.set_margin_start(16)
         self._list_container.set_margin_end(16)
         self._list_container.set_margin_top(6)
@@ -120,9 +130,7 @@ class ThemesPage(Gtk.Box):
         self._light_btn.set_child(li)
         self._light_btn.add_css_class("scheme-pill")
         self._light_btn.add_css_class("flat")
-        self._light_btn.update_property(
-            [Gtk.AccessibleProperty.LABEL], [tr("Light mode")]
-        )
+        self._light_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Light mode")])
         if not is_dark:
             self._light_btn.add_css_class("s-on")
         self._light_btn.connect("clicked", lambda b: self._set_scheme(False))
@@ -137,9 +145,7 @@ class ThemesPage(Gtk.Box):
         self._dark_btn.set_child(di)
         self._dark_btn.add_css_class("scheme-pill")
         self._dark_btn.add_css_class("flat")
-        self._dark_btn.update_property(
-            [Gtk.AccessibleProperty.LABEL], [tr("Dark mode")]
-        )
+        self._dark_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Dark mode")])
         if is_dark:
             self._dark_btn.add_css_class("s-on")
         self._dark_btn.connect("clicked", lambda b: self._set_scheme(True))
@@ -157,8 +163,10 @@ class ThemesPage(Gtk.Box):
             btn = Gtk.Button(label=label)
             btn.add_css_class("kind-tab")
             btn.add_css_class("flat")
-            if kind == "gtk":
+            is_default = kind == "gtk"
+            if is_default:
                 btn.add_css_class("kind-on")
+            btn.update_state([Gtk.AccessibleState.SELECTED], [is_default])
             btn.connect("clicked", lambda b, k=kind: self._switch_kind(k))
             kb.append(btn)
             self._kind_btns[kind] = btn
@@ -174,6 +182,7 @@ class ThemesPage(Gtk.Box):
                 GLib.idle_add(self._toast, tr("Dark mode") if dark else tr("Light mode"))
             else:
                 GLib.idle_add(self._toast, tr("Error") + f": {err}")
+
         self._pool.submit(task)
 
     def _update_scheme_buttons(self, dark: bool) -> None:
@@ -191,10 +200,13 @@ class ThemesPage(Gtk.Box):
     def _switch_kind(self, kind: str) -> None:
         self._theme_kind = kind
         for k, btn in self._kind_btns.items():
-            if k == kind:
+            selected = k == kind
+            if selected:
                 btn.add_css_class("kind-on")
             else:
                 btn.remove_css_class("kind-on")
+            # a11y: announce selected state to screen readers
+            btn.update_state([Gtk.AccessibleState.SELECTED], [selected])
         self.refresh_themes()
 
     # ── Lista de temas ────────────────────────────────────────────────────────
@@ -225,11 +237,24 @@ class ThemesPage(Gtk.Box):
 
         self._pool.submit(_scan)
 
-    def _populate_themes(
-        self, kind: str, active: str, names: List[str]
-    ) -> None:
+    def _populate_themes(self, kind: str, active: str, names: List[str]) -> None:
         """Popula a lista após o scan em thread."""
-        # Limpa (remove spinner ou conteúdo anterior)
+        self._cached_names = names
+        self._cached_active = active
+        self._filter_and_display(kind, active, names)
+
+    def _on_search_changed(self, entry: Gtk.SearchEntry) -> None:
+        """Filter displayed themes based on search text."""
+        query = entry.get_text().strip().lower()
+        if query:
+            filtered = [n for n in self._cached_names if query in n.lower()]
+        else:
+            filtered = self._cached_names
+        self._filter_and_display(self._theme_kind, self._cached_active, filtered)
+
+    def _filter_and_display(self, kind: str, active: str, names: List[str]) -> None:
+        """Render theme list from pre-filtered names."""
+        # clear container
         child = self._list_container.get_first_child()
         while child:
             nxt = child.get_next_sibling()
@@ -246,9 +271,7 @@ class ThemesPage(Gtk.Box):
             return
 
         # Contador discreto
-        count_lbl = Gtk.Label(
-            label=f"{len(names)} {tr('themes available')}"
-        )
+        count_lbl = Gtk.Label(label=f"{len(names)} {tr('themes available')}")
         count_lbl.add_css_class("caption")
         count_lbl.add_css_class("dim-label")
         count_lbl.set_halign(Gtk.Align.START)
@@ -262,7 +285,7 @@ class ThemesPage(Gtk.Box):
         lb.set_selection_mode(Gtk.SelectionMode.NONE)
         lb.connect(
             "row-activated",
-            lambda box, row: self._apply_theme(row.theme_name, row.theme_kind),
+            lambda _box, row: self._apply_theme(row.theme_name, row.theme_kind),
         )
 
         for name in names:
@@ -318,9 +341,7 @@ class ThemesPage(Gtk.Box):
         a11y_label = f"{name} {tr('theme')}"
         if is_on:
             a11y_label += f" ({tr('Active')})"
-        row.update_property(
-            [Gtk.AccessibleProperty.LABEL], [a11y_label]
-        )
+        row.update_property([Gtk.AccessibleProperty.LABEL], [a11y_label])
         return row
 
     def _apply_theme(self, name: str, kind: str) -> None:
@@ -333,6 +354,7 @@ class ThemesPage(Gtk.Box):
                 GLib.idle_add(self._show_user_theme_dialog)
             else:
                 GLib.idle_add(self._toast, tr("Error") + f": {err}")
+
         self._pool.submit(task)
 
     def _show_user_theme_dialog(self) -> None:
@@ -341,14 +363,18 @@ class ThemesPage(Gtk.Box):
             heading=tr("User Themes required"),
             body=tr("Install and enable the User Themes extension to apply shell themes."),
         )
-        d.add_response("cancel",  tr("Cancel"))
+        d.add_response("cancel", tr("Cancel"))
         d.add_response("install", tr("Open Extensions Page"))
         d.set_response_appearance("install", Adw.ResponseAppearance.SUGGESTED)
 
-        def on_r(dlg, r):
+        def on_r(_dlg, r):
             if r == "install":
-                run_cmd(["xdg-open",
-                         "https://extensions.gnome.org/extension/19/user-themes/"])
+                run_cmd(
+                    [
+                        "xdg-open",
+                        "https://extensions.gnome.org/extension/19/user-themes/",
+                    ]
+                )
 
         d.connect("response", on_r)
         d.present(parent)

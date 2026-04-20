@@ -14,16 +14,18 @@ Contém:
 DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
+import logging
 import os
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from constants import COLOR_MAP, ICONS_DIR, LAYOUTS_DIR
+from constants import COLOR_MAP
 
+log = logging.getLogger("layout-switcher")
 
 # ── Subprocess ────────────────────────────────────────────────────────────────
+
 
 def run_cmd(
     args: List[str],
@@ -49,18 +51,26 @@ def run_cmd(
             env=merged_env,
         )
         out = (result.stdout.strip() or result.stderr.strip() or "").strip()
-        return result.returncode == 0, out
+        ok = result.returncode == 0
+        if not ok:
+            log.debug("cmd fail rc=%d: %s → %s", result.returncode, args, out)
+        return ok, out
     except FileNotFoundError:
+        log.warning("cmd not found: %s", args[0])
         return False, f"command not found: {args[0]}"
     except subprocess.TimeoutExpired:
+        log.warning("cmd timeout %ds: %s", timeout, args)
         return False, f"timed out after {timeout}s"
     except PermissionError:
+        log.warning("cmd perm denied: %s", args[0])
         return False, f"permission denied: {args[0]}"
     except Exception as exc:
+        log.error("cmd error: %s → %s", args, exc)
         return False, f"error: {exc}"
 
 
 # ── GSettings / dconf ─────────────────────────────────────────────────────────
+
 
 def gsettings_get(schema: str, key: str) -> Optional[str]:
     """Lê um valor de gsettings; retorna None em caso de falha."""
@@ -86,6 +96,7 @@ def dconf_write(path: str, value: str) -> Tuple[bool, str]:
 
 # ── Localização de arquivos ───────────────────────────────────────────────────
 
+
 def find_file(filename: str, subdirs: List[str]) -> Optional[Path]:
     """
     Localiza um arquivo percorrendo múltiplos diretórios base.
@@ -110,6 +121,7 @@ def find_file(filename: str, subdirs: List[str]) -> Optional[Path]:
 
 # ── Cores ─────────────────────────────────────────────────────────────────────
 
+
 def color_from_name(name: str) -> str:
     """
     Retorna uma cor hexadecimal baseada no nome do tema.
@@ -124,6 +136,7 @@ def color_from_name(name: str) -> str:
 
 
 # ── GNOME Shell ───────────────────────────────────────────────────────────────
+
 
 def gnome_shell_version() -> Tuple[int, int]:
     """

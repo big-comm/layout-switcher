@@ -13,8 +13,9 @@ import shutil
 from typing import Dict
 
 import gi
-gi.require_version("Gtk",   "4.0")
-gi.require_version("Adw",   "1")
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 from gi.repository import Adw, GLib, Gtk, Pango
 
@@ -31,7 +32,7 @@ class ExtensionsPage(Gtk.Box):
 
     def __init__(self, pool, toast_cb) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self._pool  = pool
+        self._pool = pool
         self._toast = toast_cb
         self._ext_sub = "featured"
         self._build()
@@ -65,12 +66,17 @@ class ExtensionsPage(Gtk.Box):
         tab_bar.set_margin_bottom(10)
 
         self._tab_btns: Dict[str, Gtk.Button] = {}
-        for key, label in [("featured", tr("Featured")), ("installed", tr("Installed"))]:
+        for key, label in [
+            ("featured", tr("Featured")),
+            ("installed", tr("Installed")),
+        ]:
             btn = Gtk.Button(label=label)
             btn.add_css_class("sub-tab")
             btn.add_css_class("flat")
-            if key == self._ext_sub:
+            is_default = key == self._ext_sub
+            if is_default:
                 btn.add_css_class("sub-on")
+            btn.update_state([Gtk.AccessibleState.SELECTED], [is_default])
             btn.connect("clicked", lambda b, k=key: self._switch_sub(k))
             tab_bar.append(btn)
             self._tab_btns[key] = btn
@@ -88,10 +94,12 @@ class ExtensionsPage(Gtk.Box):
     def _switch_sub(self, key: str) -> None:
         self._ext_sub = key
         for k, btn in self._tab_btns.items():
-            if k == key:
+            selected = k == key
+            if selected:
                 btn.add_css_class("sub-on")
             else:
                 btn.remove_css_class("sub-on")
+            btn.update_state([Gtk.AccessibleState.SELECTED], [selected])
         if key == "installed":
             GLib.idle_add(self.refresh_installed)
         self._stack.set_visible_child_name(key)
@@ -133,7 +141,7 @@ class ExtensionsPage(Gtk.Box):
 
     def _make_feat_card(self, ext: Dict) -> Gtk.Box:
         installed = ExtMgr.is_installed(ext["uuid"])
-        enabled   = ExtMgr.is_enabled(ext["uuid"]) if installed else False
+        enabled = ExtMgr.is_enabled(ext["uuid"]) if installed else False
 
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         card.add_css_class("ext-card")
@@ -148,7 +156,38 @@ class ExtensionsPage(Gtk.Box):
         inner.set_margin_top(14)
         inner.set_margin_bottom(14)
 
-        # Cabeçalho do card: ícone + nome + descrição
+        inner.append(self._make_feat_header(ext))
+
+        # system extension badge
+        if installed and not ExtMgr.is_user_dir(ext["uuid"]):
+            sys_lbl = Gtk.Label(label=tr("System extension"))
+            sys_lbl.add_css_class("caption")
+            sys_lbl.add_css_class("dim-label")
+            sys_lbl.set_halign(Gtk.Align.START)
+            sys_lbl.set_margin_bottom(4)
+            inner.append(sys_lbl)
+
+        inner.append(Gtk.Separator())
+
+        if installed:
+            self._build_feat_installed(inner, ext, card, enabled)
+        else:
+            self._build_feat_not_installed(inner, ext, card)
+
+        card.append(inner)
+
+        card_label = ext["name"]
+        if installed and enabled:
+            card_label = f"{ext['name']} ({tr('enabled')})"
+        elif installed:
+            card_label = f"{ext['name']} ({tr('disabled')})"
+        else:
+            card_label = f"{ext['name']} ({tr('Not installed')})"
+        card.update_property([Gtk.AccessibleProperty.LABEL], [card_label])
+        return card
+
+    def _make_feat_header(self, ext: Dict) -> Gtk.Box:
+        """Build card header: icon + name + description + author."""
         hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         ico = Gtk.Image.new_from_icon_name(ext.get("icon", "application-x-addon-symbolic"))
         ico.set_pixel_size(28)
@@ -168,7 +207,6 @@ class ExtensionsPage(Gtk.Box):
         dl.set_max_width_chars(30)
         tc.append(dl)
 
-        # Autor
         author = ext.get("author", "")
         if author:
             al = Gtk.Label(label=f"by {author}")
@@ -179,115 +217,99 @@ class ExtensionsPage(Gtk.Box):
             tc.append(al)
 
         hdr.append(tc)
-        inner.append(hdr)
-        inner.append(Gtk.Separator())
+        return hdr
 
-        if installed:
-            # Linha de toggle
-            btm = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            st  = Gtk.Label(label=tr("On") if enabled else tr("Off"))
-            st.add_css_class("ok-col" if enabled else "dim-label")
-            st.set_hexpand(True)
-            st.set_halign(Gtk.Align.START)
-            btm.append(st)
-            sw = Gtk.Switch()
-            sw.set_active(enabled)
-            sw.set_valign(Gtk.Align.CENTER)
-            sw.update_property(
-                [Gtk.AccessibleProperty.LABEL],
-                [f"{tr('Toggle')} {ext['name']}"]
-            )
-            sw.connect(
-                "notify::active",
-                lambda s, p, _uuid=ext["uuid"], _card=card, _st=st, _sw=sw:
-                    self._toggle_feat(_uuid, s.get_active(), _card, _st, _sw),
-            )
-            btm.append(sw)
-            inner.append(btm)
-
-            # Botão remover
-            rm = Gtk.Button(label=tr("Remove"))
-            rm.add_css_class("flat")
-            rm.add_css_class("destructive-action")
-            rm.set_halign(Gtk.Align.START)
-            rm.update_property(
-                [Gtk.AccessibleProperty.LABEL],
-                [f"{tr('Remove')} {ext['name']}"]
-            )
-            rm.connect(
-                "clicked",
-                lambda b, _uuid=ext["uuid"], _name=ext["name"]:
-                    self._confirm_remove(_uuid, _name),
-            )
-            inner.append(rm)
-
-            # Botão configurações (apenas quando habilitada)
-            if ext.get("has_settings") and enabled:
-                sb_btn = Gtk.Button(label=tr("Settings"))
-                sb_btn.add_css_class("flat")
-                sb_btn.set_halign(Gtk.Align.START)
-                sb_btn.connect(
-                    "clicked",
-                    lambda b, _uuid=ext["uuid"]: ExtMgr.open_prefs(_uuid),
-                )
-                inner.append(sb_btn)
-        else:
-            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            nl2 = Gtk.Label(label=tr("Not installed"))
-            nl2.add_css_class("dim-label")
-            nl2.set_hexpand(True)
-            row.append(nl2)
-            ib = Gtk.Button(label=tr("Install"))
-            ib.add_css_class("suggested-action")
-            ib.add_css_class("pill")
-            ib.connect(
-                "clicked",
-                lambda b, e=ext, _card=card: self._confirm_install(e, _card),
-            )
-            row.append(ib)
-            inner.append(row)
-
-            # Link para extensions.gnome.org
-            ego_id = ext.get("ego_id", 0)
-            if ego_id > 0:
-                ego_btn = Gtk.Button()
-                ego_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-                ego_ico = Gtk.Image.new_from_icon_name("web-browser-symbolic")
-                ego_ico.set_pixel_size(14)
-                ego_box.append(ego_ico)
-                ego_lbl = Gtk.Label(label=tr("View on GNOME Extensions"))
-                ego_lbl.add_css_class("caption")
-                ego_box.append(ego_lbl)
-                ego_btn.set_child(ego_box)
-                ego_btn.add_css_class("flat")
-                ego_btn.set_halign(Gtk.Align.START)
-                ego_btn.set_margin_top(4)
-                ego_btn.connect(
-                    "clicked",
-                    lambda b, _id=ego_id: run_cmd(
-                        ["xdg-open", f"https://extensions.gnome.org/extension/{_id}/"],
-                        timeout=5,
-                    ),
-                )
-                inner.append(ego_btn)
-
-        card.append(inner)
-
-        card_label = ext["name"]
-        if installed and enabled:
-            card_label = f"{ext['name']} ({tr('enabled')})"
-        elif installed:
-            card_label = f"{ext['name']} ({tr('disabled')})"
-        else:
-            card_label = f"{ext['name']} ({tr('Not installed')})"
-        card.update_property(
-            [Gtk.AccessibleProperty.LABEL], [card_label]
+    def _build_feat_installed(
+        self, inner: Gtk.Box, ext: Dict, card: Gtk.Box, enabled: bool
+    ) -> None:
+        """Build toggle/remove/settings controls for installed extension."""
+        btm = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        st = Gtk.Label(label=tr("On") if enabled else tr("Off"))
+        st.add_css_class("ok-col" if enabled else "dim-label")
+        st.set_hexpand(True)
+        st.set_halign(Gtk.Align.START)
+        btm.append(st)
+        sw = Gtk.Switch()
+        sw.set_active(enabled)
+        sw.set_valign(Gtk.Align.CENTER)
+        sw.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Toggle')} {ext['name']}"])
+        sw.connect(
+            "notify::active",
+            lambda s, p, _uuid=ext["uuid"], _card=card, _st=st, _sw=sw: self._toggle_feat(
+                _uuid, s.get_active(), _card, _st, _sw
+            ),
         )
-        return card
+        btm.append(sw)
+        inner.append(btm)
+
+        rm = Gtk.Button(label=tr("Remove"))
+        rm.add_css_class("flat")
+        rm.add_css_class("destructive-action")
+        rm.set_halign(Gtk.Align.START)
+        rm.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Remove')} {ext['name']}"])
+        rm.connect(
+            "clicked",
+            lambda b, _uuid=ext["uuid"], _name=ext["name"]: self._confirm_remove(_uuid, _name),
+        )
+        inner.append(rm)
+
+        if ext.get("has_settings") and enabled:
+            sb_btn = Gtk.Button(label=tr("Settings"))
+            sb_btn.add_css_class("flat")
+            sb_btn.set_halign(Gtk.Align.START)
+            sb_btn.connect(
+                "clicked",
+                lambda b, _uuid=ext["uuid"]: ExtMgr.open_prefs(_uuid),
+            )
+            inner.append(sb_btn)
+
+    def _build_feat_not_installed(self, inner: Gtk.Box, ext: Dict, card: Gtk.Box) -> None:
+        """Build install button + EGO link for not-installed extension."""
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        nl2 = Gtk.Label(label=tr("Not installed"))
+        nl2.add_css_class("dim-label")
+        nl2.set_hexpand(True)
+        row.append(nl2)
+        ib = Gtk.Button(label=tr("Install"))
+        ib.add_css_class("suggested-action")
+        ib.add_css_class("pill")
+        ib.connect(
+            "clicked",
+            lambda b, e=ext, _card=card: self._confirm_install(e, _card),
+        )
+        row.append(ib)
+        inner.append(row)
+
+        ego_id = ext.get("ego_id", 0)
+        if ego_id > 0:
+            ego_btn = Gtk.Button()
+            ego_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            ego_ico = Gtk.Image.new_from_icon_name("web-browser-symbolic")
+            ego_ico.set_pixel_size(14)
+            ego_box.append(ego_ico)
+            ego_lbl = Gtk.Label(label=tr("View on GNOME Extensions"))
+            ego_lbl.add_css_class("caption")
+            ego_box.append(ego_lbl)
+            ego_btn.set_child(ego_box)
+            ego_btn.add_css_class("flat")
+            ego_btn.set_halign(Gtk.Align.START)
+            ego_btn.set_margin_top(4)
+            ego_btn.connect(
+                "clicked",
+                lambda b, _id=ego_id: run_cmd(
+                    ["xdg-open", f"https://extensions.gnome.org/extension/{_id}/"],
+                    timeout=5,
+                ),
+            )
+            inner.append(ego_btn)
 
     def _toggle_feat(
-        self, uuid: str, enable: bool,
-        card: Gtk.Box, status_lbl: Gtk.Label, switch: Gtk.Switch,
+        self,
+        uuid: str,
+        enable: bool,
+        card: Gtk.Box,
+        status_lbl: Gtk.Label,
+        switch: Gtk.Switch,
     ) -> None:
         def task():
             ok, err = ShellReloader.apply_extension_state(uuid, enable)
@@ -295,11 +317,12 @@ class ExtensionsPage(Gtk.Box):
                 GLib.idle_add(self.rebuild_featured)
                 GLib.idle_add(self.refresh_installed)
                 short = uuid.split("@")[0]
-                msg   = f"{short} " + (tr("enabled") if enable else tr("disabled"))
+                msg = f"{short} " + (tr("enabled") if enable else tr("disabled"))
                 GLib.idle_add(self._toast, msg)
             else:
                 GLib.idle_add(switch.set_active, not enable)
                 GLib.idle_add(self._toast, tr("Error") + f": {err}")
+
         self._pool.submit(task)
 
     def _confirm_install(self, ext: Dict, card: Gtk.Box) -> None:
@@ -309,10 +332,10 @@ class ExtensionsPage(Gtk.Box):
             body=f"{ext['name']}\n{tr('Will try to install automatically.')}",
         )
         d.add_response("cancel", tr("Cancel"))
-        d.add_response("yes",    tr("Install"))
+        d.add_response("yes", tr("Install"))
         d.set_response_appearance("yes", Adw.ResponseAppearance.SUGGESTED)
 
-        def on_r(dlg, r):
+        def on_r(_dlg, r):
             if r != "yes":
                 return
             GLib.idle_add(self._show_spinner, card, tr("Installing…"))
@@ -350,7 +373,7 @@ class ExtensionsPage(Gtk.Box):
         d.add_response("remove", tr("Remove"))
         d.set_response_appearance("remove", Adw.ResponseAppearance.DESTRUCTIVE)
 
-        def on_r(dlg, r):
+        def on_r(_dlg, r):
             if r != "remove":
                 return
 
@@ -425,9 +448,7 @@ class ExtensionsPage(Gtk.Box):
         clamp.set_maximum_size(700)
         clamp.set_tightening_threshold(500)
 
-        self._inst_container = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL, spacing=0
-        )
+        self._inst_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._inst_container.set_margin_start(16)
         self._inst_container.set_margin_end(16)
         self._inst_container.set_margin_top(4)
@@ -457,6 +478,11 @@ class ExtensionsPage(Gtk.Box):
         exts = ExtMgr.list_installed()
         self._refresh_global_btn()
 
+        # update sub-tab label with count
+        inst_btn = self._tab_btns.get("installed")
+        if inst_btn:
+            inst_btn.set_label(f"{tr('Installed')} ({len(exts)})")
+
         if not exts:
             self._inst_count_lbl.set_label("")
             ph = Adw.StatusPage(
@@ -472,11 +498,11 @@ class ExtensionsPage(Gtk.Box):
         )
 
         # Divide em dois grupos: Habilitadas e Desabilitadas
-        enabled_exts  = [e for e in exts if e["enabled"]]
+        enabled_exts = [e for e in exts if e["enabled"]]
         disabled_exts = [e for e in exts if not e["enabled"]]
 
         for group_label, group_exts in [
-            (tr("Enabled"),  enabled_exts),
+            (tr("Enabled"), enabled_exts),
             (tr("Disabled"), disabled_exts),
         ]:
             if not group_exts:
@@ -561,10 +587,7 @@ class ExtensionsPage(Gtk.Box):
         sw = Gtk.Switch()
         sw.set_active(enabled)
         sw.set_valign(Gtk.Align.CENTER)
-        sw.update_property(
-            [Gtk.AccessibleProperty.LABEL],
-            [f"{tr('Toggle')} {ext['name']}"]
-        )
+        sw.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Toggle')} {ext['name']}"])
         uuid_ref = ext["uuid"]
 
         def on_sw(s, p, _uuid=uuid_ref) -> None:
@@ -588,15 +611,11 @@ class ExtensionsPage(Gtk.Box):
             rm = Gtk.Button(icon_name="user-trash-symbolic")
             rm.add_css_class("flat")
             rm.set_tooltip_text(tr("Remove"))
-            rm.update_property(
-                [Gtk.AccessibleProperty.LABEL],
-                [f"{tr('Remove')} {ext['name']}"]
-            )
+            rm.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Remove')} {ext['name']}"])
             rm.set_valign(Gtk.Align.CENTER)
             rm.connect(
                 "clicked",
-                lambda b, _uuid=ext["uuid"], _name=ext["name"]:
-                    self._confirm_remove(_uuid, _name),
+                lambda b, _uuid=ext["uuid"], _name=ext["name"]: self._confirm_remove(_uuid, _name),
             )
             ctrl.append(rm)
 
@@ -610,23 +629,41 @@ class ExtensionsPage(Gtk.Box):
         on = ExtMgr.all_globally_enabled()
         label = tr("Disable All") if on else tr("Enable All")
         self._global_btn.set_label(label)
-        self._global_btn.update_property(
-            [Gtk.AccessibleProperty.LABEL], [label]
-        )
+        self._global_btn.update_property([Gtk.AccessibleProperty.LABEL], [label])
         for c in ("destructive-action", "suggested-action"):
             self._global_btn.remove_css_class(c)
-        self._global_btn.add_css_class(
-            "destructive-action" if on else "suggested-action"
-        )
+        self._global_btn.add_css_class("destructive-action" if on else "suggested-action")
 
     def _on_global_toggle(self, btn) -> None:
         currently_on = ExtMgr.all_globally_enabled()
 
+        if currently_on:
+            # confirm before disabling all
+            parent = self.get_root()
+            d = Adw.AlertDialog(
+                heading=tr("Disable all extensions?"),
+                body=tr("All extensions will be disabled. You can re-enable them later."),
+            )
+            d.add_response("cancel", tr("Cancel"))
+            d.add_response("disable", tr("Disable All"))
+            d.set_response_appearance("disable", Adw.ResponseAppearance.DESTRUCTIVE)
+
+            def on_r(_dlg, r):
+                if r == "disable":
+                    self._do_global_toggle(True)
+
+            d.connect("response", on_r)
+            d.present(parent)
+        else:
+            self._do_global_toggle(False)
+
+    def _do_global_toggle(self, currently_on: bool) -> None:
         def task():
             ok, err = ExtMgr.disable_all_globally(disable=currently_on)
             if ok:
-                msg = (tr("All extensions disabled") if currently_on
-                       else tr("All extensions enabled"))
+                msg = (
+                    tr("All extensions disabled") if currently_on else tr("All extensions enabled")
+                )
                 GLib.idle_add(self._refresh_global_btn)
                 GLib.idle_add(self.refresh_installed)
                 GLib.idle_add(self._toast, msg)

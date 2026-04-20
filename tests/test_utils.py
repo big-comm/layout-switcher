@@ -2,19 +2,23 @@
 """Tests for utils.py — run_cmd, gsettings/dconf helpers, find_file, color_from_name."""
 
 import os
-import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import subprocess
+from unittest.mock import patch
 
-# Ensure the package is importable
-sys.path.insert(0, str(Path(__file__).parent.parent / "usr" / "share" / "layout-switcher"))
-
-import pytest
-from utils import run_cmd, gsettings_get, gsettings_set, dconf_read, dconf_write, find_file, color_from_name, gnome_shell_version, is_wayland
-
+from utils import (
+    color_from_name,
+    dconf_read,
+    dconf_write,
+    find_file,
+    gnome_shell_version,
+    gsettings_get,
+    gsettings_set,
+    is_wayland,
+    run_cmd,
+)
 
 # ── run_cmd ───────────────────────────────────────────────────────────────────
+
 
 class TestRunCmd:
     def test_success(self):
@@ -48,6 +52,7 @@ class TestRunCmd:
 
 
 # ── gsettings/dconf helpers ───────────────────────────────────────────────────
+
 
 class TestGsettings:
     @patch("utils.run_cmd", return_value=(True, "'Adwaita'"))
@@ -91,14 +96,12 @@ class TestDconf:
 
 # ── find_file ─────────────────────────────────────────────────────────────────
 
+
 class TestFindFile:
     def test_find_existing_file(self, tmp_path):
         (tmp_path / "layouts").mkdir()
         (tmp_path / "layouts" / "classic.txt").write_text("data")
-
-        with patch("utils.Path") as mock_path_cls:
-            # We need to directly test with a real temp path
-            pass
+        # find_file uses hardcoded search paths — integration test only
 
     def test_find_file_none_for_empty(self):
         result = find_file("", ["layouts"])
@@ -112,6 +115,7 @@ class TestFindFile:
 
 
 # ── color_from_name ───────────────────────────────────────────────────────────
+
 
 class TestColorFromName:
     def test_known_color(self):
@@ -132,6 +136,7 @@ class TestColorFromName:
 
 
 # ── gnome_shell_version ───────────────────────────────────────────────────────
+
 
 class TestGnomeShellVersion:
     @patch("utils.run_cmd", return_value=(True, "GNOME Shell 46.2"))
@@ -154,6 +159,7 @@ class TestGnomeShellVersion:
 
 
 # ── is_wayland ────────────────────────────────────────────────────────────────
+
 
 class TestIsWayland:
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "wayland", "WAYLAND_DISPLAY": ""})

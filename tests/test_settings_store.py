@@ -2,11 +2,7 @@
 """Tests for settings_store.py — Settings JSON persistence."""
 
 import json
-import sys
-from pathlib import Path
 from unittest.mock import patch
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "usr" / "share" / "layout-switcher"))
 
 import pytest
 
@@ -24,7 +20,9 @@ class TestSettings:
             p.start()
 
         import importlib
+
         import settings_store
+
         importlib.reload(settings_store)
         self.Settings = settings_store.Settings
 

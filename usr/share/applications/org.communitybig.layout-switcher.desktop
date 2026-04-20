@@ -14,5 +14,5 @@ Categories=Settings;DesktopSettings;GTK;GNOME;
 Keywords=layout;theme;extension;gnome;desktop;appearance;switcher;
 Keywords[pt_BR]=layout;tema;extensão;gnome;desktop;aparência;
 StartupNotify=true
-StartupWMClass=layout-switcher
+StartupWMClass=org.communitybig.layout-switcher
 X-GNOME-UsesNotifications=false

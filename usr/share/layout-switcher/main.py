@@ -11,22 +11,30 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 `tr = gettext.gettext` is the translation function.
 """
 
+import logging
 import sys
 
 # Ensure the package directory is on sys.path when run directly
 from pathlib import Path
+
 _ROOT = Path(__file__).parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(levelname)s [%(name)s] %(message)s",
+)
+
 import gi
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio
 
-from constants import APP_ID, tr
+from constants import APP_ID
 from ui.window import MainWindow
 
 

@@ -1,0 +1,7 @@
+usr/share/layout-switcher/extension_manager.py
+    M 86:4 ExtMgr.list_installed - C (11)
+usr/share/layout-switcher/theme_manager.py
+    M 35:4 ThemeMgr.list_themes - C (18)
+usr/share/layout-switcher/ui/page_extensions.py
+    M 134:4 ExtensionsPage._make_feat_card - C (13)
+    M 449:4 ExtensionsPage.refresh_installed - C (12)

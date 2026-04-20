@@ -12,9 +12,10 @@ import concurrent.futures
 from typing import Dict
 
 import gi
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gio, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from constants import APP_ID, APP_VERSION, tr
 from settings_store import GSettingsMonitor, Settings
@@ -48,10 +49,8 @@ class MainWindow(Adw.ApplicationWindow):
 
     def __init__(self, app: Adw.Application) -> None:
         super().__init__(application=app)
-        self._prefs   = Settings()
-        self._pool    = concurrent.futures.ThreadPoolExecutor(
-            max_workers=4, thread_name_prefix="cls"
-        )
+        self._prefs = Settings()
+        self._pool = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="cls")
         self._monitor = GSettingsMonitor()
 
         self.set_title(tr("Layout Switcher"))
@@ -76,6 +75,7 @@ class MainWindow(Adw.ApplicationWindow):
         pois o install.sh já copia o SVG para hicolor/scalable/apps.
         """
         from pathlib import Path
+
         icons_dir = Path(__file__).parent.parent / "icons"
         if icons_dir.is_dir():
             display = Gdk.Display.get_default()
@@ -104,7 +104,8 @@ class MainWindow(Adw.ApplicationWindow):
         prov = Gtk.CssProvider()
         prov.load_from_string(APP_CSS)
         Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(), prov,
+            Gdk.Display.get_default(),
+            prov,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
@@ -116,19 +117,23 @@ class MainWindow(Adw.ApplicationWindow):
         e atualizar a UI automaticamente (sem reiniciar o app).
         """
         self._monitor.watch(
-            "org.gnome.shell", "enabled-extensions",
+            "org.gnome.shell",
+            "enabled-extensions",
             lambda: GLib.idle_add(self._on_ext_changed),
         )
         self._monitor.watch(
-            "org.gnome.desktop.interface", "gtk-theme",
+            "org.gnome.desktop.interface",
+            "gtk-theme",
             lambda: GLib.idle_add(self._themes_page.refresh_themes),
         )
         self._monitor.watch(
-            "org.gnome.desktop.interface", "icon-theme",
+            "org.gnome.desktop.interface",
+            "icon-theme",
             lambda: GLib.idle_add(self._themes_page.refresh_themes),
         )
         self._monitor.watch(
-            "org.gnome.desktop.interface", "color-scheme",
+            "org.gnome.desktop.interface",
+            "color-scheme",
             lambda: GLib.idle_add(self._themes_page.update_scheme_from_external),
         )
 
@@ -162,9 +167,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Sidebar toggle button (visible only when sidebar is collapsed)
         self._sidebar_btn = Gtk.ToggleButton(icon_name="sidebar-show-symbolic")
         self._sidebar_btn.set_tooltip_text(tr("Show Sidebar"))
-        self._sidebar_btn.update_property(
-            [Gtk.AccessibleProperty.LABEL], [tr("Show Sidebar")]
-        )
+        self._sidebar_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Show Sidebar")])
         self._sidebar_btn.set_visible(False)
         self._sidebar_btn.connect("toggled", self._on_sidebar_toggled)
         self._content_hdr.pack_start(self._sidebar_btn)
@@ -176,9 +179,7 @@ class MainWindow(Adw.ApplicationWindow):
         menu_btn = Gtk.MenuButton()
         menu_btn.set_icon_name("open-menu-symbolic")
         menu_btn.set_tooltip_text(tr("Menu"))
-        menu_btn.update_property(
-            [Gtk.AccessibleProperty.LABEL], [tr("Main menu")]
-        )
+        menu_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Main menu")])
 
         menu = Gio.Menu()
         menu.append(tr("About"), "app.about")
@@ -186,6 +187,21 @@ class MainWindow(Adw.ApplicationWindow):
         self._content_hdr.pack_end(menu_btn)
 
         content_toolbar.add_top_bar(self._content_hdr)
+
+        # ── First-run welcome banner ─────────────────────────────────────────
+        if not self._prefs.get("intro_shown"):
+            banner = Adw.Banner(
+                title=tr("Welcome! Choose a desktop layout below to get started."),
+                button_label=tr("Got it"),
+            )
+            banner.set_revealed(True)
+
+            def on_dismiss(_b):
+                banner.set_revealed(False)
+                self._prefs.set("intro_shown", True)
+
+            banner.connect("button-clicked", on_dismiss)
+            content_toolbar.add_top_bar(banner)
 
         # Stack with pages
         self._stack = Gtk.Stack()
@@ -210,9 +226,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_content(self._toast_overlay)
 
         # Show/hide sidebar toggle button when split view collapses/expands
-        self._split_view.connect(
-            "notify::collapsed", self._on_split_collapsed
-        )
+        self._split_view.connect("notify::collapsed", self._on_split_collapsed)
 
         # Register about action
         about_action = Gio.SimpleAction.new("about", None)
@@ -255,9 +269,9 @@ class MainWindow(Adw.ApplicationWindow):
 
         self._nav_rows: Dict[str, NavRow] = {}
         nav_items = [
-            ("layouts",    tr("Layouts"),    "view-grid-symbolic"),
+            ("layouts", tr("Layouts"), "view-grid-symbolic"),
             ("extensions", tr("Extensions"), "application-x-addon-symbolic"),
-            ("themes",     tr("Themes"),     "applications-graphics-symbolic"),
+            ("themes", tr("Themes"), "applications-graphics-symbolic"),
         ]
         for key, label, icon in nav_items:
             row = self._make_nav_row(key, label, icon)
@@ -291,14 +305,12 @@ class MainWindow(Adw.ApplicationWindow):
         inner.append(lbl)
 
         row.set_child(inner)
-        row.update_property(
-            [Gtk.AccessibleProperty.LABEL], [label]
-        )
+        row.update_property([Gtk.AccessibleProperty.LABEL], [label])
         return row
 
     # ── Sidebar toggle (collapsed) ────────────────────────────────────────────
 
-    def _on_split_collapsed(self, split_view, pspec) -> None:
+    def _on_split_collapsed(self, split_view, _pspec) -> None:
         collapsed = split_view.get_collapsed()
         self._sidebar_btn.set_visible(collapsed)
         # Show start title buttons when collapsed (no sidebar header visible)
@@ -339,7 +351,7 @@ class MainWindow(Adw.ApplicationWindow):
             comments=tr("Layouts, effects and themes for your GNOME desktop."),
             website="https://communitybig.org/",
             issue_url="https://github.com/BigCommunity/layout-switcher/issues",
-            copyright="© 2022–2025 Big Community",
+            copyright="© 2022–2025 Big Community & Contributors",
             developers=["Big Community", "Ari Novais"],
         )
         about.present(self)

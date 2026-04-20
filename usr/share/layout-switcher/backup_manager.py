@@ -25,8 +25,8 @@ from utils import run_cmd
 class BackupManager:
     """Gerencia backups do dconf para restauração de layouts e configurações."""
 
-    N_KEEP    = 10    # número máximo de backups retidos
-    MIN_BYTES = 20    # um dump dconf válido tem pelo menos este tamanho
+    N_KEEP = int(os.environ.get("LAYOUT_SWITCHER_N_KEEP", "10"))
+    MIN_BYTES = 20  # um dump dconf válido tem pelo menos este tamanho
 
     # ── Criar ─────────────────────────────────────────────────────────────────
 
@@ -45,9 +45,9 @@ class BackupManager:
         if not ok or not data or len(data) < cls.MIN_BYTES:
             return False, f"dconf dump failed or empty: {data!r}"
 
-        ts   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         dest = BACKUP_DIR / f"backup_{ts}.dconf"
-        tmp  = dest.with_suffix(".tmp")
+        tmp = dest.with_suffix(".tmp")
 
         try:
             tmp.write_text(data, encoding="utf-8")
@@ -62,8 +62,8 @@ class BackupManager:
             lnk_tmp = BACKUP_DIR / "latest.dconf.tmp"
             if lnk_tmp.exists() or lnk_tmp.is_symlink():
                 lnk_tmp.unlink()
-            lnk_tmp.symlink_to(dest.name)   # symlink relativo
-            lnk_tmp.replace(lnk)            # rename atômico
+            lnk_tmp.symlink_to(dest.name)  # symlink relativo
+            lnk_tmp.replace(lnk)  # rename atômico
         except Exception:
             pass  # symlink é conveniência, não obrigatório
 
@@ -100,7 +100,8 @@ class BackupManager:
         try:
             return sorted(
                 [
-                    p for p in BACKUP_DIR.glob("backup_*.dconf")
+                    p
+                    for p in BACKUP_DIR.glob("backup_*.dconf")
                     if p.exists() and p.stat().st_size >= cls.MIN_BYTES
                 ],
                 key=lambda p: p.stat().st_mtime,
@@ -151,7 +152,7 @@ class BackupManager:
                 key=lambda p: p.stat().st_mtime,
                 reverse=True,
             )
-            for old in all_files[cls.N_KEEP:]:
+            for old in all_files[cls.N_KEEP :]:
                 try:
                     old.unlink()
                 except Exception:

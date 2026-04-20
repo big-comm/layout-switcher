@@ -1,13 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Tests for theme_manager.py — list, apply, color_scheme."""
 
-import sys
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "usr" / "share" / "layout-switcher"))
-
-import pytest
 from theme_manager import ThemeMgr
 
 
@@ -49,20 +44,16 @@ class TestApply:
     def test_apply_gtk(self, mock_gs):
         ok, msg = ThemeMgr.apply("gtk", "Adwaita")
         assert ok is True
-        mock_gs.assert_called_with(
-            "org.gnome.desktop.interface", "gtk-theme", "Adwaita"
-        )
+        mock_gs.assert_called_with("org.gnome.desktop.interface", "gtk-theme", "Adwaita")
 
     @patch("theme_manager.gsettings_set", return_value=(True, ""))
     def test_apply_icons(self, mock_gs):
         ok, msg = ThemeMgr.apply("icons", "Papirus")
         assert ok is True
-        mock_gs.assert_called_with(
-            "org.gnome.desktop.interface", "icon-theme", "Papirus"
-        )
+        mock_gs.assert_called_with("org.gnome.desktop.interface", "icon-theme", "Papirus")
 
     @patch("extension_manager.ExtMgr.is_installed", return_value=False)
-    def test_apply_shell_no_user_theme(self, mock_inst):
+    def test_apply_shell_no_user_theme(self, _mock_inst):
         ok, msg = ThemeMgr.apply("shell", "Orchis")
         assert ok is False
         assert msg == "user-theme-not-installed"

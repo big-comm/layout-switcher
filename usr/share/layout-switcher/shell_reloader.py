@@ -43,13 +43,21 @@ class ShellReloader:
         Recarrega uma extensão específica via D-Bus (recarga cirúrgica).
         Funciona em Wayland e X11. Retorna True se o D-Bus aceitou o comando.
         """
-        ok, out = run_cmd([
-            "gdbus", "call", "--session",
-            "--dest",        DBUS_SHELL_NAME,
-            "--object-path", DBUS_EXT_PATH,
-            "--method",      f"{DBUS_EXT_IFACE}.ReloadExtension",
-            uuid,
-        ], timeout=8)
+        ok, out = run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.ReloadExtension",
+                uuid,
+            ],
+            timeout=8,
+        )
         return ok
 
     # ── Ativar / desativar via D-Bus ──────────────────────────────────────────
@@ -62,17 +70,23 @@ class ShellReloader:
         Retorna (sucesso, mensagem).
         """
         method = (
-            f"{DBUS_EXT_IFACE}.EnableExtension"
-            if enable
-            else f"{DBUS_EXT_IFACE}.DisableExtension"
+            f"{DBUS_EXT_IFACE}.EnableExtension" if enable else f"{DBUS_EXT_IFACE}.DisableExtension"
         )
-        ok, out = run_cmd([
-            "gdbus", "call", "--session",
-            "--dest",        DBUS_SHELL_NAME,
-            "--object-path", DBUS_EXT_PATH,
-            "--method",      method,
-            uuid,
-        ], timeout=8)
+        ok, out = run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                method,
+                uuid,
+            ],
+            timeout=8,
+        )
         return ok, out
 
     # ── Recarga geral ─────────────────────────────────────────────────────────
@@ -84,13 +98,21 @@ class ShellReloader:
         Tenta múltiplas estratégias; nunca levanta exceção.
         """
         # Estratégia 1: D-Bus Extensions API (GS 40+, Wayland-safe)
-        run_cmd([
-            "gdbus", "call", "--session",
-            "--dest",        DBUS_SHELL_NAME,
-            "--object-path", DBUS_EXT_PATH,
-            "--method",      f"{DBUS_EXT_IFACE}.ReloadExtension",
-            "",
-        ], timeout=5)
+        run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.ReloadExtension",
+                "",
+            ],
+            timeout=5,
+        )
 
         # Estratégia 2: gnome-extensions CLI
         if shutil.which("gnome-extensions"):
@@ -98,13 +120,21 @@ class ShellReloader:
 
         # Estratégia 3: Eval reexec (X11 somente — ignorado silenciosamente no Wayland)
         if not is_wayland():
-            run_cmd([
-                "gdbus", "call", "--session",
-                "--dest",        DBUS_SHELL_NAME,
-                "--object-path", DBUS_SHELL_PATH,
-                "--method",      DBUS_EVAL_IFACE,
-                "global.reexec_self()",
-            ], timeout=5)
+            run_cmd(
+                [
+                    "gdbus",
+                    "call",
+                    "--session",
+                    "--dest",
+                    DBUS_SHELL_NAME,
+                    "--object-path",
+                    DBUS_SHELL_PATH,
+                    "--method",
+                    DBUS_EVAL_IFACE,
+                    "global.reexec_self()",
+                ],
+                timeout=5,
+            )
 
     # ── Ponto de entrada principal ────────────────────────────────────────────
 

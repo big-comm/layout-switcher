@@ -1,13 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Tests for layout_applier.py — apply layout via dconf load."""
 
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "usr" / "share" / "layout-switcher"))
-
-import pytest
 from layout_applier import LayoutApplier
 
 
@@ -52,8 +48,9 @@ class TestLayoutApplier:
 class TestShellReloader:
     @patch("shell_reloader.run_cmd", return_value=(True, ""))
     @patch("shell_reloader.is_wayland", return_value=True)
-    def test_reload_all_wayland(self, mock_way, mock_run):
+    def test_reload_all_wayland(self, _mock_way, mock_run):
         from shell_reloader import ShellReloader
+
         ShellReloader.reload_all()
         # Should NOT call reexec on Wayland
         calls = [str(c) for c in mock_run.call_args_list]
@@ -61,8 +58,9 @@ class TestShellReloader:
 
     @patch("shell_reloader.run_cmd", return_value=(True, ""))
     @patch("shell_reloader.is_wayland", return_value=False)
-    def test_reload_all_x11(self, mock_way, mock_run):
+    def test_reload_all_x11(self, _mock_way, mock_run):
         from shell_reloader import ShellReloader
+
         ShellReloader.reload_all()
         # Should call multiple strategies including reexec on X11
         assert mock_run.call_count >= 2

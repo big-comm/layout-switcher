@@ -15,10 +15,11 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 import json
 import shutil
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from constants import EXT_SYS_DIR, EXT_USER_DIR
 from utils import dconf_read, dconf_write, gnome_shell_version, gsettings_get, run_cmd
@@ -112,15 +113,17 @@ class ExtMgr:
                     except Exception:
                         meta = {}
                 uuid = meta.get("uuid") or entry.name
-                results.append({
-                    "uuid":        uuid,
-                    "name":        meta.get("name") or uuid,
-                    "description": meta.get("description", ""),
-                    "version":     str(meta.get("version", "")),
-                    "url":         meta.get("url", ""),
-                    "user":        is_user,
-                    "enabled":     uuid in enabled,
-                })
+                results.append(
+                    {
+                        "uuid": uuid,
+                        "name": meta.get("name") or uuid,
+                        "description": meta.get("description", ""),
+                        "version": str(meta.get("version", "")),
+                        "url": meta.get("url", ""),
+                        "user": is_user,
+                        "enabled": uuid in enabled,
+                    }
+                )
         return results
 
     # ── Ativar / Desativar ────────────────────────────────────────────────────
@@ -133,6 +136,7 @@ class ExtMgr:
         """
         # Import local para evitar circular import
         from shell_reloader import ShellReloader
+
         return ShellReloader.apply_extension_state(uuid, enable)
 
     @staticmethod
@@ -148,10 +152,15 @@ class ExtMgr:
         else:
             cur = [e for e in cur if e != uuid]
         inner = ", ".join(f"'{e}'" for e in cur)
-        return run_cmd([
-            "gsettings", "set", "org.gnome.shell", "enabled-extensions",
-            f"[{inner}]",
-        ])
+        return run_cmd(
+            [
+                "gsettings",
+                "set",
+                "org.gnome.shell",
+                "enabled-extensions",
+                f"[{inner}]",
+            ]
+        )
 
     @staticmethod
     def disable_all_globally(disable: bool) -> Tuple[bool, str]:
@@ -161,6 +170,7 @@ class ExtMgr:
         disable=False → re-habilita tudo
         """
         from shell_reloader import ShellReloader
+
         ok, msg = dconf_write(
             "/org/gnome/shell/disable-extensions",
             "true" if disable else "false",
@@ -200,12 +210,12 @@ class ExtMgr:
 
         # 3. Gerenciadores de pacotes
         for cmd in [
-            ["pkcon",   "install",  "-y",          pkg],
-            ["apt-get", "install",  "-y",           pkg],
-            ["apt",     "install",  "-y",           pkg],
-            ["dnf",     "install",  "-y",           pkg],
-            ["pacman",  "-S",       "--noconfirm",  pkg],
-            ["zypper",  "install",  "-y",           pkg],
+            ["pkcon", "install", "-y", pkg],
+            ["apt-get", "install", "-y", pkg],
+            ["apt", "install", "-y", pkg],
+            ["dnf", "install", "-y", pkg],
+            ["pacman", "-S", "--noconfirm", pkg],
+            ["zypper", "install", "-y", pkg],
         ]:
             if shutil.which(cmd[0]):
                 ok, out = run_cmd(cmd, timeout=180)
@@ -220,13 +230,13 @@ class ExtMgr:
         Baixa extensão de extensions.gnome.org com shell_version correto.
         Corrigido para GNOME 45+ que mudou o formato do query param.
         Proteção contra path traversal em zips maliciosos.
+        Retry com backoff para falhas de rede.
         """
+        import time
+
         try:
             major, minor = gnome_shell_version()
-            url = (
-                f"https://extensions.gnome.org/download-extension"
-                f"/{uuid}.shell-extension.zip"
-            )
+            url = f"https://extensions.gnome.org/download-extension/{uuid}.shell-extension.zip"
             if major > 0:
                 url += f"?shell_version={major}"
 
@@ -244,26 +254,38 @@ class ExtMgr:
             dest = EXT_USER_DIR / uuid
             dest.mkdir(parents=True, exist_ok=True)
 
-            with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_f:
-                tmp_path = Path(tmp_f.name)
-
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                ct = resp.headers.get("Content-Type", "")
-                if "text/html" in ct:
-                    return False, "server returned HTML instead of zip"
-                data = resp.read()
+            # retry with exponential backoff (1s, 2s, 4s)
+            data = None
+            last_err = ""
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(req, timeout=60) as resp:
+                        ct = resp.headers.get("Content-Type", "")
+                        if "text/html" in ct:
+                            return False, "server returned HTML instead of zip"
+                        data = resp.read()
+                    break
+                except (urllib.error.URLError, OSError) as net_err:
+                    last_err = str(net_err)
+                    if attempt < 2:
+                        time.sleep(1 << attempt)
 
             if not data or len(data) < 100:
                 try:
                     dest.rmdir()
                 except Exception:
                     pass
+                if last_err:
+                    return False, f"download failed after retries: {last_err}"
                 return False, "empty or too-small download"
+
+            with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_f:
+                tmp_path = Path(tmp_f.name)
 
             tmp_path.write_bytes(data)
 
             with zipfile.ZipFile(str(tmp_path)) as zf:
-                # Segurança: evita path traversal no zip
+                # security: prevent path traversal
                 for member in zf.namelist():
                     if ".." in member or member.startswith("/"):
                         continue
@@ -289,6 +311,7 @@ class ExtMgr:
 
         # Desativa em tempo real antes de remover
         from shell_reloader import ShellReloader
+
         ShellReloader.apply_extension_state(uuid, False)
 
         try:
@@ -315,10 +338,20 @@ class ExtMgr:
                 return
 
         # Método 2: D-Bus OpenExtensionPrefs (GS 40+)
-        run_cmd([
-            "gdbus", "call", "--session",
-            "--dest",        DBUS_SHELL_NAME,
-            "--object-path", DBUS_EXT_PATH,
-            "--method",      f"{DBUS_EXT_IFACE}.OpenExtensionPrefs",
-            uuid, "", "{}",
-        ], timeout=5)
+        run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.OpenExtensionPrefs",
+                uuid,
+                "",
+                "{}",
+            ],
+            timeout=5,
+        )

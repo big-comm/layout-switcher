@@ -11,6 +11,7 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 import math
 
 import gi
+
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk
 
@@ -32,11 +33,9 @@ class ColorDot(Gtk.DrawingArea):
         self.set_size_request(size, size)
         self.set_draw_func(self._draw, None)
         self.set_accessible_role(Gtk.AccessibleRole.IMG)
-        self.update_property(
-            [Gtk.AccessibleProperty.LABEL], [f"Color: {hex_color}"]
-        )
+        self.update_property([Gtk.AccessibleProperty.LABEL], [f"Color: {hex_color}"])
 
-    def _draw(self, area, ctx, w, h, data) -> None:
+    def _draw(self, _area, ctx, w, h, _data) -> None:
         r = min(w, h) / 2 - 2
         ctx.arc(w / 2, h / 2, r, 0, 2 * math.pi)
         ctx.set_source_rgb(self._r, self._g, self._b)

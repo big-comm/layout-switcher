@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Tests for backup_manager.py — create, latest, list_all, restore, prune."""
 
-import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "usr" / "share" / "layout-switcher"))
+from unittest.mock import patch
 
 import pytest
 
@@ -27,7 +24,9 @@ class TestBackupManager:
 
         # Import after patching
         import importlib
+
         import backup_manager
+
         importlib.reload(backup_manager)
         self.BackupManager = backup_manager.BackupManager
 
@@ -63,6 +62,7 @@ class TestBackupManager:
 
     def test_list_all_sorted(self):
         import time
+
         for i in range(3):
             f = self.backup_dir / f"backup_2025010{i}_120000.dconf"
             f.write_text("x" * 100)
@@ -98,6 +98,7 @@ class TestBackupManager:
         mock_run.return_value = (True, "[org/gnome/shell]\n" + "x" * 100)
         # Create 15 backups manually
         import time
+
         for i in range(15):
             f = self.backup_dir / f"backup_2025010{i:02d}_120000.dconf"
             f.write_text("x" * 100)

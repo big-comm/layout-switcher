@@ -1,156 +1,173 @@
 # PLANNING.md — Layout Switcher Improvement Roadmap
 
 ## Files Analyzed
-**Total files read:** 17
-**Total lines analyzed:** ~3,100
+**Total files read:** 24 (every .py file in the project)
+**Total lines analyzed:** 3,681
 **Large files (>500 lines) confirmed read in full:**
-- `ui/page_extensions.py` (573 lines)
+- `ui/page_extensions.py` (636 lines)
 
 ### File inventory
 
 | # | File | Lines | Purpose |
 |---|------|-------|---------|
-| 1 | `main.py` | 60 | Entry point, `Adw.Application` lifecycle |
-| 2 | `__init__.py` | 35 | Package exports |
-| 3 | `constants.py` | 140 | App ID, paths, layouts, featured extensions, color map, i18n |
+| 1 | `main.py` | 61 | Entry point, `Adw.Application` lifecycle |
+| 2 | `__init__.py` | 2 | Package stub |
+| 3 | `constants.py` | 144 | APP_ID, paths, layouts, featured extensions, color map, i18n |
 | 4 | `utils.py` | 149 | `run_cmd()`, gsettings/dconf helpers, `find_file()`, `gnome_shell_version()` |
 | 5 | `backup_manager.py` | 160 | dconf dump/restore, atomic writes, prune old backups |
-| 6 | `extension_manager.py` | 321 | Install/remove/toggle GNOME extensions (CLI/EGO/pacman) |
+| 6 | `extension_manager.py` | 324 | Install/remove/toggle GNOME extensions (CLI/EGO/pacman) |
 | 7 | `shell_reloader.py` | 137 | D-Bus cascade for live extension reload |
 | 8 | `theme_manager.py` | 171 | GTK/Icon/Shell theme apply + color scheme |
-| 9 | `settings_store.py` | 119 | JSON settings + GSettings watcher |
+| 9 | `settings_store.py` | 124 | JSON settings + GSettings watcher |
 | 10 | `layout_applier.py` | 59 | `dconf load` for layout files |
-| 11 | `ui/__init__.py` | 25 | UI package exports |
-| 12 | `ui/window.py` | 397 | Main window with `Adw.OverlaySplitView` |
-| 13 | `ui/page_layouts.py` | 200 | FlowBox grid of layout cards |
-| 14 | `ui/page_extensions.py` | 573 | Featured cards + installed list + global toggle |
-| 15 | `ui/page_themes.py` | 303 | Theme list with dark/light toggle |
-| 16 | `ui/styles.py` | 78 | `APP_CSS` string |
-| 17 | `ui/widgets.py` | 42 | `ColorDot` custom DrawingArea |
+| 11 | `ui/__init__.py` | 3 | UI package stub |
+| 12 | `ui/window.py` | 352 | Main window — `Adw.OverlaySplitView` + sidebar + stack |
+| 13 | `ui/page_layouts.py` | 210 | FlowBox grid of layout cards |
+| 14 | `ui/page_extensions.py` | 636 | Featured cards + installed list + global toggle |
+| 15 | `ui/page_themes.py` | 354 | Theme list with dark/light toggle |
+| 16 | `ui/styles.py` | 75 | `APP_CSS` string — all visual styles |
+| 17 | `ui/widgets.py` | 46 | `ColorDot` custom DrawingArea |
+| 18 | `tests/__init__.py` | 7 | Test package |
+| 19 | `tests/test_utils.py` | 169 | Tests for run_cmd, gsettings, dconf, find_file, color, version |
+| 20 | `tests/test_extension_manager.py` | 156 | Tests for enabled_list, is_installed, list_installed, remove |
+| 21 | `tests/test_backup_manager.py` | 108 | Tests for create, latest, list_all, restore, prune |
+| 22 | `tests/test_layout_applier.py` | 68 | Tests for apply, ShellReloader strategies |
+| 23 | `tests/test_theme_manager.py` | 95 | Tests for list, apply, color_scheme |
+| 24 | `tests/test_settings_store.py` | 71 | Tests for Settings JSON persistence |
 
 ---
 
 ## Current State Summary
 
-**Grade: B−**
+**Grade: B**
 
-The app is functional and well-structured for a single-developer project. Clean separation between managers (business logic) and UI pages. Error handling in service modules is solid (never raises exceptions). The `OverlaySplitView` layout has just been applied. Main weaknesses: zero tests, deprecated API usage, no accessibility support, several UX friction points, and dynamic attributes instead of proper subclasses.
+Well-structured single-purpose GTK4/Adwaita app. Clean separation between service modules (backup, extension, theme, layout managers) and UI pages. Error handling in services is solid — never raises exceptions, always returns `(bool, str)`. Previous audit addressed deprecated APIs (Adw.MessageDialog→AlertDialog, AboutWindow→AboutDialog), added accessibility labels (A01–A14), created test suite (59 passing), typed subclasses (NavRow, ThemeRow), cleaned CSS. Main remaining weaknesses: unused imports, formatting inconsistency, incomplete tests for GI-dependent modules, missing i18n files, ToastOverlay still in use (per new requirements), and several UX friction points.
 
 ---
 
 ## Critical (fix immediately)
 
-- [x] ✅ **C01 — No test suite:** Zero tests exist. Any refactor risks silent regressions. Create at least unit tests for `BackupManager`, `ExtMgr` (mock subprocess), `ThemeMgr`, `LayoutApplier`, `Settings`, and `ShellReloader`.
+- [ ] **C01 — `AdwToastOverlay` still used for notifications:** `window.py:148` wraps entire UI in `Adw.ToastOverlay`, `window.py:341` creates `Adw.Toast`. Toasts are unsuitable for critical feedback (easily missed, no Orca announcement, disappear on timeout). Use inline status labels or `Adw.AlertDialog` for important feedback. Keep toast only for truly ephemeral confirmations (like "copied to clipboard").
 
-- [x] ✅ **C02 — Hicolor icon path wrong:** `usr/share/icons/hicolor/org.bigappearance.app.svg` should be `usr/share/icons/hicolor/scalable/apps/org.bigappearance.app.svg`. Without proper path, the icon won't appear in app launchers or the GNOME app grid. *(SVG copiado para caminho correto; arquivo antigo em hicolor/ raiz deve ser removido via `rm usr/share/icons/hicolor/org.bigappearance.app.svg`)*
+- [ ] **C02 — `settings_store.py` imports `gi` unnecessarily for `Settings` class:** `Settings` is pure JSON, doesn't need GI. `GSettingsMonitor` needs GI. The module-level `import gi` + `gi.require_version("Gtk", "4.0")` prevents testing `Settings` class in environments without GTK (e.g., CI, headless). Split: move `GSettingsMonitor` import of `gi` inside class or use conditional import. This blocks 6 test cases currently.
 
-- [x] ✅ **C03 — `Adw.MessageDialog` deprecated (7 instances):** Migrado para `Adw.AlertDialog` em todos os 7 pontos:
-  - `ui/window.py:_do_restore_backup()` — restore confirmation
-  - `ui/window.py:_show_intro()` — welcome dialog
-  - `ui/page_layouts.py:_on_click()` — layout apply confirmation
-  - `ui/page_extensions.py:_confirm_install()` — install confirmation
-  - `ui/page_extensions.py:_confirm_remove()` — remove confirmation
-  - `ui/page_themes.py:_show_user_theme_dialog()` — user themes missing
+- [ ] **C03 — Package name `layout-switcher` breaks mypy:** `__init__.py` exists in a dir named `layout-switcher` (hyphen invalid in Python identifiers). mypy refuses to analyze. Either: (a) rename `__init__.py` to not be a package marker, or (b) add `mypy.ini` with `[mypy]` / `namespace_packages = True` / `explicit_package_bases = True`.
 
-- [x] ✅ **C04 — `Adw.AboutWindow` deprecated:** `ui/window.py:_show_about()` migrado para `Adw.AboutDialog`.
+- [ ] **C04 — `GestureClick` on layout cards — not keyboard-accessible:** `page_layouts.py:144` — `GestureClick` only responds to mouse/touch. Cards have `set_focusable(True)` but no key handler. Orca users and keyboard-only users cannot activate layout cards via Enter/Space. Add `Gtk.EventControllerKey` that triggers `_on_click` on Enter/Space, or wrap in `Gtk.Button`.
 
-- [x] ✅ **C05 — No accessible names on interactive widgets (Orca-breaking):** Adicionados `update_property(LABEL)` em todos os widgets interativos (A01-A14). A15 já está OK (CheckButton com label nativo).
+- [ ] **C05 — No keyboard activation for extension featured cards:** `page_extensions.py:131–250` — featured cards are `Gtk.Box` with no click gesture or keyboard handler at all. Install/toggle is via child buttons (OK), but the card itself has no focus/activation. The card `update_property(LABEL)` is set, but it's not focusable or activatable. Add `set_focusable(True)` and key controller.
 
-- [x] ✅ **C06 — `Settings.delete()` uses internal hack:** Corrigido — agora usa escrita atômica direta, sem `__func__` nem chave `"__noop__"`.
+- [ ] **C06 — Status label color-only feedback (A14 not fully resolved):** `page_layouts.py:200–205` — `.ok-col` and `.err-col` change only color. Orca live region was planned (A14) but not implemented. Add `update_property([Gtk.AccessibleProperty.LIVE], [Gtk.AccessibleLive.POLITE])` to `_status_lbl` so screen readers announce status changes. Also use icon prefix (`✓`/`✗` equivalent via `Gtk.Image`) alongside color for non-color indicator.
 
 ---
 
 ## High Priority (code quality)
 
-- [x] ✅ **H01 — Dynamic `_page_key` attribute on `Gtk.ListBoxRow`:** Criada subclass `NavRow(Gtk.ListBoxRow)` com property `page_key` tipada.
+- [ ] **H01 — 14 unused imports across codebase (ruff F401):**
+  - `tests/`: 4× unused `MagicMock`, 4× unused `pytest`, 1× unused `subprocess`
+  - `main.py`: unused `tr` import
+  - `extension_manager.py`: unused `Optional`
+  - `settings_store.py`: unused `Path`, unused `Optional`
+  - `theme_manager.py`: unused `Optional`
+  - `utils.py`: unused `LAYOUTS_DIR`
 
-- [x] ✅ **H02 — Dynamic `_theme_name`/`_theme_kind` on `Gtk.ListBoxRow`:** Criada subclass `ThemeRow(Gtk.ListBoxRow)` com properties tipadas `theme_name` e `theme_kind`.
+- [ ] **H02 — 20 files fail `ruff format --check`:** All Python files except `__init__.py` files and `layout_applier.py` need formatting. Run `ruff format .` to fix.
 
-- [x] ✅ **H03 — `__init__.py` re-exports all symbols but is never used:** Limpos ambos `__init__.py` para stubs mínimos.
+- [ ] **H03 — Vulture dead code (25 findings):**
+  - 10× unused lambda params in callbacks (`dlg`, `box`, `g`, `n`, `x`, `y`, `pspec`, `area`, `mock_*`) — use `_` prefix convention
+  - `page_extensions.py:290` — `status_lbl` assigned but never used in `_toggle_feat` signature (refactored but param kept)
+  - `utils.py` — `LAYOUTS_DIR` imported from constants but never used
 
-- [x] ⏭️ **H04 — No type annotations on callbacks:** Skipped — most callbacks are GTK signal lambdas/closures where type hints add noise. Low ROI.
+- [ ] **H04 — High cyclomatic complexity (4 functions ≥ C grade):**
+  - `ThemeMgr.list_themes()` — CC=18 → split into `_scan_gtk()`, `_scan_icons()`, `_scan_shell()` helpers
+  - `ExtensionsPage._make_feat_card()` — CC=13 → extract installed vs not-installed widget builders
+  - `ExtensionsPage.refresh_installed()` — CC=12 → extract group rendering
+  - `ExtMgr.list_installed()` — CC=11 → extract metadata parsing
 
-- [x] ✅ **H05 — `_install_from_ego()` validates zip but doesn't verify content-type:** Adicionada verificação de `Content-Type: text/html` antes de processar download.
+- [ ] **H05 — `settings_store.py` imports `Gio` at module level but `Settings` class doesn't use it:** This couples pure-JSON `Settings` class to GTK runtime. Move `gi` import to `GSettingsMonitor` class scope or use lazy import.
 
-- [x] ✅ **H06 — `find_file()` `dirs` parameter is confusing:** Renomeado para `subdirs` para clareza.
+- [ ] **H06 — Empty locale files:** `locale/en.po` and `locale/pt-BR.po` are 0 bytes. `locale/en.json` is `{}`. gettext is configured but no translations exist. Either: generate `.pot` from source + translate, or remove i18n setup and use plain strings until translations are ready.
 
-- [x] ⏭️ **H07 — `_open_gnome_extensions()` fallback opens browser URL:** Skipped — o fallback para o browser é aceitável como último recurso; a UX é adequada.
+- [ ] **H07 — `_install_from_ego()` HTTP request without retry or user-agent rotation:** `extension_manager.py:220` — single attempt `urlopen` with 60s timeout. Extensions.gnome.org may rate-limit or fail transiently. Add 1 retry with backoff for network errors (not for HTTP errors).
 
-- [x] ✅ **H08 — `.dim` CSS class still used but `dim-label` is native:** Migrados todos os 12 usos de `.dim` → `dim-label`; removida regra `.dim` do CSS.
+- [ ] **H08 — `run_cmd()` logs nothing:** `utils.py:30` — subprocess failures return generic string but no logging. Critical for debugging extension install/remove failures in production. Add `logging.debug` for command + exit code.
 
 ---
 
 ## Medium Priority (UX improvements)
 
-- [x] ✅ **M01 — No loading state for theme list:** Theme scan now runs in background thread with spinner; UI populates via `GLib.idle_add` when done.
+- [ ] **M01 — Layout cards lack description:** Users unfamiliar with "G-Unity" or "Next GNOME" have no context about what each layout does before applying. Add a subtitle or tooltip describing the layout. *Principle: recognition over recall (Nielsen #6).*
 
-- [x] ✅ **M02 — No feedback when clicking disabled layout card:** Now shows "Already active" toast instead of opening the Apply dialog.
+- [ ] **M02 — Confirmation dialog for every layout apply:** `page_layouts.py:155–175` — Apply always shows `Adw.AlertDialog`. Non-destructive actions should use *commit-then-undo* pattern: apply immediately, show "Undo (10s)" inline/toast. This feels faster. *Principle: error recovery > prevention for reversible actions.*
 
-- [x] ⏭️ **M03 — Extension install progress is only a spinner:** Deferred — requires reworking card state machine.
+- [ ] **M03 — No layout preview:** All layout cards show static SVGs. Adding a brief description below card name (e.g., "Taskbar at bottom, Activities top-left") would help first-time users. *Principle: information scent.*
 
-- [x] ⏭️ **M04 — Sub-tabs are custom buttons:** Deferred — requires significant rework to adopt AdwViewSwitcher.
+- [ ] **M04 — Theme list has no search/filter:** `page_themes.py` — with 50+ themes, scrolling is tedious. Add a search entry at top of the list that filters in real-time. *Principle: flexibility and efficiency of use (Nielsen #7).*
 
-- [x] ⏭️ **M05 — No search/filter:** Deferred — new feature, not a fix.
+- [ ] **M05 — Extension sub-tabs should show counts:** "Featured" and "Installed" tabs have no badge showing how many items each contains. Add count badge. *Principle: information scent — expectation setting before interaction.*
 
-- [x] ⏭️ **M06 — Global "Disable All" button position:** Deferred — UX decision requiring design review.
+- [ ] **M06 — Global "Disable All" button is dangerous without confirmation:** `page_extensions.py:581` — one click disables ALL extensions globally. No confirmation dialog. This is a destructive action that can break user's desktop. Add `Adw.AlertDialog` confirmation with clear warning. *Principle: error prevention (Nielsen #5) — destructive actions require confirmation.*
 
-- [x] ✅ **M07 — Layout "Backup & Apply" vs "Apply" confusion:** Only "Backup & Apply" is suggested action; "Apply" is default/flat.
+- [ ] **M07 — No visual distinction between user and system extensions in Featured tab:** System extensions show "system" badge in Installed tab but not in Featured cards. Users may try to remove system extensions and get confused. *Principle: visibility of system status (Nielsen #1).*
 
-- [x] ✅ **M08 — No AdwBreakpoint for responsive layout:** Sidebar toggle button added to content header; visible only when collapsed; auto-closes on nav selection.
+- [ ] **M08 — Welcome/first-run experience:** No onboarding flow exists. New users see the Layouts page without context. Consider a first-run `Adw.StatusPage` with brief explanation and "Get Started" CTA. Store "intro_shown" in Settings. *Principle: aesthetic-usability effect.*
 
-- [x] ✅ **M09 — Toast timeout increased:** Changed from 3s to 5s for all toast messages.
-
-- [x] ⏭️ **M10 — Welcome dialog checkbox pattern:** Deferred — UX decision requiring settings page.
+- [ ] **M09 — No undo for layout application:** After applying a layout, there's no way to revert except manually restoring a backup. The "Backup & Apply" flow creates backup but restoring requires navigating to a different UI. Add "Undo" inline action for 15s post-apply. *Principle: user control and freedom (Nielsen #3).*
 
 ---
 
 ## Low Priority (polish & optimization)
 
-- [x] ✅ **L01 — `Gtk.CssProvider.load_from_data()` deprecated:** Replaced with `load_from_string()` (GTK 4.10+). `add_provider_for_display` is still the correct static method.
+- [ ] **L01 — `E402` module-level import warnings (17 instances):** All in app source files due to `gi.require_version()` before GI imports. This is unavoidable for PyGObject. Suppress with `# noqa: E402` or add `ruff.toml` with `[lint] ignore = ["E402"]` for `usr/share/layout-switcher/**`.
 
-- [x] ✅ **L02 — `.card` CSS class on layout/ext cards:** Removed redundant `border-radius: 14px` from `.layout-card` and `.ext-card`; libadwaita `.card` class handles it natively.
+- [ ] **L02 — No `ruff.toml` or `pyproject.toml` config:** Lint/format rules are undefined. Create `pyproject.toml` with `[tool.ruff]` section to configure E402 ignore, line length, target version.
 
-- [x] ✅ **L03 — Hardcoded colors in `.ok-col` and `.err-col`:** Replaced `#26a269` → `@success_color` and `#c01c28` → `@error_color`.
+- [ ] **L03 — `README.md` is the template placeholder:** Shows "pkgbuild-template-translator" — not the actual project. Write proper README with screenshots, install instructions (pacman + manual), usage, and development setup.
 
-- [x] ⏭️ **L04 — `_prune()` called every backup creation:** Skipped — negligible overhead for N_KEEP=10.
+- [ ] **L04 — `PKGBUILD` uses `pkgver=$(date)` — non-reproducible:** `pkgbuild/PKGBUILD:11` — version is build-time date. Consider tagging releases and using `APP_VERSION` from `constants.py` for reproducibility.
 
-- [x] ⏭️ **L05 — `ColorDot` uses raw Cairo drawing:** Kept as-is. Cairo `DrawingArea` is the correct approach for per-instance dynamic colors; CSS alternative would pollute global providers.
+- [ ] **L05 — `.desktop` file `StartupWMClass=layout-switcher` may not match:** Window title is set to `tr("Layout Switcher")` which is a translated string. On pt-BR, this becomes "Seletor de Layouts" breaking WM class matching. Set `StartupWMClass` to `APP_ID` (`org.communitybig.layout-switcher`), or explicitly set the window's startup-id.
 
-- [x] ⏭️ **L06 — `Pango` imported but only `Pango.EllipsizeMode` used:** Skipped — cosmetic; `require_version` is needed per-file for PyGObject.
+- [ ] **L06 — `ColorDot._draw` param `data` unused:** `widgets.py:39` — `data` param from `set_draw_func` callback is always `None`. Not a bug but vulture reports it. Rename to `_data`.
 
-- [x] ✅ **L07 — Emoji characters in status text:** Removed ⏳, ✓, ✗ emoji prefixes; status text now uses plain descriptive words with CSS color classes.
+- [ ] **L07 — Test coverage gaps:** Tests exist for services but NOT for UI modules (no GTK mocking). Consider adding headless GTK tests for widget construction at minimum, or document that UI tests require display.
 
-- [x] ⏭️ **L08 — No locale/translations directory structure:** Deferred — requires actual translator contributions (.po/.pot files).
+- [ ] **L08 — `BackupManager.N_KEEP = 10` is not configurable:** Hardcoded constant. Allow override via `Settings` or env var for power users.
+
+- [ ] **L09 — Copyright year outdated:** `window.py:330` — `© 2022–2025`. Should be `2022–2026` or use dynamic year.
 
 ---
 
 ## Architecture Recommendations
 
-1. **Extract dialog creation into utility functions.** Six places create `Adw.MessageDialog` (soon `Adw.AlertDialog`) with repetitive patterns. A helper like `show_confirm(parent, heading, body, responses) → Future[str]` would reduce duplication.
+1. **Decouple `Settings` from GI runtime.** `settings_store.py` imports `gi` at module level solely for `GSettingsMonitor`. Move `GSettingsMonitor` to its own file (`gsettings_monitor.py`) or use lazy import: `def __init__(self): import gi; ...`. This unblocks testability in CI/headless environments.
 
-2. **Create proper `GObject.Property`-based subclasses for custom rows.** `NavRow`, `ThemeRow`, `ExtRow` would eliminate all `type: ignore[attr-defined]` hacks and make the code more introspectable.
+2. **Create `pyproject.toml` for tooling config.** Currently no lint/format/test configuration. A minimal `pyproject.toml` with `[tool.ruff]`, `[tool.pytest.ini_options]`, and `[project]` metadata would standardize the development workflow.
 
-3. **Move CSS class management to a constants module.** CSS class names like `"nav-sel"`, `"ext-on"`, `"scheme-pill"`, `"s-on"`, `"kind-on"` are string literals scattered across 5 files. A `CssClass` enum or namespace would prevent typos.
+3. **Reduce `page_extensions.py` complexity.** At 636 lines with CC≥12 in two methods, this is the hardest file to maintain. Extract:
+   - `_FeaturedCard` widget class (handles its own state transitions)
+   - `_InstalledRow` widget class (encapsulates switch/remove logic)
+   - This drops `_make_feat_card` and `_make_installed_row` to simple instantiations.
 
-4. **Consider migrating custom sub-tabs to `Adw.ViewStack` + `Adw.ViewSwitcher`.** The custom tab bars in Extensions and Themes pages reinvent `Adw.ViewSwitcher` behavior (mutual exclusion, active highlighting). Using native widgets would give free accessibility, animation, and responsive behavior.
+4. **Standardize callback signature naming.** Current mix: `on_r`, `on_sw`, `task`, `_scan`. Adopt: `_on_<widget>_<signal>` for GTK signals, `_task_<operation>` for thread pool tasks.
 
-5. **Add a single-instance guard.** The app uses `GtkApplication` which normally handles single-instance, but the `APP_ID` should match the `.desktop` file's `StartupWMClass`. Currently the `.desktop` uses `StartupWMClass=layout-switcher` but the window title is set to a translated string, which may break matching.
+5. **Add a `conftest.py` with shared fixtures.** Tests duplicate `sys.path.insert` and `patch("constants.*")` setup. A `conftest.py` with `@pytest.fixture(autouse=True)` for path setup and common mocks would DRY the test suite.
 
 ---
 
 ## UX Recommendations
 
-1. **Progressive disclosure (layout page):** Show layout descriptions on hover or in a subtitle under each card. Users unfamiliar with "G-Unity" or "Next GNOME" have no way to know what they do without trying them. *Principle: recognition over recall (Nielsen's 6th heuristic).*
+1. **Progressive disclosure on layout page.** Show a subtitle under each layout card name: "Classic taskbar, bottom panel" / "GNOME vanilla, no extensions" / "Unity-like left dock". Users shouldn't need to apply a layout to discover what it does. *Principle: recognition over recall.*
 
-2. **Undo instead of confirm:** Instead of "Apply this layout?" confirmation dialogs, apply immediately and show an "Undo (10s)" toast. This follows the *commit-then-undo* pattern which feels faster and more forgiving. *Principle: error recovery > error prevention for non-destructive actions.*
+2. **Immediate theme preview.** When hovering a theme row, show a small preview thumbnail (screenshot or color swatch panel). This transforms theme selection from trial-and-error to informed choice. *Principle: visibility of system status.*
 
-3. **Immediate visual feedback on theme change:** When applying a theme, the list refreshes but the user doesn't see the desktop change. Add a small preview thumbnail or before/after overlay. *Principle: visibility of system status (Nielsen's 1st heuristic).*
+3. **Replace confirm() pattern with commit-then-undo for layouts.** Apply the layout immediately when clicked. Show an "Undo" action bar at bottom for 15 seconds. Users who know what they want get instant gratification. Users who made a mistake can undo without navigating restore flows. *Principle: user control and freedom + error recovery.*
 
-4. **Group "Enabled" count as a badge on the Extensions tab:** Instead of showing "15 installed · 8 enabled" as text, put a badge on the "Installed" sub-tab showing the count. *Principle: information scent — users know what to expect before clicking.*
+4. **Add search to both themes and installed extensions.** With 50+ themes and 20+ extensions, scrolling is a O(n) operation. A search box at top filters instantly. Follow Adw.NavigationView search bar pattern. *Principle: flexibility and efficiency of use.*
 
-5. **First-run experience:** The current welcome dialog is text-heavy. Consider a `Adw.StatusPage` splash with an illustration and a single "Get Started" button. *Principle: aesthetic-usability effect — users perceive beautiful interfaces as more usable.*
+5. **Badge counts on sub-tabs.** "Installed (12)" and "Featured (4)" — subtle count badges set expectations before clicking. *Principle: information scent — users predict density of content.*
 
-6. **Consistent action hierarchy in dialogs:** "Backup & Apply" and "Apply" as both suggested actions violates the *one primary action* principle. Make "Backup & Apply" the primary (suggested) and "Apply without backup" a secondary flat button. *Principle: Hick's Law — fewer equivalent choices = faster decisions.*
+6. **Dark/Light toggle needs more prominence.** The pill in the top-right is easily missed. Consider making it a full-width banner at top of themes page, or a sticky footer. The color scheme is arguably the most important theme setting. *Principle: visual hierarchy.*
 
 ---
 
@@ -160,49 +177,46 @@ The app is functional and well-structured for a single-developer project. Clean 
 
 | # | Widget | File:Line | Orca Impact | Fix |
 |---|--------|-----------|-------------|-----|
-| A01 | Layout cards (`Gtk.Box` + `GestureClick`) | page_layouts.py:87 | Orca cannot announce card purpose, cannot focus via keyboard, not a button/activatable | Wrap each card in `Gtk.Button` or make the `Gtk.FlowBoxChild` activatable with `set_accessible_name(layout_name)` |
-| A02 | Extension featured cards | page_extensions.py:131 | Same as A01 — cards are not focusable by Orca | Same fix — make FlowBoxChild accessible |
-| A03 | Nav sidebar rows | window.py:264 | `Gtk.ListBoxRow` has no accessible name, Orca reads raw widget type | Add `row.update_property([Gtk.AccessibleProperty.LABEL], [label])` |
-| A04 | Theme rows | page_themes.py:236 | Row is activatable but has no accessible name describing the theme | Add `row.update_property([Gtk.AccessibleProperty.LABEL], [f"{name} theme, {'active' if is_on else 'inactive'}"])` |
-| A05 | Extension switches (featured) | page_extensions.py:182 | `Gtk.Switch` has no accessible name — Orca says "switch" with no context | `sw.update_property([Gtk.AccessibleProperty.LABEL], [f"Toggle {ext['name']}"])` |
-| A06 | Extension switches (installed) | page_extensions.py:520 | Same — switch has no label for Orca | `sw.update_property([Gtk.AccessibleProperty.LABEL], [f"Toggle {ext['name']}"])` |
-| A07 | Remove buttons (installed list) | page_extensions.py:536 | Icon-only button with tooltip but no accessible name | `rm.set_accessible_name(f"Remove {ext['name']}")` or `update_property` |
-| A08 | Light/Dark pill buttons | page_themes.py:105,115 | Buttons have child Box with icon+label — Orca may not read the label | Set `self._light_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Light mode")])` |
-| A09 | Global enable/disable button | page_extensions.py:57 | Button label changes dynamically but accessible state doesn't | After `_refresh_global_btn()`, also call `update_property` with current state |
-| A10 | Restore backup button | window.py:154 | Icon-only button, tooltip only — Orca says "button" | `restore_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Restore Backup")])` |
-| A11 | Menu button | window.py:160 | Has icon name but no accessible label | `menu_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Main menu")])` |
-| A12 | `ColorDot` widget | widgets.py:22 | Custom DrawingArea has no accessible role or description — completely invisible to Orca | Set `self.update_property([Gtk.AccessibleProperty.LABEL], [f"Color: {hex_color}"])` and `set_accessible_role(Gtk.AccessibleRole.IMG)` |
-| A13 | Layout card "Active" ribbon | page_layouts.py:102 | Visual-only indicator — Orca user has no way to know which layout is active | Include "(active)" in the card's accessible name |
-| A14 | Status labels (ok/error) | page_layouts.py:196 | Color-only change (`.ok-col` / `.err-col`) to indicate success/failure | Orca needs a live region announcement: use `update_property([Gtk.AccessibleProperty.LIVE], [Gtk.AccessibleLive.POLITE])` |
-| A15 | Dialog extra_child checkbox | window.py:383 | `Gtk.CheckButton` inside `Adw.MessageDialog.set_extra_child()` — may not be in Orca's tab order | Verify focusability; consider moving to app settings |
+| A01 | Layout cards — `GestureClick` only | page_layouts.py:144 | Cards are focusable but cannot be activated via keyboard (Enter/Space). Orca user is stuck. | Add `Gtk.EventControllerKey` → trigger `_on_click` on Enter/Space. |
+| A02 | Extension featured cards — no focus or activation | page_extensions.py:131 | Cards are `Gtk.Box` with no `set_focusable(True)`. Invisible to keyboard navigation. | Add `set_focusable(True)` + key controller, or use `Gtk.FlowBoxChild` activatable signal. |
+| A03 | Status label — color-only change | page_layouts.py:200 | Success/error indicated only by CSS color (`.ok-col`/`.err-col`). Orca announces nothing. | Add `Gtk.AccessibleProperty.LIVE = POLITE` to `_status_lbl`. Add icon prefix for non-color indicator. |
+| A04 | Toast messages — unreliable for screen readers | window.py:341 | `Adw.Toast` may or may not be announced by Orca depending on focus state and timing. | For critical feedback, use inline labels with LIVE region instead of toast. |
+| A05 | "Disable All" button — state not announced | page_extensions.py:57 | Button toggles between "Disable All" and "Enable All" — label updates but no ARIA state change. | After `_refresh_global_btn()`, call `update_property([Gtk.AccessibleProperty.LABEL], [current_label])` (already done but verify it fires on toggle). |
+| A06 | Theme kind tabs — no ARIA selected state | page_themes.py:169 | Custom buttons toggle `.kind-on` CSS but no accessible selected state. Orca reads all tabs identically. | Use `update_property([Gtk.AccessibleProperty.SELECTED], [True/False])` or migrate to `Adw.ViewSwitcher`. |
+| A07 | Extension sub-tabs — same as A06 | page_extensions.py:80 | Custom sub-tabs use CSS `.sub-on` with no accessible state. | Same fix as A06. |
+| A08 | FlowBox items in layouts — no role grouping | page_layouts.py:79 | `Gtk.FlowBox` with `Gtk.SelectionMode.NONE` — Orca may not announce grid navigation context. | Set accessible role on FlowBox: `Gtk.AccessibleRole.LIST` or `GRID`. |
 
 ### Test checklist for manual verification
 
 - [ ] Launch app with Orca running (`orca &; python3 main.py`)
 - [ ] Navigate entire sidebar using only Tab/Shift+Tab and Arrow keys
 - [ ] Verify Orca announces every nav item (Layouts, Extensions, Themes)
-- [ ] Navigate layout cards — verify each card is announced by name
-- [ ] Activate a layout card — verify dialog is announced
-- [ ] Navigate to Extensions tab — verify featured cards are announced
-- [ ] Toggle an extension switch — verify state change is announced
-- [ ] Navigate installed extensions list — verify each row is announced
-- [ ] Navigate to Themes tab — verify theme rows are announced
-- [ ] Switch between Light/Dark — verify Orca announces the change
-- [ ] Switch theme kind tabs (GTK/Icons/Shell) — verify announcement
-- [ ] Test all buttons: Restore Backup, Menu, Global Enable/Disable, Remove
-- [ ] Verify all error/success messages are announced by Orca
-- [ ] Test welcome dialog with keyboard only
+- [ ] Navigate layout cards using Tab — verify each card name is announced
+- [ ] **Press Enter/Space on focused layout card — verify activation works**
+- [ ] Verify status label change is announced after applying layout
+- [ ] Navigate to Extensions tab — verify featured card contents announced
+- [ ] Toggle extension switch — verify "enabled"/"disabled" state announced
+- [ ] Navigate Installed list — verify each row name + state announced
+- [ ] Press "Disable All" — verify confirmation appears (when implemented)
+- [ ] Navigate to Themes tab — verify theme rows announced with name
+- [ ] Switch GTK/Icons/Shell tabs — verify selected tab announced
+- [ ] Switch Light/Dark — verify mode change announced
+- [ ] Apply a theme — verify feedback is announced (not just toast)
+- [ ] Test all buttons: Menu, Sidebar toggle, Remove, Install, Settings
 
 ---
 
 ## Accessibility Checklist (General)
 
-- [ ] All interactive elements have accessible labels
-- [ ] Keyboard navigation works for all flows (Tab, Arrow, Enter, Escape)
-- [ ] Color is never the only indicator (`.ok-col`/`.err-col` use only color — fix L07/A14)
-- [ ] Text is readable at 2x font size (verified: no hardcoded `font-size` in CSS)
-- [ ] Focus indicators are visible (`.nav-row:focus` has outline — OK)
-- [ ] Dialog responses are keyboard-accessible (libadwaita handles this — OK)
+- [x] Most interactive elements have accessible labels (A01-A14 from previous audit)
+- [ ] **Keyboard navigation does NOT work for layout cards (GestureClick only)**
+- [ ] **Keyboard navigation does NOT work for featured extension cards**
+- [x] Color is supplemented by text labels in most places
+- [ ] **Status labels use color-only indication (no icon/text prefix)**
+- [x] Text is readable at 2x font size (no hardcoded font-size in CSS)
+- [x] Focus indicators visible (`.nav-row:focus` has outline)
+- [x] Dialog responses are keyboard-accessible (libadwaita handles this)
+- [ ] **Custom tab buttons lack accessible selected state**
 
 ---
 
@@ -210,24 +224,35 @@ The app is functional and well-structured for a single-developer project. Clean 
 
 | Source | Count | Severity | Details |
 |--------|-------|----------|---------|
-| Deprecated APIs | 8 | High | 7× `Adw.MessageDialog` + 1× `Adw.AboutWindow` |
-| `type: ignore` | 5 | Medium | 3× `_page_key`, 2× `_theme_name`/`_theme_kind` — dynamic attrs |
-| Dead code | 1 | Low | `__init__.py` re-exports never used externally |
-| Missing translations | 1 | Medium | gettext setup present but no `.po`/`.pot` files |
-| No tests | 1 | Critical | Zero test files exist |
+| Unused imports (F401) | 14 | Low | Tests: `MagicMock`, `pytest`, `subprocess`. Source: `Optional`, `Path`, `tr`, `LAYOUTS_DIR` |
+| Format violations | 20 files | Low | `ruff format` would fix all |
+| Vulture dead code | 25 | Low | Mostly unused callback params — cosmetic |
+| Cyclomatic complexity ≥ C | 4 fns | Medium | `list_themes` CC=18, `_make_feat_card` CC=13, `refresh_installed` CC=12, `list_installed` CC=11 |
+| Empty i18n files | 3 | Medium | `.po` files exist but are 0 bytes; `en.json` is `{}` |
+| No `pyproject.toml` | 1 | Medium | No lint/format/test config defined |
+| mypy blocked | 1 | Low | Package name `layout-switcher` has hyphen — invalid Python identifier |
+| Test gaps (GI-dependent) | 6 tests | Medium | `test_theme_manager.py` + `test_settings_store.py` fail without `gi` module |
+| TODO/FIXME markers | 0 | — | None found |
+| Copyright year | 1 | Low | Says 2022–2025, should be 2022–2026 |
+| README placeholder | 1 | Medium | Still shows template text "pkgbuild-template-translator" |
 
 ---
 
-## Metrics (before)
+## Metrics (current baseline)
 
 | Metric | Value |
 |--------|-------|
-| Total Python files | 17 |
-| Total lines | ~3,100 |
-| Files >200 lines | 4 (`page_extensions.py`, `window.py`, `extension_manager.py`, `page_themes.py`) |
-| Deprecated API calls | 8 |
-| Accessible widgets | 0 of ~30 interactive widgets |
-| Tests | 0 |
-| i18n coverage | Setup only; 0 `.po` files |
+| Total Python files | 24 |
+| Total lines | 3,681 |
+| Files >200 lines | 5 (`page_extensions.py`, `page_themes.py`, `window.py`, `extension_manager.py`, `page_layouts.py`) |
+| Test files | 6 |
+| Tests passing | 59 |
+| Tests erroring (need GI) | 6 |
+| ruff lint issues | ~30 (14 F401 + 17 E402) |
+| ruff format violations | 20 files |
+| Vulture findings | 25 |
+| Radon CC ≥ C | 4 functions |
+| Deprecated API calls | 0 (all migrated in previous audit) |
+| Accessible widgets | ~25 of ~30 interactive (5 remaining issues) |
+| i18n files | Structure exists, content empty |
 | Custom CSS classes | 22 |
-| `type: ignore` comments | 5 |

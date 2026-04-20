@@ -10,17 +10,12 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
 import json
-from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
-
-import gi
-gi.require_version("Gtk", "4.0")
-from gi.repository import Gio
+from typing import Callable, Dict, List, Tuple
 
 from constants import CONFIG_DIR, SETTINGS_FILE
 
-
 # ── Settings ──────────────────────────────────────────────────────────────────
+
 
 class Settings:
     """
@@ -47,7 +42,7 @@ class Settings:
         try:
             tmp = SETTINGS_FILE.with_suffix(".tmp")
             tmp.write_text(json.dumps(self._data, indent=2), encoding="utf-8")
-            tmp.replace(SETTINGS_FILE)   # atômico no POSIX
+            tmp.replace(SETTINGS_FILE)  # atômico no POSIX
         except Exception:
             pass
 
@@ -62,6 +57,7 @@ class Settings:
 
 
 # ── GSettings Monitor ─────────────────────────────────────────────────────────
+
 
 class GSettingsMonitor:
     """
@@ -78,8 +74,15 @@ class GSettingsMonitor:
     """
 
     def __init__(self) -> None:
+        # lazy import → Settings class stays testable without gi
+        import gi
+
+        gi.require_version("Gtk", "4.0")
+        from gi.repository import Gio
+
+        self._Gio = Gio
         # Lista de (Gio.Settings, key, handler_id) para desconexão posterior
-        self._watchers: List[Tuple[Gio.Settings, str, int]] = []
+        self._watchers: List[Tuple] = []
 
     def watch(self, schema: str, key: str, callback: Callable) -> bool:
         """
@@ -88,6 +91,7 @@ class GSettingsMonitor:
         Retorna True se o schema existe e o watch foi registrado com sucesso.
         """
         try:
+            Gio = self._Gio
             src = Gio.SettingsSchemaSource.get_default()
             if src and src.lookup(schema, True) is None:
                 return False
@@ -104,6 +108,7 @@ class GSettingsMonitor:
         Útil para schemas com muitas chaves.
         """
         try:
+            Gio = self._Gio
             src = Gio.SettingsSchemaSource.get_default()
             if src and src.lookup(schema, True) is None:
                 return False
