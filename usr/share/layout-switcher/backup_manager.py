@@ -115,8 +115,10 @@ class BackupManager:
     @classmethod
     def restore(cls, path: Path) -> Tuple[bool, str]:
         """
-        Restaura um backup via dconf load.
-        Recarrega extensões em tempo real após restaurar (sem logout).
+        Restaura um backup via dconf load, usando a orquestração atômica do
+        ``LayoutApplier`` (para-sync-monitor, pausa extensões, carrega,
+        persiste em ``settings.gnome``, reativa tudo).
+
         Retorna (True, "") ou (False, mensagem_erro).
         """
         if not path or not path.exists():
@@ -128,11 +130,13 @@ class BackupManager:
         if len(data) < cls.MIN_BYTES:
             return False, "backup file appears to be corrupt (too small)"
 
-        ok, out = run_cmd(["dconf", "load", "/"], stdin_text=data, timeout=15)
+        # Import aqui para evitar ciclo (layout_applier nao importa backup).
+        from layout_applier import LayoutApplier
+
+        ok, out = LayoutApplier.load_dconf_safely(data, persist=True)
         if not ok:
             return False, f"dconf load failed: {out}"
 
-        # Recarrega tudo em tempo real após restaurar
         ShellReloader.reload_all()
         return True, out
 

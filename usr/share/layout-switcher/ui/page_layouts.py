@@ -179,19 +179,24 @@ class LayoutsPage(Gtk.Box):
         parent = self.get_root()
         d = Adw.AlertDialog(
             heading=name,
-            body=tr("Apply this layout?"),
+            body=tr(
+                "Apply this layout? A backup of your current configuration "
+                "will be created automatically."
+            ),
         )
         d.add_response("cancel", tr("Cancel"))
         d.add_response("apply", tr("Apply"))
-        d.add_response("backup", tr("Backup & Apply"))
-        d.set_response_appearance("backup", Adw.ResponseAppearance.SUGGESTED)
+        d.set_response_appearance("apply", Adw.ResponseAppearance.SUGGESTED)
+        d.set_default_response("apply")
+        d.set_close_response("cancel")
 
         def on_r(_dlg, r):
-            if r == "cancel":
+            if r != "apply":
                 return
-            if r == "backup":
-                ok, info = BackupManager.create()
-                self._toast(tr("Backup saved") if ok else tr("Backup failed") + f": {info}")
+            # Backup automatico; erros nao bloqueiam o apply, so avisam.
+            ok, info = BackupManager.create()
+            if not ok:
+                self._toast(tr("Backup failed") + f": {info}")
             self._apply(name, cfg)
 
         d.connect("response", on_r)

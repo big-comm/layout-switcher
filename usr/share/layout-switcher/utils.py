@@ -101,6 +101,7 @@ def find_file(filename: str, subdirs: List[str]) -> Optional[Path]:
     """
     Localiza um arquivo percorrendo múltiplos diretórios base.
     Ordem de busca: diretório do pacote → ~/.local/share → /usr/share → /usr/local/share
+    Em caso de falha, loga os caminhos pesquisados para facilitar diagnóstico.
     """
     if not filename:
         return None
@@ -111,11 +112,14 @@ def find_file(filename: str, subdirs: List[str]) -> Optional[Path]:
         Path("/usr/share/layout-switcher"),
         Path("/usr/local/share/layout-switcher"),
     ]
+    tried: List[Path] = []
     for d in subdirs:
         for base in search_bases:
             p = base / d / filename
+            tried.append(p)
             if p.exists():
                 return p
+    log.debug("find_file: %s not found; tried: %s", filename, [str(p) for p in tried])
     return None
 
 

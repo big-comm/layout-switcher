@@ -19,7 +19,7 @@ tr = gettext.gettext  # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.4.0"
+APP_VERSION = "2.4.1"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -138,7 +138,7 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
     (
         "BigGnome",
         "biggnome.txt",
-        "next-gnome.svg",
+        "biggnome.svg",
         "view-paged-symbolic",
         tr("Default Big Gnome layout"),
     ),

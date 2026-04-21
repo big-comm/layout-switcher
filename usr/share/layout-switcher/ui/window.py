@@ -19,6 +19,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from constants import APP_VERSION, ICON_NAME, tr
 from settings_store import GSettingsMonitor, Settings
+from ui.dialog_backups import BackupsDialog
 from ui.page_extensions import ExtensionsPage
 from ui.page_layouts import LayoutsPage
 from ui.page_themes import ThemesPage
@@ -178,6 +179,7 @@ class MainWindow(Adw.ApplicationWindow):
         menu_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Main menu")])
 
         menu = Gio.Menu()
+        menu.append(tr("Backups…"), "app.backups")
         menu.append(tr("About"), "app.about")
         menu_btn.set_menu_model(menu)
         self._content_hdr.pack_end(menu_btn)
@@ -228,6 +230,11 @@ class MainWindow(Adw.ApplicationWindow):
         about_action = Gio.SimpleAction.new("about", None)
         about_action.connect("activate", lambda a, p: self._show_about())
         self.get_application().add_action(about_action)
+
+        # Register backups action
+        backups_action = Gio.SimpleAction.new("backups", None)
+        backups_action.connect("activate", lambda a, p: self._show_backups())
+        self.get_application().add_action(backups_action)
 
         GLib.idle_add(self._nav.select_row, self._nav_rows["layouts"])
 
@@ -341,6 +348,23 @@ class MainWindow(Adw.ApplicationWindow):
 
     # ── About ─────────────────────────────────────────────────────────────────
 
+    # ── Backups ───────────────────────────────────────────────────────────────
+
+    def _show_backups(self) -> None:
+        dlg = BackupsDialog(
+            toast_cb=self._toast,
+            on_restored=self._on_backup_restored,
+        )
+        dlg.present(self)
+
+    def _on_backup_restored(self) -> None:
+        """Apos um restore, reconstroi layouts/extensoes para refletir estado."""
+        self._layouts_page.rebuild_grid()
+        self._ext_page.rebuild_featured()
+        self._ext_page.refresh_installed()
+
+    # ── About ─────────────────────────────────────────────────────────────────
+
     def _show_about(self) -> None:
         about = Adw.AboutDialog(
             application_name=tr("Community Layout Switcher"),
@@ -351,7 +375,7 @@ class MainWindow(Adw.ApplicationWindow):
             comments=tr("Layouts, effects and themes for your GNOME desktop."),
             website="https://communitybig.org/",
             issue_url="https://github.com/BigCommunity/layout-switcher/issues",
-            copyright="© 2022–2025 Big Community & Contributors",
+            copyright="© 2022–2026 Big Community & Contributors",
             developers=["Big Community", "Ari Novais"],
         )
         about.present(self)
