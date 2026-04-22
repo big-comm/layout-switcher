@@ -19,7 +19,7 @@ tr = gettext.gettext  # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.5.0"
+APP_VERSION = "2.5.1"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -157,11 +157,11 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
         tr("Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"),
     ),
     (
-        "Yaru",
-        "yaru.txt",
-        "yaru.svg",
+        "G-Unity",
+        "g-unity.txt",
+        "g-unity.svg",
         "view-app-grid-symbolic",
-        tr("Ubuntu-style layout with left dock and top bar"),
+        tr("Unity-style layout with left dock and top bar"),
     ),
     (
         "Minimal",

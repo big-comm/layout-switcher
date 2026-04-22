@@ -56,13 +56,13 @@ class TestSnapshotManager:
 
     def test_load_returns_path_when_present(self):
         self.SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
-        f = self.SNAPSHOTS_DIR / "yaru.dconf"
+        f = self.SNAPSHOTS_DIR / "g-unity.dconf"
         f.write_text("[/]\n" + "x" * 200)
 
-        result = self.SnapshotManager.load("yaru")
+        result = self.SnapshotManager.load("g-unity")
         assert result is not None
-        assert result.name == "yaru.dconf"
-        assert self.SnapshotManager.has("yaru") is True
+        assert result.name == "g-unity.dconf"
+        assert self.SnapshotManager.has("g-unity") is True
 
     def test_load_rejects_tiny_snapshot(self):
         self.SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
