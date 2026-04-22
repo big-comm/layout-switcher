@@ -23,6 +23,7 @@ from constants import ICONS_DIR, LAYOUTS, tr
 from layout_applier import LayoutApplier
 from settings_store import Settings
 from snapshot_manager import SnapshotManager
+from ui.tooltip import Tooltip
 from utils import find_file
 
 
@@ -140,21 +141,12 @@ class LayoutsPage(Gtk.Box):
         lbl = Gtk.Label(label=name)
         lbl.add_css_class("heading")
         lbl.set_halign(Gtk.Align.CENTER)
+        lbl.set_margin_bottom(10)
         card.append(lbl)
 
+        # Descricao so aparece no hover como popover elegante, nao poluindo o card
         if desc:
-            dl = Gtk.Label(label=desc)
-            dl.add_css_class("caption")
-            dl.add_css_class("dim-label")
-            dl.set_halign(Gtk.Align.CENTER)
-            dl.set_wrap(True)
-            dl.set_max_width_chars(22)
-            card.append(dl)
-            card.set_tooltip_text(desc)
-
-        lbl.set_margin_bottom(4 if desc else 10)
-        if desc:
-            dl.set_margin_bottom(10)
+            Tooltip.attach(card, desc)
 
         gest = Gtk.GestureClick()
         gest.connect(
