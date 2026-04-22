@@ -149,7 +149,7 @@ class EffectsPage(Gtk.Box):
         tc.append(dl)
         author = ext.get("author", "")
         if author:
-            al = Gtk.Label(label=f"by {author}")
+            al = Gtk.Label(label=tr("by {author}").format(author=author))
             al.add_css_class("caption")
             al.add_css_class("dim-label")
             al.set_halign(Gtk.Align.START)

@@ -1,0 +1,692 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: layout-switcher\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-22 14:43\n"
+"PO-Revision-Date: 2026-04-22 14:43\n"
+"Last-Translator: Translation Automator <auto@translator.ai>\n"
+"Language-Team: Turkish <tr@li.org>\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:57
+msgid "Backups"
+msgstr "Yedekler"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:72
+msgid "Create backup now"
+msgstr "Şimdi yedek oluştur"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:74
+msgid "Snapshot current dconf settings"
+msgstr "Mevcut dconf ayarlarının anlık görüntüsünü al"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:87
+msgid "No backups yet"
+msgstr "Henüz yedek yok"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:89
+msgid "A backup is created automatically every time you apply a layout."
+msgstr "Bir düzen uyguladığınızda otomatik olarak yedek oluşturulur."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:142
+msgid "Latest"
+msgstr "En son"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:147
+msgid "Restore this backup"
+msgstr "Bu yedeği geri yükle"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:155
+msgid "Delete this backup"
+msgstr "Bu yedeği sil"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:169
+msgid "Backup created"
+msgstr "Yedek oluşturuldu"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:172
+#: usr/share/layout-switcher/ui/page_layouts.py:228
+msgid "Backup failed"
+msgstr "Yedek oluşturma başarısız oldu"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:176
+msgid "Restore this backup?"
+msgstr "Bu yedek geri yüklensin mi?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:178
+#, python-brace-format
+msgid ""
+"All current dconf settings will be overwritten with the snapshot from {ts}."
+msgstr ""
+"Tüm mevcut dconf ayarları {ts} tarihli anlık görüntü ile değiştirilecektir."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:181
+#: usr/share/layout-switcher/ui/dialog_backups.py:206
+#: usr/share/layout-switcher/ui/page_layouts.py:204
+#: usr/share/layout-switcher/ui/page_layouts.py:216
+#: usr/share/layout-switcher/ui/page_themes.py:314
+#: usr/share/layout-switcher/ui/page_effects.py:261
+#: usr/share/layout-switcher/ui/page_effects.py:300
+#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/page_extensions.py:332
+#: usr/share/layout-switcher/ui/page_extensions.py:370
+#: usr/share/layout-switcher/ui/page_extensions.py:645
+msgid "Cancel"
+msgstr "İptal"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:182
+msgid "Restore"
+msgstr "Geri Yükle"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
+msgid "Backup restored"
+msgstr "Yedek geri yüklendi"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:196
+msgid "Restore failed"
+msgstr "Geri yükleme başarısız oldu"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:203
+msgid "Delete this backup?"
+msgstr "Bu yedek silinsin mi?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:207
+msgid "Delete"
+msgstr "Sil"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
+msgid "Backup deleted"
+msgstr "Yedek silindi"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
+msgid "Delete failed"
+msgstr "Silme başarısız oldu"
+
+#: usr/share/layout-switcher/ui/window.py:59
+#: usr/share/layout-switcher/ui/window.py:257
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:167
+#: usr/share/layout-switcher/ui/window.py:168
+msgid "Show Sidebar"
+msgstr "Kenar Çubuğunu Göster"
+
+#: usr/share/layout-switcher/ui/window.py:174
+#: usr/share/layout-switcher/ui/window.py:281
+#: usr/share/layout-switcher/ui/window.py:352
+msgid "Layouts"
+msgstr "Düzenler"
+
+#: usr/share/layout-switcher/ui/window.py:180
+msgid "Menu"
+msgstr "Menü"
+
+#: usr/share/layout-switcher/ui/window.py:181
+msgid "Main menu"
+msgstr "Ana menü"
+
+#: usr/share/layout-switcher/ui/window.py:184
+msgid "Backups…"
+msgstr "Yedekler…"
+
+#: usr/share/layout-switcher/ui/window.py:185
+msgid "About"
+msgstr "Hakkında"
+
+#: usr/share/layout-switcher/ui/window.py:194
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr "Hoş geldiniz! Başlamak için aşağıdan bir masaüstü düzeni seçin."
+
+#: usr/share/layout-switcher/ui/window.py:195
+msgid "Got it"
+msgstr "Anladım"
+
+#: usr/share/layout-switcher/ui/window.py:282
+#: usr/share/layout-switcher/ui/window.py:353
+msgid "Fonts"
+msgstr "Yazı Tipleri"
+
+#: usr/share/layout-switcher/ui/window.py:283
+#: usr/share/layout-switcher/ui/window.py:354
+msgid "Themes"
+msgstr "Temalar"
+
+#: usr/share/layout-switcher/ui/window.py:284
+#: usr/share/layout-switcher/ui/window.py:355
+msgid "Effects"
+msgstr "Efektler"
+
+#: usr/share/layout-switcher/ui/window.py:285
+#: usr/share/layout-switcher/ui/window.py:356
+msgid "Extensions"
+msgstr "Uzantılar"
+
+#: usr/share/layout-switcher/ui/window.py:384
+msgid "Community Layout Switcher"
+msgstr "Community Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:389
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "GNOME masaüstünüz için düzenler, efektler ve temalar."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:42
+msgid "Click a layout to apply"
+msgstr "Uygulamak için bir düzen seçin"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:50
+msgid "Layout status"
+msgstr "Düzen durumu"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:107
+msgid "Contains your saved customizations"
+msgstr "Kaydedilmiş özelleştirmelerinizi içerir"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:111
+#: usr/share/layout-switcher/ui/page_layouts.py:179
+#: usr/share/layout-switcher/ui/page_themes.py:264
+msgid "Active"
+msgstr "Etkin"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:188
+msgid "This layout is already active"
+msgstr "Bu düzen zaten etkin"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:200
+msgid ""
+"You have previously modified this layout. Resume your changes or apply the "
+"original system default?"
+msgstr ""
+"Bu düzeni daha önce değiştirdiniz. Değişikliklerinize devam etmek mi yoksa "
+"orijinal sistem varsayılanını mı uygulamak istersiniz?"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:205
+msgid "Apply original"
+msgstr "Orijinali uygula"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+msgid "Resume my changes"
+msgstr "Değişikliklerime devam et"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:212
+msgid ""
+"Apply this layout? A backup of your current configuration will be created "
+"automatically."
+msgstr ""
+"Bu düzen uygulanacak mı? Mevcut yapılandırmanızın yedeği otomatik olarak "
+"oluşturulacak."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:217
+msgid "Apply"
+msgstr "Uygula"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:247
+msgid "Applying"
+msgstr "Uygulanıyor"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:254
+msgid "Snapshot not found"
+msgstr "Anlık görüntü bulunamadı"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:264
+msgid "Layout file not found"
+msgstr "Düzen dosyası bulunamadı"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:276
+#: usr/share/layout-switcher/ui/page_layouts.py:280
+#: usr/share/layout-switcher/ui/page_layouts.py:291
+msgid "applied"
+msgstr "uygulandı"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:281
+msgid "Undo"
+msgstr "Geri al"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:293
+#: usr/share/layout-switcher/ui/page_layouts.py:305
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_effects.py:251
+#: usr/share/layout-switcher/ui/page_extensions.py:322
+#: usr/share/layout-switcher/ui/page_extensions.py:601
+#: usr/share/layout-switcher/ui/page_extensions.py:669
+msgid "Error"
+msgstr "Hata"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:315
+msgid "Layout restored"
+msgstr "Düzen geri yüklendi"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:317
+msgid "Previous layout restored"
+msgstr "Önceki düzen geri yüklendi"
+
+#: usr/share/layout-switcher/ui/page_themes.py:71
+msgid "Filter themes…"
+msgstr "Temaları filtrele…"
+
+#: usr/share/layout-switcher/ui/page_themes.py:107
+msgid "Icons"
+msgstr "Simgeler"
+
+#: usr/share/layout-switcher/ui/page_themes.py:187
+msgid "No themes found"
+msgstr "Tema bulunamadı"
+
+#: usr/share/layout-switcher/ui/page_themes.py:188
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Temaları ~/.themes veya /usr/share/themes dizinine yükleyin"
+
+#: usr/share/layout-switcher/ui/page_themes.py:195
+msgid "themes available"
+msgstr "tema mevcut"
+
+#: usr/share/layout-switcher/ui/page_themes.py:262
+msgid "theme"
+msgstr "tema"
+
+#: usr/share/layout-switcher/ui/page_themes.py:311
+msgid "User Themes required"
+msgstr "Kullanıcı Temaları gerekli"
+
+#: usr/share/layout-switcher/ui/page_themes.py:312
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Kabuk temalarını uygulamak için User Themes eklentisini yükleyin ve "
+"etkinleştirin."
+
+#: usr/share/layout-switcher/ui/page_themes.py:315
+msgid "Open Extensions Page"
+msgstr "Eklentiler Sayfasını Aç"
+
+#: usr/share/layout-switcher/ui/page_effects.py:43
+msgid "Visual effects for your GNOME desktop"
+msgstr "GNOME masaüstünüz için görsel efektler"
+
+#: usr/share/layout-switcher/ui/page_effects.py:105
+#: usr/share/layout-switcher/ui/page_extensions.py:161
+msgid "System extension"
+msgstr "Sistem eklentisi"
+
+#: usr/share/layout-switcher/ui/page_effects.py:123
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:179
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "enabled"
+msgstr "etkin"
+
+#: usr/share/layout-switcher/ui/page_effects.py:125
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:181
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+msgid "disabled"
+msgstr "devre dışı"
+
+#: usr/share/layout-switcher/ui/page_effects.py:127
+#: usr/share/layout-switcher/ui/page_effects.py:202
+#: usr/share/layout-switcher/ui/page_extensions.py:183
+#: usr/share/layout-switcher/ui/page_extensions.py:267
+msgid "Not installed"
+msgstr "Yüklü değil"
+
+#: usr/share/layout-switcher/ui/page_effects.py:152
+#: usr/share/layout-switcher/ui/page_extensions.py:210
+#, python-brace-format
+msgid "by {author}"
+msgstr "tarafından {author}"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "On"
+msgstr "Açık"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "Off"
+msgstr "Kapalı"
+
+#: usr/share/layout-switcher/ui/page_effects.py:171
+#: usr/share/layout-switcher/ui/page_extensions.py:233
+#: usr/share/layout-switcher/ui/page_extensions.py:588
+msgid "Toggle"
+msgstr "Aç/Kapa"
+
+#: usr/share/layout-switcher/ui/page_effects.py:179
+#: usr/share/layout-switcher/ui/page_effects.py:183
+#: usr/share/layout-switcher/ui/page_effects.py:301
+#: usr/share/layout-switcher/ui/page_extensions.py:243
+#: usr/share/layout-switcher/ui/page_extensions.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:371
+#: usr/share/layout-switcher/ui/page_extensions.py:611
+#: usr/share/layout-switcher/ui/page_extensions.py:612
+msgid "Remove"
+msgstr "Kaldır"
+
+#: usr/share/layout-switcher/ui/page_effects.py:191
+#: usr/share/layout-switcher/ui/page_extensions.py:255
+msgid "Settings"
+msgstr "Ayarlar"
+
+#: usr/share/layout-switcher/ui/page_effects.py:206
+#: usr/share/layout-switcher/ui/page_effects.py:262
+#: usr/share/layout-switcher/ui/page_extensions.py:271
+#: usr/share/layout-switcher/ui/page_extensions.py:333
+msgid "Install"
+msgstr "Yükle"
+
+#: usr/share/layout-switcher/ui/page_effects.py:223
+#: usr/share/layout-switcher/ui/page_extensions.py:288
+msgid "View on GNOME Extensions"
+msgstr "GNOME Eklentilerinde Görüntüle"
+
+#: usr/share/layout-switcher/ui/page_effects.py:258
+msgid "Install effect?"
+msgstr "Efekt kurulacak mı?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:259
+#: usr/share/layout-switcher/ui/page_extensions.py:330
+msgid "Will try to install automatically."
+msgstr "Otomatik olarak kurmaya çalışılacak."
+
+#: usr/share/layout-switcher/ui/page_effects.py:270
+#: usr/share/layout-switcher/ui/page_extensions.py:339
+msgid "Installing…"
+msgstr "Kuruluyor…"
+
+#: usr/share/layout-switcher/ui/page_effects.py:281
+#: usr/share/layout-switcher/ui/page_extensions.py:351
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "installed"
+msgstr "kuruldu"
+
+#: usr/share/layout-switcher/ui/page_effects.py:284
+#: usr/share/layout-switcher/ui/page_extensions.py:354
+msgid "Install failed"
+msgstr "Kurulum başarısız"
+
+#: usr/share/layout-switcher/ui/page_effects.py:293
+#: usr/share/layout-switcher/ui/page_extensions.py:363
+msgid "System extension — cannot remove"
+msgstr "Sistem uzantısı — kaldırılamaz"
+
+#: usr/share/layout-switcher/ui/page_effects.py:297
+msgid "Remove effect?"
+msgstr "Efekt kaldırılacak mı?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:298
+#: usr/share/layout-switcher/ui/page_extensions.py:368
+msgid "This cannot be undone."
+msgstr "Bu işlem geri alınamaz."
+
+#: usr/share/layout-switcher/ui/page_effects.py:313
+#: usr/share/layout-switcher/ui/page_extensions.py:383
+msgid "removed"
+msgstr "kaldırıldı"
+
+#: usr/share/layout-switcher/ui/page_effects.py:315
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+msgid "Remove failed"
+msgstr "Kaldırma başarısız"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:102
+msgid "System fonts"
+msgstr "Sistem yazı tipleri"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:103
+msgid "Fonts used by the GNOME interface"
+msgstr "GNOME arayüzü tarafından kullanılan yazı tipleri"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:107
+msgid "Interface"
+msgstr "Arayüz"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:113
+msgid "Document"
+msgstr "Belge"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:119
+msgid "Monospace"
+msgstr "Monospace"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:125
+msgid "Window titles (legacy)"
+msgstr "Pencere başlıkları (eski)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:142
+#: usr/share/layout-switcher/ui/page_fonts.py:486
+msgid "(not set)"
+msgstr "(ayarlanmadı)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:144
+msgid "Choose…"
+msgstr "Seç…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:158
+msgid "Choose font"
+msgstr "Yazı tipi seç"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:174
+msgid "Font updated"
+msgstr "Yazı tipi güncellendi"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:176
+#: usr/share/layout-switcher/ui/page_fonts.py:241
+msgid "Update failed"
+msgstr "Güncelleme başarısız oldu"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:185
+msgid "Appearance"
+msgstr "Görünüm"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:186
+msgid "How fonts are rendered on screen"
+msgstr "Yazı tiplerinin ekranda nasıl görüntülendiği"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:190
+msgid "Hinting"
+msgstr "İpucu verme"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:194
+#: usr/share/layout-switcher/ui/page_fonts.py:207
+msgid "None"
+msgstr "Yok"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:195
+msgid "Slight"
+msgstr "Hafif"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:196
+msgid "Medium"
+msgstr "Orta"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:197
+msgid "Full"
+msgstr "Tam"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:203
+msgid "Antialiasing"
+msgstr "Kenar yumuşatma"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:208
+msgid "Grayscale"
+msgstr "Gri tonlama"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:209
+msgid "Subpixel (RGBA)"
+msgstr "Alt piksel (RGBA)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:251
+msgid "Installed fonts"
+msgstr "Yüklü yazı tipleri"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:252
+msgid "Browse font families installed on your system"
+msgstr "Sisteminizde yüklü yazı tipi ailelerine göz atın"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:259
+msgid "Search fonts…"
+msgstr "Yazı tiplerinde ara…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:266
+msgid "Refresh font list"
+msgstr "Yazı tipi listesini yenile"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:310
+msgid "Loading fonts…"
+msgstr "Yazı tipleri yükleniyor…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:340
+msgid "No fonts match your search"
+msgstr "Aramanızla eşleşen yazı tipi yok"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:360
+msgid "(refine search to see more)"
+msgstr "(daha fazlasını görmek için aramayı daraltın)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:362
+msgid "fonts"
+msgstr "yazı tipleri"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:380
+msgid "The quick brown fox jumps over the lazy dog 0123"
+msgstr "Pijamalı hasta yağız şoföre çabucak güvendi 0123"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:404
+msgid "Install more fonts"
+msgstr "Daha fazla yazı tipi yükle"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:407
+msgid "Browse Google Fonts"
+msgstr "Google Fonts'a göz at"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:408
+msgid "Opens fonts.google.com in your browser"
+msgstr "Tarayıcınızda fonts.google.com'u açar"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:421
+msgid "How to install"
+msgstr "Nasıl yüklenir"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:424
+msgid ""
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
+" refresh this list."
+msgstr ""
+".ttf/.otf dosyalarını ~/.local/share/fonts/ dizinine koyun, ardından 'fc-"
+"cache -f -v' komutunu çalıştırın ve bu listeyi yenileyin."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:436
+msgid "Reset to system defaults"
+msgstr "Sistemin varsayılanlarına sıfırla"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:445
+msgid "Reset all font settings?"
+msgstr "Tüm yazı tipi ayarları sıfırlansın mı?"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:447
+msgid ""
+"Interface, document, monospace and window-title fonts will return to system "
+"defaults. Hinting and antialiasing reset too."
+msgstr ""
+"Arayüz, belge, monospace ve pencere başlığı yazı tipleri sistem "
+"varsayılanlarına dönecek. İpucu ve antialiasing de sıfırlanacak."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:452
+msgid "Reset"
+msgstr "Sıfırla"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:472
+msgid "Fonts reset to defaults"
+msgstr "Yazı tipleri varsayılanlara sıfırlandı"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:69
+msgid "Featured"
+msgstr "Öne çıkanlar"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:70
+#: usr/share/layout-switcher/ui/page_extensions.py:482
+msgid "Installed"
+msgstr "Yüklü"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:329
+msgid "Install extension?"
+msgstr "Eklenti yüklensin mi?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:367
+msgid "Remove extension?"
+msgstr "Eklenti kaldırılsın mı?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:432
+msgid "Open GNOME Extensions"
+msgstr "GNOME Eklentilerini Aç"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:487
+msgid "No extensions installed"
+msgstr "Yüklü eklenti yok"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:503
+msgid "Enabled"
+msgstr "Etkin"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:504
+msgid "Disabled"
+msgstr "Devre dışı"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:580
+msgid "system"
+msgstr "sistem"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+#: usr/share/layout-switcher/ui/page_extensions.py:646
+msgid "Disable All"
+msgstr "Tümünü Devre Dışı Bırak"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+msgid "Enable All"
+msgstr "Tümünü Etkinleştir"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:642
+msgid "Disable all extensions?"
+msgstr "Tüm uzantılar devre dışı bırakılsın mı?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:643
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr ""
+"Tüm uzantılar devre dışı bırakılacak. Daha sonra yeniden "
+"etkinleştirebilirsiniz."
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions disabled"
+msgstr "Tüm uzantılar devre dışı bırakıldı"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions enabled"
+msgstr "Tüm uzantılar etkinleştirildi"
+
+#: usr/share/layout-switcher/constants.py:143
+msgid "Default Big Gnome layout"
+msgstr "Varsayılan Big Gnome düzeni"
+
+#: usr/share/layout-switcher/constants.py:150
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Görev çubuğu ve sistem tepsili geleneksel masaüstü"
+
+#: usr/share/layout-switcher/constants.py:157
+msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
+msgstr "Ortalanmış dock-görev çubuğu, Windows 11 / Deepin / Pop!_OS tarzı"
+
+#: usr/share/layout-switcher/constants.py:164
+msgid "Unity-style layout with left dock and top bar"
+msgstr "Sol dock ve üst çubuklu Unity tarzı düzen"
+
+#: usr/share/layout-switcher/constants.py:171
+msgid "Near-vanilla GNOME with minimal distro tweaks"
+msgstr "Minimal dağıtım ayarlarıyla neredeyse saf GNOME"
+
+#: usr/share/layout-switcher/constants.py:178
+msgid "Clean and contemporary desktop"
+msgstr "Temiz ve modern masaüstü"

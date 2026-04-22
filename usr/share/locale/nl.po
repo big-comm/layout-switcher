@@ -1,0 +1,695 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: layout-switcher\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-22 14:39\n"
+"PO-Revision-Date: 2026-04-22 14:39\n"
+"Last-Translator: Translation Automator <auto@translator.ai>\n"
+"Language-Team: Dutch <nl@li.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:57
+msgid "Backups"
+msgstr "Back-ups"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:72
+msgid "Create backup now"
+msgstr "Maak nu een back-up"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:74
+msgid "Snapshot current dconf settings"
+msgstr "Momentopname van huidige dconf-instellingen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:87
+msgid "No backups yet"
+msgstr "Nog geen back-ups"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:89
+msgid "A backup is created automatically every time you apply a layout."
+msgstr ""
+"Er wordt automatisch een back-up gemaakt elke keer dat je een layout "
+"toepast."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:142
+msgid "Latest"
+msgstr "Laatste"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:147
+msgid "Restore this backup"
+msgstr "Deze back-up herstellen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:155
+msgid "Delete this backup"
+msgstr "Deze back-up verwijderen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:169
+msgid "Backup created"
+msgstr "Back-up gemaakt"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:172
+#: usr/share/layout-switcher/ui/page_layouts.py:228
+msgid "Backup failed"
+msgstr "Back-up mislukt"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:176
+msgid "Restore this backup?"
+msgstr "Deze back-up herstellen?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:178
+#, python-brace-format
+msgid ""
+"All current dconf settings will be overwritten with the snapshot from {ts}."
+msgstr ""
+"Alle huidige dconf-instellingen worden overschreven met de momentopname van "
+"{ts}."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:181
+#: usr/share/layout-switcher/ui/dialog_backups.py:206
+#: usr/share/layout-switcher/ui/page_layouts.py:204
+#: usr/share/layout-switcher/ui/page_layouts.py:216
+#: usr/share/layout-switcher/ui/page_themes.py:314
+#: usr/share/layout-switcher/ui/page_effects.py:261
+#: usr/share/layout-switcher/ui/page_effects.py:300
+#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/page_extensions.py:332
+#: usr/share/layout-switcher/ui/page_extensions.py:370
+#: usr/share/layout-switcher/ui/page_extensions.py:645
+msgid "Cancel"
+msgstr "Annuleren"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:182
+msgid "Restore"
+msgstr "Herstellen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
+msgid "Backup restored"
+msgstr "Back-up hersteld"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:196
+msgid "Restore failed"
+msgstr "Herstel mislukt"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:203
+msgid "Delete this backup?"
+msgstr "Deze backup verwijderen?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:207
+msgid "Delete"
+msgstr "Verwijderen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
+msgid "Backup deleted"
+msgstr "Backup verwijderd"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
+msgid "Delete failed"
+msgstr "Verwijderen mislukt"
+
+#: usr/share/layout-switcher/ui/window.py:59
+#: usr/share/layout-switcher/ui/window.py:257
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:167
+#: usr/share/layout-switcher/ui/window.py:168
+msgid "Show Sidebar"
+msgstr "Zijbalk tonen"
+
+#: usr/share/layout-switcher/ui/window.py:174
+#: usr/share/layout-switcher/ui/window.py:281
+#: usr/share/layout-switcher/ui/window.py:352
+msgid "Layouts"
+msgstr "Layouts"
+
+#: usr/share/layout-switcher/ui/window.py:180
+msgid "Menu"
+msgstr "Menu"
+
+#: usr/share/layout-switcher/ui/window.py:181
+msgid "Main menu"
+msgstr "Hoofdmenu"
+
+#: usr/share/layout-switcher/ui/window.py:184
+msgid "Backups…"
+msgstr "Backups…"
+
+#: usr/share/layout-switcher/ui/window.py:185
+msgid "About"
+msgstr "Over"
+
+#: usr/share/layout-switcher/ui/window.py:194
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr "Welkom! Kies hieronder een desktopindeling om te beginnen."
+
+#: usr/share/layout-switcher/ui/window.py:195
+msgid "Got it"
+msgstr "Begrepen"
+
+#: usr/share/layout-switcher/ui/window.py:282
+#: usr/share/layout-switcher/ui/window.py:353
+msgid "Fonts"
+msgstr "Lettertypen"
+
+#: usr/share/layout-switcher/ui/window.py:283
+#: usr/share/layout-switcher/ui/window.py:354
+msgid "Themes"
+msgstr "Thema's"
+
+#: usr/share/layout-switcher/ui/window.py:284
+#: usr/share/layout-switcher/ui/window.py:355
+msgid "Effects"
+msgstr "Effecten"
+
+#: usr/share/layout-switcher/ui/window.py:285
+#: usr/share/layout-switcher/ui/window.py:356
+msgid "Extensions"
+msgstr "Extensies"
+
+#: usr/share/layout-switcher/ui/window.py:384
+msgid "Community Layout Switcher"
+msgstr "Community Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:389
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "Layouts, effecten en thema's voor je GNOME-bureaublad."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:42
+msgid "Click a layout to apply"
+msgstr "Klik op een layout om toe te passen"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:50
+msgid "Layout status"
+msgstr "Layoutstatus"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:107
+msgid "Contains your saved customizations"
+msgstr "Bevat je opgeslagen aanpassingen"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:111
+#: usr/share/layout-switcher/ui/page_layouts.py:179
+#: usr/share/layout-switcher/ui/page_themes.py:264
+msgid "Active"
+msgstr "Actief"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:188
+msgid "This layout is already active"
+msgstr "Deze layout is al actief"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:200
+msgid ""
+"You have previously modified this layout. Resume your changes or apply the "
+"original system default?"
+msgstr ""
+"Je hebt deze layout eerder aangepast. Wil je je wijzigingen hervatten of de "
+"originele systeemstandaard toepassen?"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:205
+msgid "Apply original"
+msgstr "Origineel toepassen"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+msgid "Resume my changes"
+msgstr "Mijn wijzigingen hervatten"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:212
+msgid ""
+"Apply this layout? A backup of your current configuration will be created "
+"automatically."
+msgstr ""
+"Deze layout toepassen? Er wordt automatisch een back-up gemaakt van je "
+"huidige configuratie."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:217
+msgid "Apply"
+msgstr "Toepassen"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:247
+msgid "Applying"
+msgstr "Toepassen"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:254
+msgid "Snapshot not found"
+msgstr "Momentopname niet gevonden"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:264
+msgid "Layout file not found"
+msgstr "Lay-outbestand niet gevonden"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:276
+#: usr/share/layout-switcher/ui/page_layouts.py:280
+#: usr/share/layout-switcher/ui/page_layouts.py:291
+msgid "applied"
+msgstr "toegepast"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:281
+msgid "Undo"
+msgstr "Ongedaan maken"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:293
+#: usr/share/layout-switcher/ui/page_layouts.py:305
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_effects.py:251
+#: usr/share/layout-switcher/ui/page_extensions.py:322
+#: usr/share/layout-switcher/ui/page_extensions.py:601
+#: usr/share/layout-switcher/ui/page_extensions.py:669
+msgid "Error"
+msgstr "Fout"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:315
+msgid "Layout restored"
+msgstr "Lay-out hersteld"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:317
+msgid "Previous layout restored"
+msgstr "Vorige lay-out hersteld"
+
+#: usr/share/layout-switcher/ui/page_themes.py:71
+msgid "Filter themes…"
+msgstr "Thema's filteren…"
+
+#: usr/share/layout-switcher/ui/page_themes.py:107
+msgid "Icons"
+msgstr "Pictogrammen"
+
+#: usr/share/layout-switcher/ui/page_themes.py:187
+msgid "No themes found"
+msgstr "Geen thema's gevonden"
+
+#: usr/share/layout-switcher/ui/page_themes.py:188
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Installeer thema's in ~/.themes of /usr/share/themes"
+
+#: usr/share/layout-switcher/ui/page_themes.py:195
+msgid "themes available"
+msgstr "thema's beschikbaar"
+
+#: usr/share/layout-switcher/ui/page_themes.py:262
+msgid "theme"
+msgstr "thema"
+
+#: usr/share/layout-switcher/ui/page_themes.py:311
+msgid "User Themes required"
+msgstr "User Themes vereist"
+
+#: usr/share/layout-switcher/ui/page_themes.py:312
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Installeer en schakel de User Themes-extensie in om shell-thema's toe te "
+"passen."
+
+#: usr/share/layout-switcher/ui/page_themes.py:315
+msgid "Open Extensions Page"
+msgstr "Open de extensiepagina"
+
+#: usr/share/layout-switcher/ui/page_effects.py:43
+msgid "Visual effects for your GNOME desktop"
+msgstr "Visuele effecten voor je GNOME-bureaublad"
+
+#: usr/share/layout-switcher/ui/page_effects.py:105
+#: usr/share/layout-switcher/ui/page_extensions.py:161
+msgid "System extension"
+msgstr "Systeemextensie"
+
+#: usr/share/layout-switcher/ui/page_effects.py:123
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:179
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "enabled"
+msgstr "ingeschakeld"
+
+#: usr/share/layout-switcher/ui/page_effects.py:125
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:181
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+msgid "disabled"
+msgstr "uitgeschakeld"
+
+#: usr/share/layout-switcher/ui/page_effects.py:127
+#: usr/share/layout-switcher/ui/page_effects.py:202
+#: usr/share/layout-switcher/ui/page_extensions.py:183
+#: usr/share/layout-switcher/ui/page_extensions.py:267
+msgid "Not installed"
+msgstr "Niet geïnstalleerd"
+
+#: usr/share/layout-switcher/ui/page_effects.py:152
+#: usr/share/layout-switcher/ui/page_extensions.py:210
+#, python-brace-format
+msgid "by {author}"
+msgstr "door {author}"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "On"
+msgstr "Aan"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "Off"
+msgstr "Uit"
+
+#: usr/share/layout-switcher/ui/page_effects.py:171
+#: usr/share/layout-switcher/ui/page_extensions.py:233
+#: usr/share/layout-switcher/ui/page_extensions.py:588
+msgid "Toggle"
+msgstr "Wisselen"
+
+#: usr/share/layout-switcher/ui/page_effects.py:179
+#: usr/share/layout-switcher/ui/page_effects.py:183
+#: usr/share/layout-switcher/ui/page_effects.py:301
+#: usr/share/layout-switcher/ui/page_extensions.py:243
+#: usr/share/layout-switcher/ui/page_extensions.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:371
+#: usr/share/layout-switcher/ui/page_extensions.py:611
+#: usr/share/layout-switcher/ui/page_extensions.py:612
+msgid "Remove"
+msgstr "Verwijderen"
+
+#: usr/share/layout-switcher/ui/page_effects.py:191
+#: usr/share/layout-switcher/ui/page_extensions.py:255
+msgid "Settings"
+msgstr "Instellingen"
+
+#: usr/share/layout-switcher/ui/page_effects.py:206
+#: usr/share/layout-switcher/ui/page_effects.py:262
+#: usr/share/layout-switcher/ui/page_extensions.py:271
+#: usr/share/layout-switcher/ui/page_extensions.py:333
+msgid "Install"
+msgstr "Installeren"
+
+#: usr/share/layout-switcher/ui/page_effects.py:223
+#: usr/share/layout-switcher/ui/page_extensions.py:288
+msgid "View on GNOME Extensions"
+msgstr "Bekijken op GNOME Extensions"
+
+#: usr/share/layout-switcher/ui/page_effects.py:258
+msgid "Install effect?"
+msgstr "Effect installeren?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:259
+#: usr/share/layout-switcher/ui/page_extensions.py:330
+msgid "Will try to install automatically."
+msgstr "Zal proberen automatisch te installeren."
+
+#: usr/share/layout-switcher/ui/page_effects.py:270
+#: usr/share/layout-switcher/ui/page_extensions.py:339
+msgid "Installing…"
+msgstr "Bezig met installeren…"
+
+#: usr/share/layout-switcher/ui/page_effects.py:281
+#: usr/share/layout-switcher/ui/page_extensions.py:351
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "installed"
+msgstr "geïnstalleerd"
+
+#: usr/share/layout-switcher/ui/page_effects.py:284
+#: usr/share/layout-switcher/ui/page_extensions.py:354
+msgid "Install failed"
+msgstr "Installatie mislukt"
+
+#: usr/share/layout-switcher/ui/page_effects.py:293
+#: usr/share/layout-switcher/ui/page_extensions.py:363
+msgid "System extension — cannot remove"
+msgstr "Systeemextensie — kan niet worden verwijderd"
+
+#: usr/share/layout-switcher/ui/page_effects.py:297
+msgid "Remove effect?"
+msgstr "Effect verwijderen?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:298
+#: usr/share/layout-switcher/ui/page_extensions.py:368
+msgid "This cannot be undone."
+msgstr "Dit kan niet ongedaan worden gemaakt."
+
+#: usr/share/layout-switcher/ui/page_effects.py:313
+#: usr/share/layout-switcher/ui/page_extensions.py:383
+msgid "removed"
+msgstr "verwijderd"
+
+#: usr/share/layout-switcher/ui/page_effects.py:315
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+msgid "Remove failed"
+msgstr "Verwijderen mislukt"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:102
+msgid "System fonts"
+msgstr "Systeemlettertypen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:103
+msgid "Fonts used by the GNOME interface"
+msgstr "Lettertypen gebruikt door de GNOME-interface"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:107
+msgid "Interface"
+msgstr "Interface"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:113
+msgid "Document"
+msgstr "Document"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:119
+msgid "Monospace"
+msgstr "Monospace"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:125
+msgid "Window titles (legacy)"
+msgstr "Venstertitels (verouderd)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:142
+#: usr/share/layout-switcher/ui/page_fonts.py:486
+msgid "(not set)"
+msgstr "(niet ingesteld)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:144
+msgid "Choose…"
+msgstr "Kies…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:158
+msgid "Choose font"
+msgstr "Lettertype kiezen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:174
+msgid "Font updated"
+msgstr "Lettertype bijgewerkt"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:176
+#: usr/share/layout-switcher/ui/page_fonts.py:241
+msgid "Update failed"
+msgstr "Bijwerken mislukt"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:185
+msgid "Appearance"
+msgstr "Uiterlijk"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:186
+msgid "How fonts are rendered on screen"
+msgstr "Hoe lettertypen op het scherm worden weergegeven"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:190
+msgid "Hinting"
+msgstr "Hinting"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:194
+#: usr/share/layout-switcher/ui/page_fonts.py:207
+msgid "None"
+msgstr "Geen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:195
+msgid "Slight"
+msgstr "Licht"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:196
+msgid "Medium"
+msgstr "Gemiddeld"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:197
+msgid "Full"
+msgstr "Volledig"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:203
+msgid "Antialiasing"
+msgstr "Antialiasing"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:208
+msgid "Grayscale"
+msgstr "Grijstinten"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:209
+msgid "Subpixel (RGBA)"
+msgstr "Subpixel (RGBA)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:251
+msgid "Installed fonts"
+msgstr "Geïnstalleerde lettertypen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:252
+msgid "Browse font families installed on your system"
+msgstr "Blader door lettertypefamilies die op uw systeem zijn geïnstalleerd"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:259
+msgid "Search fonts…"
+msgstr "Lettertypen zoeken…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:266
+msgid "Refresh font list"
+msgstr "Lettertypenlijst vernieuwen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:310
+msgid "Loading fonts…"
+msgstr "Lettertypen laden…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:340
+msgid "No fonts match your search"
+msgstr "Geen lettertypen komen overeen met uw zoekopdracht"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:360
+msgid "(refine search to see more)"
+msgstr "(verfijn de zoekopdracht om meer te zien)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:362
+msgid "fonts"
+msgstr "lettertypen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:380
+msgid "The quick brown fox jumps over the lazy dog 0123"
+msgstr "Pa's wijze lynx bezag vroom het fikse aquaduct 0123"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:404
+msgid "Install more fonts"
+msgstr "Meer lettertypen installeren"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:407
+msgid "Browse Google Fonts"
+msgstr "Blader door Google Fonts"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:408
+msgid "Opens fonts.google.com in your browser"
+msgstr "Opent fonts.google.com in uw browser"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:421
+msgid "How to install"
+msgstr "Hoe te installeren"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:424
+msgid ""
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
+" refresh this list."
+msgstr ""
+"Plaats .ttf/.otf-bestanden in ~/.local/share/fonts/ en voer vervolgens 'fc-"
+"cache -f -v' uit en vernieuw deze lijst."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:436
+msgid "Reset to system defaults"
+msgstr "Terugzetten naar systeemstandaarden"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:445
+msgid "Reset all font settings?"
+msgstr "Alle lettertype-instellingen resetten?"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:447
+msgid ""
+"Interface, document, monospace and window-title fonts will return to system "
+"defaults. Hinting and antialiasing reset too."
+msgstr ""
+"Lettertypen voor interface, documenten, monospace en venstertitels worden "
+"teruggezet naar de systeemstandaarden. Hinting en antialiasing worden ook "
+"gereset."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:452
+msgid "Reset"
+msgstr "Resetten"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:472
+msgid "Fonts reset to defaults"
+msgstr "Lettertypen teruggezet naar standaardwaarden"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:69
+msgid "Featured"
+msgstr "Aanbevolen"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:70
+#: usr/share/layout-switcher/ui/page_extensions.py:482
+msgid "Installed"
+msgstr "Geïnstalleerd"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:329
+msgid "Install extension?"
+msgstr "Extensie installeren?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:367
+msgid "Remove extension?"
+msgstr "Extensie verwijderen?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:432
+msgid "Open GNOME Extensions"
+msgstr "GNOME Extensions openen"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:487
+msgid "No extensions installed"
+msgstr "Geen extensies geïnstalleerd"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:503
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:504
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:580
+msgid "system"
+msgstr "systeem"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+#: usr/share/layout-switcher/ui/page_extensions.py:646
+msgid "Disable All"
+msgstr "Alles uitschakelen"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+msgid "Enable All"
+msgstr "Alles inschakelen"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:642
+msgid "Disable all extensions?"
+msgstr "Alle extensies uitschakelen?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:643
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr ""
+"Alle extensies worden uitgeschakeld. Je kunt ze later weer inschakelen."
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions disabled"
+msgstr "Alle extensies uitgeschakeld"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions enabled"
+msgstr "Alle extensies ingeschakeld"
+
+#: usr/share/layout-switcher/constants.py:143
+msgid "Default Big Gnome layout"
+msgstr "Standaard Big Gnome-indeling"
+
+#: usr/share/layout-switcher/constants.py:150
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Traditioneel bureaublad met taakbalk en systeemvak"
+
+#: usr/share/layout-switcher/constants.py:157
+msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
+msgstr "Gecentreerde dock-taakbalk, Windows 11 / Deepin / Pop!_OS stijl"
+
+#: usr/share/layout-switcher/constants.py:164
+msgid "Unity-style layout with left dock and top bar"
+msgstr "Unity-stijl indeling met linker dock en bovenbalk"
+
+#: usr/share/layout-switcher/constants.py:171
+msgid "Near-vanilla GNOME with minimal distro tweaks"
+msgstr "Bijna-vanilla GNOME met minimale distro-aanpassingen"
+
+#: usr/share/layout-switcher/constants.py:178
+msgid "Clean and contemporary desktop"
+msgstr "Schoon en eigentijds bureaublad"

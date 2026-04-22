@@ -12,14 +12,43 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 # ── i18n ──────────────────────────────────────────────────────────────────────
-_LOCALE_DIR = Path(__file__).parent.parent / "locale"
-gettext.bindtextdomain("layout-switcher", str(_LOCALE_DIR))
-gettext.textdomain("layout-switcher")
-tr = gettext.gettext  # purposely NOT named `_`
+# gettext.gettext() do modulo nao respeita bindtextdomain — precisamos do
+# gettext.translation(domain, localedir).gettext para usar nossos .mo.
+#
+# Procura a pasta locale em varias raizes e testa se o .mo do dominio existe
+# em pelo menos um idioma. Assim evitamos cair em /usr/share/locale quando ele
+# nao contem o dominio do app.
+_DOMAIN = "layout-switcher"
+
+
+def _find_locale_dir() -> str:
+    # Arquivo fica em <share>/layout-switcher/, logo parent^2 = <share>.
+    # Tanto em dev (repo/usr/share) quanto em instalacao (/usr/share), o .mo
+    # fica em <share>/locale/<lang>/LC_MESSAGES/layout-switcher.mo — mesma
+    # logica.
+    _script = Path(__file__).resolve()
+    candidates = [
+        _script.parent.parent / "locale",
+        Path("/usr/share/locale"),
+        Path("/usr/local/share/locale"),
+        Path.home() / ".local" / "share" / "locale",
+    ]
+    for base in candidates:
+        if not base.is_dir():
+            continue
+        if any(base.glob(f"*/LC_MESSAGES/{_DOMAIN}.mo")):
+            return str(base)
+    return "/usr/share/locale"
+
+
+_LOCALE_DIR = _find_locale_dir()
+gettext.bindtextdomain(_DOMAIN, _LOCALE_DIR)
+gettext.textdomain(_DOMAIN)
+tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.5.1"
+APP_VERSION = "2.5.2"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg

@@ -1,0 +1,46 @@
+# ── Python bytecode and caches ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ── Distribution / packaging artifacts ──────────────────────────────────────
+*.egg-info/
+build/
+dist/
+*.whl
+*.tar.gz
+
+# ── Test / lint / type-check caches ─────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+
+# ── Audit output (local analysis reports) ───────────────────────────────────
+.audit/
+
+# ── Editor / IDE ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Local package build artifacts ───────────────────────────────────────────
+pkgbuild/pkg/
+pkgbuild/src/
+pkgbuild/*.pkg.tar.*
+pkgbuild/*.log
+
+# ── gettext source side-effects (keep the final .mo under git) ──────────────
+# .po files regenerated from the .pot are tracked. Intermediate merges aren't.
+*.po~
+messages.mo
+
+# IMPORTANT: compiled translations MUST be tracked — do NOT ignore .mo files.
+# (This comment exists so future edits don't accidentally add `*.mo` above.)

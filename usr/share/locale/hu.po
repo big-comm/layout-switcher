@@ -1,0 +1,695 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: layout-switcher\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-22 14:36\n"
+"PO-Revision-Date: 2026-04-22 14:36\n"
+"Last-Translator: Translation Automator <auto@translator.ai>\n"
+"Language-Team: Hungarian <hu@li.org>\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:57
+msgid "Backups"
+msgstr "Biztonsági mentések"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:72
+msgid "Create backup now"
+msgstr "Biztonsági mentés készítése most"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:74
+msgid "Snapshot current dconf settings"
+msgstr "Pillanatkép a jelenlegi dconf beállításokról"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:87
+msgid "No backups yet"
+msgstr "Még nincs biztonsági mentés"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:89
+msgid "A backup is created automatically every time you apply a layout."
+msgstr ""
+"Minden alkalommal, amikor alkalmazol egy elrendezést, automatikusan készül "
+"egy biztonsági mentés."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:142
+msgid "Latest"
+msgstr "Legfrissebb"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:147
+msgid "Restore this backup"
+msgstr "Biztonsági mentés visszaállítása"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:155
+msgid "Delete this backup"
+msgstr "Biztonsági mentés törlése"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:169
+msgid "Backup created"
+msgstr "Biztonsági mentés elkészült"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:172
+#: usr/share/layout-switcher/ui/page_layouts.py:228
+msgid "Backup failed"
+msgstr "Biztonsági mentés sikertelen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:176
+msgid "Restore this backup?"
+msgstr "Visszaállítod ezt a biztonsági mentést?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:178
+#, python-brace-format
+msgid ""
+"All current dconf settings will be overwritten with the snapshot from {ts}."
+msgstr ""
+"Minden jelenlegi dconf beállítás felülíródik a {ts} időpontban készült "
+"pillanatképpel."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:181
+#: usr/share/layout-switcher/ui/dialog_backups.py:206
+#: usr/share/layout-switcher/ui/page_layouts.py:204
+#: usr/share/layout-switcher/ui/page_layouts.py:216
+#: usr/share/layout-switcher/ui/page_themes.py:314
+#: usr/share/layout-switcher/ui/page_effects.py:261
+#: usr/share/layout-switcher/ui/page_effects.py:300
+#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/page_extensions.py:332
+#: usr/share/layout-switcher/ui/page_extensions.py:370
+#: usr/share/layout-switcher/ui/page_extensions.py:645
+msgid "Cancel"
+msgstr "Mégse"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:182
+msgid "Restore"
+msgstr "Visszaállítás"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
+msgid "Backup restored"
+msgstr "Biztonsági mentés visszaállítva"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:196
+msgid "Restore failed"
+msgstr "Visszaállítás sikertelen"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:203
+msgid "Delete this backup?"
+msgstr "Törli ezt a biztonsági mentést?"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:207
+msgid "Delete"
+msgstr "Törlés"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
+msgid "Backup deleted"
+msgstr "Biztonsági mentés törölve"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
+msgid "Delete failed"
+msgstr "Törlés sikertelen"
+
+#: usr/share/layout-switcher/ui/window.py:59
+#: usr/share/layout-switcher/ui/window.py:257
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:167
+#: usr/share/layout-switcher/ui/window.py:168
+msgid "Show Sidebar"
+msgstr "Oldalsáv megjelenítése"
+
+#: usr/share/layout-switcher/ui/window.py:174
+#: usr/share/layout-switcher/ui/window.py:281
+#: usr/share/layout-switcher/ui/window.py:352
+msgid "Layouts"
+msgstr "Elrendezések"
+
+#: usr/share/layout-switcher/ui/window.py:180
+msgid "Menu"
+msgstr "Menü"
+
+#: usr/share/layout-switcher/ui/window.py:181
+msgid "Main menu"
+msgstr "Főmenü"
+
+#: usr/share/layout-switcher/ui/window.py:184
+msgid "Backups…"
+msgstr "Biztonsági mentések…"
+
+#: usr/share/layout-switcher/ui/window.py:185
+msgid "About"
+msgstr "Névjegy"
+
+#: usr/share/layout-switcher/ui/window.py:194
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr ""
+"Üdvözöljük! Válasszon egy asztali elrendezést az alábbiakból a kezdéshez."
+
+#: usr/share/layout-switcher/ui/window.py:195
+msgid "Got it"
+msgstr "Értettem"
+
+#: usr/share/layout-switcher/ui/window.py:282
+#: usr/share/layout-switcher/ui/window.py:353
+msgid "Fonts"
+msgstr "Betűtípusok"
+
+#: usr/share/layout-switcher/ui/window.py:283
+#: usr/share/layout-switcher/ui/window.py:354
+msgid "Themes"
+msgstr "Témák"
+
+#: usr/share/layout-switcher/ui/window.py:284
+#: usr/share/layout-switcher/ui/window.py:355
+msgid "Effects"
+msgstr "Effektek"
+
+#: usr/share/layout-switcher/ui/window.py:285
+#: usr/share/layout-switcher/ui/window.py:356
+msgid "Extensions"
+msgstr "Kiterjesztések"
+
+#: usr/share/layout-switcher/ui/window.py:384
+msgid "Community Layout Switcher"
+msgstr "Community Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:389
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "Elrendezések, effektek és témák a GNOME asztalodhoz."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:42
+msgid "Click a layout to apply"
+msgstr "Kattints egy elrendezésre az alkalmazáshoz"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:50
+msgid "Layout status"
+msgstr "Elrendezés állapota"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:107
+msgid "Contains your saved customizations"
+msgstr "Tartalmazza a mentett testreszabásaidat"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:111
+#: usr/share/layout-switcher/ui/page_layouts.py:179
+#: usr/share/layout-switcher/ui/page_themes.py:264
+msgid "Active"
+msgstr "Aktív"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:188
+msgid "This layout is already active"
+msgstr "Ez az elrendezés már aktív"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:200
+msgid ""
+"You have previously modified this layout. Resume your changes or apply the "
+"original system default?"
+msgstr ""
+"Korábban módosítottad ezt az elrendezést. Folytatod a változtatásokat, vagy "
+"alkalmazod az eredeti rendszer alapértelmezett beállítását?"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:205
+msgid "Apply original"
+msgstr "Eredeti alkalmazása"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+msgid "Resume my changes"
+msgstr "Változtatásaim folytatása"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:212
+msgid ""
+"Apply this layout? A backup of your current configuration will be created "
+"automatically."
+msgstr ""
+"Alkalmazod ezt az elrendezést? A jelenlegi konfigurációd automatikusan "
+"mentésre kerül."
+
+#: usr/share/layout-switcher/ui/page_layouts.py:217
+msgid "Apply"
+msgstr "Alkalmaz"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:247
+msgid "Applying"
+msgstr "Alkalmazás"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:254
+msgid "Snapshot not found"
+msgstr "Pillanatkép nem található"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:264
+msgid "Layout file not found"
+msgstr "Elrendezés fájl nem található"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:276
+#: usr/share/layout-switcher/ui/page_layouts.py:280
+#: usr/share/layout-switcher/ui/page_layouts.py:291
+msgid "applied"
+msgstr "alkalmazva"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:281
+msgid "Undo"
+msgstr "Visszavonás"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:293
+#: usr/share/layout-switcher/ui/page_layouts.py:305
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_effects.py:251
+#: usr/share/layout-switcher/ui/page_extensions.py:322
+#: usr/share/layout-switcher/ui/page_extensions.py:601
+#: usr/share/layout-switcher/ui/page_extensions.py:669
+msgid "Error"
+msgstr "Hiba"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:315
+msgid "Layout restored"
+msgstr "Elrendezés visszaállítva"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:317
+msgid "Previous layout restored"
+msgstr "Előző elrendezés visszaállítva"
+
+#: usr/share/layout-switcher/ui/page_themes.py:71
+msgid "Filter themes…"
+msgstr "Témák szűrése…"
+
+#: usr/share/layout-switcher/ui/page_themes.py:107
+msgid "Icons"
+msgstr "Ikonok"
+
+#: usr/share/layout-switcher/ui/page_themes.py:187
+msgid "No themes found"
+msgstr "Nincs találat téma"
+
+#: usr/share/layout-switcher/ui/page_themes.py:188
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Telepíts témákat a ~/.themes vagy /usr/share/themes könyvtárba"
+
+#: usr/share/layout-switcher/ui/page_themes.py:195
+msgid "themes available"
+msgstr "elérhető téma"
+
+#: usr/share/layout-switcher/ui/page_themes.py:262
+msgid "theme"
+msgstr "téma"
+
+#: usr/share/layout-switcher/ui/page_themes.py:311
+msgid "User Themes required"
+msgstr "Felhasználói témák szükségesek"
+
+#: usr/share/layout-switcher/ui/page_themes.py:312
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Telepítse és engedélyezze a User Themes kiterjesztést a shell témák "
+"alkalmazásához."
+
+#: usr/share/layout-switcher/ui/page_themes.py:315
+msgid "Open Extensions Page"
+msgstr "Bővítmények oldal megnyitása"
+
+#: usr/share/layout-switcher/ui/page_effects.py:43
+msgid "Visual effects for your GNOME desktop"
+msgstr "Vizuális effektek a GNOME asztalához"
+
+#: usr/share/layout-switcher/ui/page_effects.py:105
+#: usr/share/layout-switcher/ui/page_extensions.py:161
+msgid "System extension"
+msgstr "Rendszerbővítmény"
+
+#: usr/share/layout-switcher/ui/page_effects.py:123
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:179
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "enabled"
+msgstr "engedélyezve"
+
+#: usr/share/layout-switcher/ui/page_effects.py:125
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:181
+#: usr/share/layout-switcher/ui/page_extensions.py:318
+msgid "disabled"
+msgstr "letiltva"
+
+#: usr/share/layout-switcher/ui/page_effects.py:127
+#: usr/share/layout-switcher/ui/page_effects.py:202
+#: usr/share/layout-switcher/ui/page_extensions.py:183
+#: usr/share/layout-switcher/ui/page_extensions.py:267
+msgid "Not installed"
+msgstr "Nincs telepítve"
+
+#: usr/share/layout-switcher/ui/page_effects.py:152
+#: usr/share/layout-switcher/ui/page_extensions.py:210
+#, python-brace-format
+msgid "by {author}"
+msgstr "készítette: {author}"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "On"
+msgstr "Be"
+
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:225
+msgid "Off"
+msgstr "Ki"
+
+#: usr/share/layout-switcher/ui/page_effects.py:171
+#: usr/share/layout-switcher/ui/page_extensions.py:233
+#: usr/share/layout-switcher/ui/page_extensions.py:588
+msgid "Toggle"
+msgstr "Kapcsoló"
+
+#: usr/share/layout-switcher/ui/page_effects.py:179
+#: usr/share/layout-switcher/ui/page_effects.py:183
+#: usr/share/layout-switcher/ui/page_effects.py:301
+#: usr/share/layout-switcher/ui/page_extensions.py:243
+#: usr/share/layout-switcher/ui/page_extensions.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:371
+#: usr/share/layout-switcher/ui/page_extensions.py:611
+#: usr/share/layout-switcher/ui/page_extensions.py:612
+msgid "Remove"
+msgstr "Eltávolítás"
+
+#: usr/share/layout-switcher/ui/page_effects.py:191
+#: usr/share/layout-switcher/ui/page_extensions.py:255
+msgid "Settings"
+msgstr "Beállítások"
+
+#: usr/share/layout-switcher/ui/page_effects.py:206
+#: usr/share/layout-switcher/ui/page_effects.py:262
+#: usr/share/layout-switcher/ui/page_extensions.py:271
+#: usr/share/layout-switcher/ui/page_extensions.py:333
+msgid "Install"
+msgstr "Telepítés"
+
+#: usr/share/layout-switcher/ui/page_effects.py:223
+#: usr/share/layout-switcher/ui/page_extensions.py:288
+msgid "View on GNOME Extensions"
+msgstr "Megtekintés a GNOME Extensions oldalon"
+
+#: usr/share/layout-switcher/ui/page_effects.py:258
+msgid "Install effect?"
+msgstr "Effekt telepítése?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:259
+#: usr/share/layout-switcher/ui/page_extensions.py:330
+msgid "Will try to install automatically."
+msgstr "Megpróbálja automatikusan telepíteni."
+
+#: usr/share/layout-switcher/ui/page_effects.py:270
+#: usr/share/layout-switcher/ui/page_extensions.py:339
+msgid "Installing…"
+msgstr "Telepítés…"
+
+#: usr/share/layout-switcher/ui/page_effects.py:281
+#: usr/share/layout-switcher/ui/page_extensions.py:351
+#: usr/share/layout-switcher/ui/page_extensions.py:495
+msgid "installed"
+msgstr "telepítve"
+
+#: usr/share/layout-switcher/ui/page_effects.py:284
+#: usr/share/layout-switcher/ui/page_extensions.py:354
+msgid "Install failed"
+msgstr "A telepítés sikertelen"
+
+#: usr/share/layout-switcher/ui/page_effects.py:293
+#: usr/share/layout-switcher/ui/page_extensions.py:363
+msgid "System extension — cannot remove"
+msgstr "Rendszerbővítmény — nem távolítható el"
+
+#: usr/share/layout-switcher/ui/page_effects.py:297
+msgid "Remove effect?"
+msgstr "Effekt eltávolítása?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:298
+#: usr/share/layout-switcher/ui/page_extensions.py:368
+msgid "This cannot be undone."
+msgstr "Ez nem vonható vissza."
+
+#: usr/share/layout-switcher/ui/page_effects.py:313
+#: usr/share/layout-switcher/ui/page_extensions.py:383
+msgid "removed"
+msgstr "eltávolítva"
+
+#: usr/share/layout-switcher/ui/page_effects.py:315
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+msgid "Remove failed"
+msgstr "Az eltávolítás sikertelen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:102
+msgid "System fonts"
+msgstr "Rendszerbetűtípusok"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:103
+msgid "Fonts used by the GNOME interface"
+msgstr "A GNOME felület által használt betűtípusok"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:107
+msgid "Interface"
+msgstr "Felület"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:113
+msgid "Document"
+msgstr "Dokumentum"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:119
+msgid "Monospace"
+msgstr "Monospace"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:125
+msgid "Window titles (legacy)"
+msgstr "Ablakcímek (régi)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:142
+#: usr/share/layout-switcher/ui/page_fonts.py:486
+msgid "(not set)"
+msgstr "(nincs beállítva)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:144
+msgid "Choose…"
+msgstr "Válasszon…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:158
+msgid "Choose font"
+msgstr "Betűtípus kiválasztása"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:174
+msgid "Font updated"
+msgstr "Betűtípus frissítve"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:176
+#: usr/share/layout-switcher/ui/page_fonts.py:241
+msgid "Update failed"
+msgstr "Frissítés sikertelen"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:185
+msgid "Appearance"
+msgstr "Megjelenés"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:186
+msgid "How fonts are rendered on screen"
+msgstr "Hogyan jelenjenek meg a betűk a képernyőn"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:190
+msgid "Hinting"
+msgstr "Hinting"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:194
+#: usr/share/layout-switcher/ui/page_fonts.py:207
+msgid "None"
+msgstr "Nincs"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:195
+msgid "Slight"
+msgstr "Enyhe"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:196
+msgid "Medium"
+msgstr "Közepes"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:197
+msgid "Full"
+msgstr "Teljes"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:203
+msgid "Antialiasing"
+msgstr "Élsimítás"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:208
+msgid "Grayscale"
+msgstr "Szürkeárnyalatos"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:209
+msgid "Subpixel (RGBA)"
+msgstr "Alpixeles (RGBA)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:251
+msgid "Installed fonts"
+msgstr "Telepített betűtípusok"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:252
+msgid "Browse font families installed on your system"
+msgstr "Böngésszen a rendszerére telepített betűcsaládok között"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:259
+msgid "Search fonts…"
+msgstr "Betűtípusok keresése…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:266
+msgid "Refresh font list"
+msgstr "Betűtípuslista frissítése"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:310
+msgid "Loading fonts…"
+msgstr "Betűtípusok betöltése…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:340
+msgid "No fonts match your search"
+msgstr "Egyetlen betűtípus sem felel meg a keresésnek"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:360
+msgid "(refine search to see more)"
+msgstr "(szűkítse a keresést a több találathoz)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:362
+msgid "fonts"
+msgstr "betűtípus"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:380
+msgid "The quick brown fox jumps over the lazy dog 0123"
+msgstr "Jó foxim és don Quijote húszwattos lámpánál ülve egy bűvös cipőt készít 0123"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:404
+msgid "Install more fonts"
+msgstr "Több betűtípus telepítése"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:407
+msgid "Browse Google Fonts"
+msgstr "Google Fonts böngészése"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:408
+msgid "Opens fonts.google.com in your browser"
+msgstr "Megnyitja a fonts.google.com oldalt a böngészőben"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:421
+msgid "How to install"
+msgstr "Telepítési útmutató"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:424
+msgid ""
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
+" refresh this list."
+msgstr ""
+"Helyezze a .ttf/.otf fájlokat a ~/.local/share/fonts/ mappába, majd futtassa"
+" a 'fc-cache -f -v' parancsot, és frissítse ezt a listát."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:436
+msgid "Reset to system defaults"
+msgstr "Visszaállítás a rendszer alapértelmezett értékeire"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:445
+msgid "Reset all font settings?"
+msgstr "Minden betűtípus-beállítást visszaállítunk?"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:447
+msgid ""
+"Interface, document, monospace and window-title fonts will return to system "
+"defaults. Hinting and antialiasing reset too."
+msgstr ""
+"A felület, dokumentum, monospace és ablakcím betűtípusok visszaállnak a "
+"rendszer alapértelmezettjeire. A hinting és az élsimítás is visszaáll."
+
+#: usr/share/layout-switcher/ui/page_fonts.py:452
+msgid "Reset"
+msgstr "Visszaállítás"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:472
+msgid "Fonts reset to defaults"
+msgstr "Betűtípusok visszaállítva az alapértelmezett értékekre"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:69
+msgid "Featured"
+msgstr "Kiemelt"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:70
+#: usr/share/layout-switcher/ui/page_extensions.py:482
+msgid "Installed"
+msgstr "Telepítve"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:329
+msgid "Install extension?"
+msgstr "Kiterjesztés telepítése?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:367
+msgid "Remove extension?"
+msgstr "Kiterjesztés eltávolítása?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:432
+msgid "Open GNOME Extensions"
+msgstr "GNOME Kiterjesztések megnyitása"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:487
+msgid "No extensions installed"
+msgstr "Nincsenek telepített kiterjesztések"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:503
+msgid "Enabled"
+msgstr "Engedélyezve"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:504
+msgid "Disabled"
+msgstr "Letiltva"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:580
+msgid "system"
+msgstr "rendszer"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+#: usr/share/layout-switcher/ui/page_extensions.py:646
+msgid "Disable All"
+msgstr "Mindet letiltás"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:628
+msgid "Enable All"
+msgstr "Az összes engedélyezése"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:642
+msgid "Disable all extensions?"
+msgstr "Az összes kiterjesztés letiltása?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:643
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr ""
+"Az összes kiterjesztés le lesz tiltva. Később újra engedélyezheti őket."
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions disabled"
+msgstr "Az összes kiterjesztés letiltva"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:663
+msgid "All extensions enabled"
+msgstr "Az összes kiterjesztés engedélyezve"
+
+#: usr/share/layout-switcher/constants.py:143
+msgid "Default Big Gnome layout"
+msgstr "Alapértelmezett Big Gnome elrendezés"
+
+#: usr/share/layout-switcher/constants.py:150
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Hagyományos asztal tálcával és rendszer tálcával"
+
+#: usr/share/layout-switcher/constants.py:157
+msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
+msgstr "Középre igazított dokk-tálca, Windows 11 / Deepin / Pop!_OS stílus"
+
+#: usr/share/layout-switcher/constants.py:164
+msgid "Unity-style layout with left dock and top bar"
+msgstr "Unity-stílusú elrendezés bal oldali dokkal és felső sávval"
+
+#: usr/share/layout-switcher/constants.py:171
+msgid "Near-vanilla GNOME with minimal distro tweaks"
+msgstr "Közel natív GNOME minimális disztribúciós módosításokkal"
+
+#: usr/share/layout-switcher/constants.py:178
+msgid "Clean and contemporary desktop"
+msgstr "Tiszta és modern asztal"

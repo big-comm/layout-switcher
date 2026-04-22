@@ -377,7 +377,7 @@ class FontsPage(Gtk.Box):
         name_lbl.set_halign(Gtk.Align.START)
         inner.append(name_lbl)
 
-        preview = Gtk.Label(label="The quick brown fox jumps over the lazy dog 0123")
+        preview = Gtk.Label(label=tr("The quick brown fox jumps over the lazy dog 0123"))
         preview.set_halign(Gtk.Align.START)
         preview.set_ellipsize(Pango.EllipsizeMode.END)
         # Aplica a familia via Pango markup/attribute
