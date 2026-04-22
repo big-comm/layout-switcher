@@ -20,7 +20,9 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 from constants import APP_VERSION, ICON_NAME, tr
 from settings_store import GSettingsMonitor, Settings
 from ui.dialog_backups import BackupsDialog
+from ui.page_effects import EffectsPage
 from ui.page_extensions import ExtensionsPage
+from ui.page_fonts import FontsPage
 from ui.page_layouts import LayoutsPage
 from ui.page_themes import ThemesPage
 from ui.styles import APP_CSS
@@ -134,9 +136,9 @@ class MainWindow(Adw.ApplicationWindow):
         )
 
     def _on_ext_changed(self) -> None:
-        """Atualiza abas de extensões quando estado muda externamente."""
-        self._ext_page.rebuild_featured()
+        """Atualiza páginas de extensões/efeitos quando estado muda externamente."""
         self._ext_page.refresh_installed()
+        self._effects_page.rebuild()
 
     # ── Estrutura da janela ───────────────────────────────────────────────────
 
@@ -209,12 +211,16 @@ class MainWindow(Adw.ApplicationWindow):
         self._stack.set_vexpand(True)
 
         self._layouts_page = LayoutsPage(self._pool, self._toast)
-        self._ext_page = ExtensionsPage(self._pool, self._toast)
+        self._fonts_page = FontsPage(self._pool, self._toast)
         self._themes_page = ThemesPage(self._pool, self._toast)
+        self._effects_page = EffectsPage(self._pool, self._toast)
+        self._ext_page = ExtensionsPage(self._pool, self._toast)
 
         self._stack.add_named(self._layouts_page, "layouts")
-        self._stack.add_named(self._ext_page, "extensions")
+        self._stack.add_named(self._fonts_page, "fonts")
         self._stack.add_named(self._themes_page, "themes")
+        self._stack.add_named(self._effects_page, "effects")
+        self._stack.add_named(self._ext_page, "extensions")
 
         content_toolbar.set_content(self._stack)
 
@@ -273,8 +279,10 @@ class MainWindow(Adw.ApplicationWindow):
         self._nav_rows: Dict[str, NavRow] = {}
         nav_items = [
             ("layouts", tr("Layouts"), "view-grid-symbolic"),
-            ("extensions", tr("Extensions"), "application-x-addon-symbolic"),
+            ("fonts", tr("Fonts"), "font-x-generic-symbolic"),
             ("themes", tr("Themes"), "applications-graphics-symbolic"),
+            ("effects", tr("Effects"), "view-paged-symbolic"),
+            ("extensions", tr("Extensions"), "application-x-addon-symbolic"),
         ]
         for key, label, icon in nav_items:
             row = self._make_nav_row(key, label, icon)
@@ -335,18 +343,24 @@ class MainWindow(Adw.ApplicationWindow):
                 r.remove_css_class("nav-sel")
         if key == "extensions":
             GLib.idle_add(self._ext_page.refresh_installed)
+        elif key == "effects":
+            GLib.idle_add(self._effects_page.rebuild)
         self._stack.set_visible_child_name(key)
 
         # Update header title
-        titles = {"layouts": tr("Layouts"), "extensions": tr("Extensions"), "themes": tr("Themes")}
+        titles = {
+            "layouts": tr("Layouts"),
+            "fonts": tr("Fonts"),
+            "themes": tr("Themes"),
+            "effects": tr("Effects"),
+            "extensions": tr("Extensions"),
+        }
         self._title_widget.set_title(titles.get(key, ""))
 
         # Auto-close sidebar overlay on mobile
         if self._split_view.get_collapsed():
             self._split_view.set_show_sidebar(False)
             self._sidebar_btn.set_active(False)
-
-    # ── About ─────────────────────────────────────────────────────────────────
 
     # ── Backups ───────────────────────────────────────────────────────────────
 
@@ -358,10 +372,10 @@ class MainWindow(Adw.ApplicationWindow):
         dlg.present(self)
 
     def _on_backup_restored(self) -> None:
-        """Apos um restore, reconstroi layouts/extensoes para refletir estado."""
+        """Após um restore, reconstrói páginas para refletir estado."""
         self._layouts_page.rebuild_grid()
-        self._ext_page.rebuild_featured()
         self._ext_page.refresh_installed()
+        self._effects_page.rebuild()
 
     # ── About ─────────────────────────────────────────────────────────────────
 
@@ -375,7 +389,7 @@ class MainWindow(Adw.ApplicationWindow):
             comments=tr("Layouts, effects and themes for your GNOME desktop."),
             website="https://communitybig.org/",
             issue_url="https://github.com/BigCommunity/layout-switcher/issues",
-            copyright="© 2022–2026 Big Community & Contributors",
+            copyright="© 2022–2025 Big Community & Contributors",
             developers=["Big Community", "Ari Novais"],
         )
         about.present(self)

@@ -19,7 +19,7 @@ tr = gettext.gettext  # purposely NOT named `_`
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.4.1"
+APP_VERSION = "2.5.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -150,25 +150,25 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
         tr("Traditional desktop with taskbar and system tray"),
     ),
     (
-        "Vanilla",
-        "vanilla.txt",
-        "vanilla.svg",
-        "view-grid-symbolic",
-        tr("Stock GNOME experience"),
+        "Hybrid",
+        "hybrid.txt",
+        "hybrid.svg",
+        "view-dual-symbolic",
+        tr("Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"),
     ),
     (
-        "G-Unity",
-        "g-unity.txt",
-        "g-unity.svg",
+        "Yaru",
+        "yaru.txt",
+        "yaru.svg",
         "view-app-grid-symbolic",
-        tr("Unity-style layout with dock and top bar"),
+        tr("Ubuntu-style layout with left dock and top bar"),
     ),
     (
-        "New",
-        "new.txt",
-        "new.svg",
-        "view-paged-symbolic",
-        tr("Fresh modern layout"),
+        "Minimal",
+        "minimal.txt",
+        "minimal.svg",
+        "view-grid-symbolic",
+        tr("Near-vanilla GNOME with minimal distro tweaks"),
     ),
     (
         "Modern",

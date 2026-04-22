@@ -4,7 +4,7 @@ GTK4 + libadwaita app for managing GNOME desktop layouts, shell extensions, and 
 
 ## Features
 
-- **Layouts** — Switch between pre-configured desktop layouts (Classic, Vanilla, G-Unity, Modern, etc.) with one click. Automatic dconf backup before applying.
+- **Layouts** — Switch between pre-configured desktop layouts (BigGnome, Classic, Hybrid, Yaru, Minimal, Modern) with one click. Automatic dconf backup before applying.
 - **Extensions** — Browse featured GNOME Shell extensions, install from extensions.gnome.org, enable/disable/remove installed extensions.
 - **Themes** — Manage GTK, icon, cursor, and shell themes. Filter by kind, search by name, apply with one click.
 

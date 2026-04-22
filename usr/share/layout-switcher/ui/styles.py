@@ -41,6 +41,11 @@ APP_CSS = """
     font-weight: 700;
     padding: 3px 9px;
 }
+.layout-modified {
+    color: @warning_color;
+    font-size: 14px;
+    font-weight: 700;
+}
 
 /* ── Extension cards em destaque ─────────────────────────────────────── */
 .ext-card {

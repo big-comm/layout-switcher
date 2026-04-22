@@ -85,7 +85,7 @@ ShellReloader.reload_all()
 
 ### Alto
 - [ ] **Outros layouts com formato misto.** Os arquivos
-  `classic.txt`, `vanilla.txt`, `modern.txt`, `new.txt`, `g-unity.txt` contêm
+  `classic.txt`, `minimal.txt`, `modern.txt`, `yaru.txt` contêm
   mistura de seções absolutas (`[org/gnome/Console]`) e relativas
   (`[extensions/arcmenu]`, `[keybindings]`). Agora que o loader usa
   `dconf load /`, seções relativas como `[extensions/...]` serão aplicadas em

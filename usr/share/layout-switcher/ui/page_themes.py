@@ -19,6 +19,7 @@ from gi.repository import Adw, GLib, Gtk, Pango
 
 from constants import tr
 from theme_manager import ThemeMgr
+from theme_preview import extract_theme_color, find_folder_icon
 from ui.widgets import ColorDot
 from utils import color_from_name, run_cmd
 
@@ -230,10 +231,10 @@ class ThemesPage(Gtk.Box):
         inner.set_margin_top(10)
         inner.set_margin_bottom(10)
 
-        # Dot de cor
-        dot = ColorDot(color_from_name(name), size=22)
-        dot.set_valign(Gtk.Align.CENTER)
-        inner.append(dot)
+        # Preview: icon real para icons; cor extraida do CSS para gtk/shell
+        preview = self._build_preview(name, kind)
+        preview.set_valign(Gtk.Align.CENTER)
+        inner.append(preview)
 
         # Nome
         lbl = Gtk.Label(label=name)
@@ -263,6 +264,33 @@ class ThemesPage(Gtk.Box):
             a11y_label += f" ({tr('Active')})"
         row.update_property([Gtk.AccessibleProperty.LABEL], [a11y_label])
         return row
+
+    def _build_preview(self, name: str, kind: str) -> Gtk.Widget:
+        """
+        Constroi o widget de preview da linha de tema.
+
+        * ``kind=icons`` → ``Gtk.Picture`` com o icone ``folder`` real do tema.
+          Fallback para symbolic se o tema nao tiver folder.
+        * ``kind=gtk|shell`` → ``ColorDot`` com a cor real extraida do CSS.
+          Fallback para cor derivada do nome quando nao e possivel extrair.
+        """
+        if kind == "icons":
+            folder_path = find_folder_icon(name)
+            if folder_path:
+                pic = Gtk.Picture.new_for_filename(str(folder_path))
+                pic.set_content_fit(Gtk.ContentFit.CONTAIN)
+                pic.set_size_request(26, 22)
+                pic.set_can_shrink(True)
+                return pic
+            img = Gtk.Image.new_from_icon_name("folder-symbolic")
+            img.set_pixel_size(22)
+            return img
+
+        # gtk ou shell: ColorDot com cor real do CSS quando possivel
+        color = extract_theme_color(name, kind)
+        if not color:
+            color = color_from_name(name)
+        return ColorDot(color, size=22)
 
     def _apply_theme(self, name: str, kind: str) -> None:
         def task():

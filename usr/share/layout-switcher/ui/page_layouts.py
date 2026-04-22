@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: MIT
 """
-ui/page_layouts.py — Página de Layouts do aplicativo.
+ui/page_layouts.py — Pagina de Layouts.
 
-Exibe grid de cards de layout; ao clicar aplica via dconf + reload em tempo real.
+Comportamento tipo KDE Plasma: ao trocar de layout, o estado atual e salvo
+como snapshot do layout anterior. Ao voltar para um layout com snapshot,
+o usuario escolhe entre retomar sua versao modificada ou aplicar o padrao.
 
-DEVELOPER NOTE — DO NOT name any variable `_` in this file.
+DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
+from pathlib import Path
 from typing import Optional
 
 import gi
@@ -18,20 +21,20 @@ from gi.repository import Adw, Gdk, GLib, Gtk
 from backup_manager import BackupManager
 from constants import ICONS_DIR, LAYOUTS, tr
 from layout_applier import LayoutApplier
+from settings_store import Settings
+from snapshot_manager import SnapshotManager
 from utils import find_file
 
 
 class LayoutsPage(Gtk.Box):
-    """
-    Página de Layouts.
-    Exibe todos os layouts disponíveis em um FlowBox de cards clicáveis.
-    """
+    """Pagina de Layouts com grid de cards + Resume/Original."""
 
     def __init__(self, pool, toast_cb) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._pool = pool
         self._toast = toast_cb
-        self._active_layout: Optional[str] = None
+        self._prefs = Settings()
+        self._active_layout: Optional[str] = self._prefs.get("active_layout")
 
         self._build()
 
@@ -42,14 +45,12 @@ class LayoutsPage(Gtk.Box):
         self._status_lbl.set_margin_start(26)
         self._status_lbl.set_margin_top(4)
         self._status_lbl.set_margin_bottom(12)
-        # a11y: announce status changes to screen readers
         self._status_lbl.update_property(
             [Gtk.AccessibleProperty.LABEL],
             [tr("Layout status")],
         )
         self.append(self._status_lbl)
 
-        # ── Grid de layouts ───────────────────────────────────────────────────
         sc = Gtk.ScrolledWindow()
         sc.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         sc.set_vexpand(True)
@@ -71,6 +72,11 @@ class LayoutsPage(Gtk.Box):
 
     # ── Grid ──────────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _layout_id(cfg: str) -> str:
+        """Stem do arquivo de layout (ex.: 'biggnome.txt' -> 'biggnome')."""
+        return Path(cfg).stem
+
     def rebuild_grid(self) -> None:
         child = self._flow.get_first_child()
         while child:
@@ -83,14 +89,24 @@ class LayoutsPage(Gtk.Box):
 
     def _make_card(self, name, cfg, icon_file, fallback, desc) -> Gtk.Box:
         is_on = name == self._active_layout
+        has_snapshot = SnapshotManager.has(self._layout_id(cfg))
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         card.add_css_class("layout-card")
         if is_on:
             card.add_css_class("layout-on")
         card.set_size_request(158, 132)
 
-        # Faixa "Ativo"
+        # Topo: indicador "modificado" a esquerda + faixa "Ativo" a direita
         top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        top.set_size_request(-1, 22)
+        if has_snapshot:
+            mod = Gtk.Label(label="●")
+            mod.add_css_class("layout-modified")
+            mod.add_css_class("caption")
+            mod.set_halign(Gtk.Align.START)
+            mod.set_tooltip_text(tr("Contains your saved customizations"))
+            mod.set_margin_start(8)
+            top.append(mod)
         if is_on:
             rb = Gtk.Label(label=tr("Active"))
             rb.add_css_class("layout-ribbon")
@@ -98,11 +114,8 @@ class LayoutsPage(Gtk.Box):
             rb.set_halign(Gtk.Align.END)
             rb.set_hexpand(True)
             top.append(rb)
-        else:
-            top.set_size_request(-1, 22)
         card.append(top)
 
-        # Imagem / ícone
         wrap = Gtk.Box()
         wrap.set_margin_start(10)
         wrap.set_margin_end(10)
@@ -150,7 +163,6 @@ class LayoutsPage(Gtk.Box):
         )
         card.add_controller(gest)
 
-        # keyboard activate: Enter / Space
         key_ctl = Gtk.EventControllerKey()
         key_ctl.connect(
             "key-pressed",
@@ -169,48 +181,89 @@ class LayoutsPage(Gtk.Box):
         card.set_focusable(True)
         return card
 
-    # ── Interação ─────────────────────────────────────────────────────────────
+    # ── Interacao ─────────────────────────────────────────────────────────────
 
     def _on_click(self, name: str, cfg: str) -> None:
         if name == self._active_layout:
             self._toast(tr("This layout is already active"))
             return
 
+        target_id = self._layout_id(cfg)
+        has_snapshot = SnapshotManager.has(target_id)
+
         parent = self.get_root()
-        d = Adw.AlertDialog(
-            heading=name,
-            body=tr(
-                "Apply this layout? A backup of your current configuration "
-                "will be created automatically."
-            ),
-        )
-        d.add_response("cancel", tr("Cancel"))
-        d.add_response("apply", tr("Apply"))
-        d.set_response_appearance("apply", Adw.ResponseAppearance.SUGGESTED)
-        d.set_default_response("apply")
+        d = Adw.AlertDialog(heading=name)
+
+        if has_snapshot:
+            d.set_body(
+                tr(
+                    "You have previously modified this layout. Resume your "
+                    "changes or apply the original system default?"
+                )
+            )
+            d.add_response("cancel", tr("Cancel"))
+            d.add_response("original", tr("Apply original"))
+            d.add_response("resume", tr("Resume my changes"))
+            d.set_response_appearance("resume", Adw.ResponseAppearance.SUGGESTED)
+            d.set_default_response("resume")
+        else:
+            d.set_body(
+                tr(
+                    "Apply this layout? A backup of your current "
+                    "configuration will be created automatically."
+                )
+            )
+            d.add_response("cancel", tr("Cancel"))
+            d.add_response("apply", tr("Apply"))
+            d.set_response_appearance("apply", Adw.ResponseAppearance.SUGGESTED)
+            d.set_default_response("apply")
+
         d.set_close_response("cancel")
 
         def on_r(_dlg, r):
-            if r != "apply":
+            if r == "cancel":
                 return
-            # Backup automatico; erros nao bloqueiam o apply, so avisam.
-            ok, info = BackupManager.create()
-            if not ok:
+            ok_bk, info = BackupManager.create()
+            if not ok_bk:
                 self._toast(tr("Backup failed") + f": {info}")
-            self._apply(name, cfg)
+            self._save_current_snapshot()
+            use_snapshot = r == "resume"
+            self._apply(name, cfg, use_snapshot=use_snapshot)
 
         d.connect("response", on_r)
         d.present(parent)
 
-    def _apply(self, name: str, cfg: str) -> None:
+    def _save_current_snapshot(self) -> None:
+        """Dump do dconf atual como snapshot do layout ativo."""
+        if not self._active_layout:
+            return
+        for lname, lcfg, *_rest in LAYOUTS:
+            if lname == self._active_layout:
+                SnapshotManager.save(self._layout_id(lcfg))
+                return
+
+    def _apply(self, name: str, cfg: str, use_snapshot: bool = False) -> None:
+        """Aplica layout. use_snapshot=True carrega a versao modificada."""
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
+        layout_id = self._layout_id(cfg)
 
         def task():
-            path = find_file(cfg, ["layouts"])
-            if not path:
-                GLib.idle_add(self._done, name, False, tr("Layout file not found"))
-                return
-            ok, err = LayoutApplier.apply(path)
+            if use_snapshot:
+                data = SnapshotManager.read(layout_id)
+                if not data:
+                    GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
+                    return
+                ok, err = LayoutApplier.load_dconf_safely(data, persist=True)
+                if ok:
+                    from shell_reloader import ShellReloader
+
+                    ShellReloader.reload_all()
+            else:
+                path = find_file(cfg, ["layouts"])
+                if not path:
+                    GLib.idle_add(self._done, name, False, tr("Layout file not found"))
+                    return
+                ok, err = LayoutApplier.apply(path)
             GLib.idle_add(self._done, name, ok, err)
 
         self._pool.submit(task)
@@ -219,9 +272,9 @@ class LayoutsPage(Gtk.Box):
         if ok:
             prev = self._active_layout
             self._active_layout = name
+            self._prefs.set("active_layout", name)
             self._set_status(f"{name} {tr('applied')}", "ok-col")
             self.rebuild_grid()
-            # undo toast → restore latest backup
             latest = BackupManager.latest()
             if latest:
                 t = Adw.Toast(title=f"{name} {tr('applied')}", timeout=15)
@@ -240,7 +293,7 @@ class LayoutsPage(Gtk.Box):
             self._set_status(f"{tr('Error')}: {msg}", "err-col")
 
     def _undo_layout(self, prev_name, backup_path) -> None:
-        """Restore previous layout from backup."""
+        """Restaura o layout anterior a partir do backup."""
 
         def task():
             ok, info = BackupManager.restore(backup_path)
@@ -257,6 +310,8 @@ class LayoutsPage(Gtk.Box):
 
     def _done_undo(self, prev_name) -> None:
         self._active_layout = prev_name
+        if prev_name:
+            self._prefs.set("active_layout", prev_name)
         self._set_status(tr("Layout restored"), "ok-col")
         self.rebuild_grid()
         self._toast(tr("Previous layout restored"))
@@ -264,7 +319,6 @@ class LayoutsPage(Gtk.Box):
     def _set_status(self, text: str, css: str) -> None:
         for c in ("ok-col", "err-col", "dim-label"):
             self._status_lbl.remove_css_class(c)
-        # text prefix → not color-only
         if css == "ok-col":
             text = f"✓ {text}"
         elif css == "err-col":

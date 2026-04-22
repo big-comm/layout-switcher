@@ -1,13 +1,3 @@
-[/]
-app-picker-layout=[{'BigApps': <{'position': <0>}>, 'AudioVideo': <{'position': <1>}>, 'Office': <{'position': <2>}>, 'Utilities': <{'position': <3>}>, 'Settings': <{'position': <4>}>, 'Network': <{'position': <5>}>, 'Game': <{'position': <6>}>, 'WebApps': <{'position': <7>}>, 'Development': <{'position': <8>}>, 'biglinux-grub-restore.desktop': <{'position': <9>}>, 'calamares-biglinux.desktop': <{'position': <10>}>}]
-command-history=['ajustes', 'r']
-disable-extensions=false
-disabled-extensions=['ddterm@amezin.github.com', 'just-perfection-desktop@just-perfection', 'GPaste@gnome-shell-extensions.gnome.org', 'dash-to-dock@micxgx.gmail.com']
-enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'CoverflowAltTab@dmo60.de', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'blur-my-shell@aunetx', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'pano@elhan.io', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com']
-favorite-apps=['org.gnome.Nautilus.desktop', 'brave-browser.desktop', 'org.gnome.Calculator.desktop', 'org.gnome.TextEditor.desktop', 'org.gnome.Calendar.desktop', 'org.communitybig.ashyterm.desktop']
-last-selected-power-profile='performance'
-welcome-dialog-last-shown-version='43.2'
-
 [ca/desrt/dconf-editor]
 saved-pathbar-path='notif'
 saved-view='/'
@@ -20,189 +10,6 @@ window-width=540
 height=727
 last-used-version='0.5.1'
 width=1189
-
-[extensions/arcmenu]
-button-item-icon-size='Medium'
-custom-menu-button-icon='comm-menu'
-force-menu-location='Off'
-left-panel-width=450
-menu-button-icon='comm-menu'
-menu-button-icon-size=32
-menu-height=510
-menu-item-category-icon-size='Large'
-menu-item-grid-icon-size='Large'
-menu-item-icon-size='Medium'
-menu-layout='Enterprise'
-misc-item-icon-size='Large'
-prefs-visible-page=0
-quicklinks-item-icon-size='Large'
-recently-installed-apps=['bvnc.desktop', 'bssh.desktop', 'avahi-discover.desktop', 'libreoffice-startcenter.desktop', 'urxvtc.desktop', 'urxvt-tabbed.desktop', 'urxvt.desktop']
-right-panel-width=450
-search-entry-border-radius=(true, 25)
-show-activities-button=true
-update-notifier-project-version=70
-
-[extensions/blur-my-shell]
-settings-version=2
-
-[extensions/blur-my-shell/appfolder]
-brightness=0.59999999999999998
-sigma=30
-
-[extensions/blur-my-shell/applications]
-blur=false
-blur-on-overview=false
-whitelist=@as []
-
-[extensions/blur-my-shell/coverflow-alt-tab]
-pipeline='pipeline_default'
-
-[extensions/blur-my-shell/dash-to-dock]
-blur=true
-brightness=0.29999999999999999
-override-background=true
-pipeline='pipeline_default'
-static-blur=true
-style-dash-to-dock=0
-unblur-in-overview=false
-
-[extensions/blur-my-shell/lockscreen]
-pipeline='pipeline_default'
-
-[extensions/blur-my-shell/overview]
-pipeline='pipeline_default'
-
-[extensions/blur-my-shell/panel]
-blur=false
-brightness=0.60999999999999999
-override-background=true
-override-background-dynamically=false
-pipeline='pipeline_default'
-sigma=30
-static-blur=true
-style-panel=0
-unblur-in-overview=true
-
-[extensions/blur-my-shell/screenshot]
-pipeline='pipeline_default'
-
-[extensions/blur-my-shell/window-list]
-brightness=0.59999999999999998
-sigma=30
-
-[extensions/com/github/hermes83/compiz-windows-effect]
-last-version=29
-preset='R'
-
-[extensions/copyous]
-history-length=70
-open-clipboard-dialog-shortcut=['<Super>v']
-paste-on-copy=false
-
-[extensions/dash-to-dock]
-animation-time=0.49999999999999994
-apply-custom-theme=false
-autohide-in-fullscreen=true
-background-color='rgb(0,0,0)'
-background-opacity=0.29999999999999999
-click-action='minimize-or-previews'
-custom-background-color=true
-custom-theme-shrink=true
-customize-alphas=true
-dash-max-icon-size=39
-dock-position='BOTTOM'
-extend-height=false
-height-fraction=0.90000000000000002
-hide-delay=0.099999999999999686
-intellihide-mode='FOCUS_APPLICATION_WINDOWS'
-max-alpha=0.80000000000000004
-multi-monitor=true
-preferred-monitor=-2
-preferred-monitor-by-connector='HDMI-1'
-pressure-threshold=100.0
-require-pressure-to-show=true
-running-indicator-dominant-color=true
-running-indicator-style='DOTS'
-scroll-action='switch-workspace'
-show-mounts=false
-transparency-mode='FIXED'
-
-[extensions/dash-to-panel]
-animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
-appicon-margin=8
-appicon-padding=8
-dot-color-dominant=true
-dot-color-override=false
-dot-color-unfocused-different=false
-dot-position='BOTTOM'
-extension-version=72
-focus-highlight-dominant=true
-global-border-radius=4
-group-apps=true
-hotkeys-overlay-combo='TEMPORARILY'
-panel-anchors='{"STA-0x00000001":"MIDDLE","GSM-SerialNumber":"MIDDLE"}'
-panel-element-positions='{"STA-0x00000001":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"activitiesButton","visible":true,"position":"stackedTL"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}],"GSM-SerialNumber":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"},{"element":"activitiesButton","visible":true,"position":"stackedTL"}]}'
-panel-lengths='{"STA-0x00000001":100,"GSM-SerialNumber":100}'
-panel-positions='{}'
-panel-side-margins=4
-panel-side-padding=0
-panel-sizes='{"STA-0x00000001":48,"GSM-SerialNumber":48}'
-panel-top-bottom-margins=4
-prefs-opened=false
-primary-monitor='STA-0x00000001'
-window-preview-title-position='TOP'
-
-[extensions/gsconnect]
-devices=@as []
-id='cf580885-93b6-47a8-a033-73dee0e7d8a0'
-missing-openssl=false
-name='BigGnome'
-
-[extensions/just-perfection]
-accessibility-menu=true
-activities-button-icon-monochrome=true
-app-menu=true
-app-menu-icon=true
-background-menu=true
-dash=true
-dash-icon-size=0
-dash-separator=true
-double-super-to-appgrid=true
-gesture=true
-hot-corner=false
-osd=true
-panel=true
-panel-arrow=true
-panel-corner-size=0
-panel-in-overview=true
-panel-notification-icon=true
-panel-size=0
-power-icon=true
-ripple-box=true
-search=true
-show-apps-button=true
-startup-status=1
-theme=false
-window-demands-attention-focus=false
-window-picker-icon=true
-window-preview-caption=true
-workspace=true
-workspace-background-corner-size=0
-workspace-popup=true
-workspaces-in-app-grid=true
-
-[extensions/pano]
-global-shortcut=['<Super>v']
-history-length=40
-incognito-shortcut=['<Control><Super>v']
-is-in-incognito=false
-keep-search-entry=true
-play-audio-on-copy=false
-send-notification-on-copy=false
-show-indicator=true
-
-[keybindings]
-toggle-message-tray=['<Super>e']
 
 [org/freedesktop/folks]
 primary-store='eds:dca38c1d91cfea724171a5feef6b2625ab457c36'
@@ -305,6 +112,13 @@ show-desktop-icons=true
 [org/gnome/desktop/input-sources]
 sources=[('xkb', 'us+intl')]
 xkb-options=['terminate:ctrl_alt_bksp']
+
+[org/gnome/desktop/interface]
+accent-color='blue'
+color-scheme='default'
+enable-animations=true
+gtk-theme='adw-gtk3'
+icon-theme='Papirus'
 
 [org/gnome/desktop/notifications]
 application-children=['org-gnome-console', 'gnome-power-panel', 'org-gnome-texteditor', 'org-gnome-nautilus', 'xed', 'org-telegram-desktop', 'org-gnome-characters', 'org-gnome-baobab', 'org-gnome-geary', 'org-gnome-shell-extensions-gsconnect', 'org-gnome-evolution-alarm-notify', 'org-telegram-desktop-c0823a45162f757ca989890a954691d3']
@@ -423,6 +237,7 @@ night-light-schedule-from=20.0
 app-picker-layout=[{'org.gnome.Geary.desktop': <{'position': <0>}>, 'org.gnome.Contacts.desktop': <{'position': <1>}>, 'org.gnome.Weather.desktop': <{'position': <2>}>, 'org.gnome.clocks.desktop': <{'position': <3>}>, 'org.gnome.Maps.desktop': <{'position': <4>}>, 'org.gnome.Totem.desktop': <{'position': <5>}>, 'org.gnome.Calculator.desktop': <{'position': <6>}>, 'simple-scan.desktop': <{'position': <7>}>, 'org.gnome.Settings.desktop': <{'position': <8>}>, 'org.gnome.SystemMonitor.desktop': <{'position': <9>}>, 'Utilities': <{'position': <10>}>, 'yelp.desktop': <{'position': <11>}>, 'waydroid.com.android.inputmethod.latin.desktop': <{'position': <12>}>, 'nemo.desktop': <{'position': <13>}>, 'waydroid.org.lineageos.jelly.desktop': <{'position': <14>}>, 'waydroid.com.android.calculator2.desktop': <{'position': <15>}>, 'waydroid.org.lineageos.etar.desktop': <{'position': <16>}>, 'org.gnome.Calendar.desktop': <{'position': <17>}>, 'waydroid.com.android.camera2.desktop': <{'position': <18>}>, 'org.gnome.Snapshot.desktop': <{'position': <19>}>, 'waydroid.com.android.deskclock.desktop': <{'position': <20>}>, 'waydroid.com.android.contacts.desktop': <{'position': <21>}>, 'ca.desrt.dconf-editor.desktop': <{'position': <22>}>, 'xed.desktop': <{'position': <23>}>}, {'cups.desktop': <{'position': <0>}>, 'waydroid.com.android.vending.desktop': <{'position': <1>}>, 'htop.desktop': <{'position': <2>}>, 'jamesdsp.desktop': <{'position': <3>}>, 'startcenter.desktop': <{'position': <4>}>, 'base.desktop': <{'position': <5>}>, 'calc.desktop': <{'position': <6>}>, 'draw.desktop': <{'position': <7>}>, 'impress.desktop': <{'position': <8>}>, 'math.desktop': <{'position': <9>}>, 'writer.desktop': <{'position': <10>}>, 'waydroid.org.lineageos.eleven.desktop': <{'position': <11>}>, 'org.gnome.Music.desktop': <{'position': <12>}>, 'nixos-manual.desktop': <{'position': <13>}>, 'nvtop.desktop': <{'position': <14>}>, 'waydroid.org.lineageos.recorder.desktop': <{'position': <15>}>, 'waydroid.com.android.settings.desktop': <{'position': <16>}>, 'org.gnome.Tour.desktop': <{'position': <17>}>, 'code.desktop': <{'position': <18>}>, 'Waydroid.desktop': <{'position': <19>}>, 'org.gnome.Epiphany.desktop': <{'position': <20>}>, 'com.mattjakeman.ExtensionManager.desktop': <{'position': <21>}>, 'waydroid.com.android.gallery3d.desktop': <{'position': <22>}>, 'firefox.desktop': <{'position': <23>}>}, {'waydroid.com.android.documentsui.desktop': <{'position': <0>}>, 'org.gnome.Extensions.desktop': <{'position': <1>}>, 'org.gnome.TextEditor.desktop': <{'position': <2>}>, 'org.kde.dolphin.desktop': <{'position': <3>}>, 'com.obsproject.Studio.desktop': <{'position': <4>}>, 'gimp.desktop': <{'position': <5>}>, 'dev.vlinkz.NixSoftwareCenter.desktop': <{'position': <6>}>}]
 disabled-extensions=['auto-move-windows@gnome-shell-extensions.gcampax.github.com', 'apps-menu@gnome-shell-extensions.gcampax.github.com', 'window-list@gnome-shell-extensions.gcampax.github.com', 'vertical-workspaces@G-dH.github.com', 'arcmenu@arcmenu.com', 'launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'native-window-placement@gnome-shell-extensions.gcampax.github.com', 'dash-to-dock@micxgx.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'just-perfection-desktop@just-perfection', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'workspace-indicator@gnome-shell-extensions.gcampax.github.com', 'windowsNavigator@gnome-shell-extensions.gcampax.github.com', 'screenshot-window-sizer@gnome-shell-extensions.gcampax.github.com', 'places-menu@gnome-shell-extensions.gcampax.github.com']
 enabled-extensions=['pano@elhan.io', 'gsconnect@andyholmes.github.io', 'dash-to-panel@jderose9.github.com', 'light-style@gnome-shell-extensions.gcampax.github.com', 'gtk4-ding@smedius.gitlab.com', 'status-icons@gnome-shell-extensions.gcampax.github.com', 'system-monitor@gnome-shell-extensions.gcampax.github.com', 'trayIconsReloaded@selfmade.pl', 'appindicatorsupport@rgcjonas.gmail.com']
+favorite-apps=['org.gnome.Nautilus.desktop', 'org.telegram.desktop.desktop', 'google-chrome.desktop', 'org.gnome.Console.desktop']
 last-selected-power-profile='power-saver'
 remember-mount-password=false
 welcome-dialog-last-shown-version='47.2'
@@ -880,6 +695,3 @@ side-panel-active-page=1541982214
 side-panel-size=200
 size=(650, 500)
 state=87168
-
-[world-clocks]
-locations=@av []
