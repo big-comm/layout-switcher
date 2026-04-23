@@ -23,28 +23,58 @@ APP_CSS = """
 
 /* ── Layout cards ────────────────────────────────────────────────────── */
 .layout-card {
-    outline: 2px solid transparent;
-    outline-offset: -2px;
+    background: transparent;
     border: none;
+    outline: none;
     box-shadow: none;
-    border-radius: 12px;
-    background-color: alpha(@card_bg_color, 1);
-    padding: 6px;
-    transition: outline-color 120ms ease, box-shadow 120ms ease;
+    border-radius: 10px;
+    padding: 4px;
+    transition: background-color 140ms ease;
 }
-.layout-card:hover          { outline-color: alpha(@accent_color, 0.35); }
-.layout-card.layout-on      { outline-color: @accent_color; }
-.layout-ribbon {
-    background-color: @accent_bg_color;
+.layout-card:hover                   { background-color: alpha(@accent_bg_color, 0.08); }
+
+/* Preview (SVG wrapper) — glow neon no layout ativo */
+.layout-preview {
+    border-radius: 8px;
+    transition: box-shadow 180ms ease;
+}
+.layout-card:hover .layout-preview {
+    box-shadow: 0 0 0 1px alpha(@accent_color, 0.25);
+}
+.layout-card.layout-on .layout-preview {
+    box-shadow: 0 0 0 2px @accent_color,
+                0 0 14px alpha(@accent_color, 0.55),
+                0 0 28px alpha(@accent_color, 0.28);
+}
+
+/* Nome do layout — cor accent + bold quando ativo */
+.layout-name                         { font-weight: 600; }
+.layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0.2px; }
+
+/* Badge "Modified" theme-aware (libadwaita adapta @warning_bg/fg_color) */
+.layout-modified-badge {
+    background-color: @warning_bg_color;
+    color: @warning_fg_color;
+    border: 1px solid alpha(@warning_fg_color, 0.22);
+    border-radius: 6px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    box-shadow: 0 1px 2px alpha(#000000, 0.15);
+}
+.layout-modified-badge image,
+.layout-modified-badge label {
+    color: @warning_fg_color;
+}
+
+/* Check de ativo — circulo accent no canto superior-direito do preview */
+.layout-active-check {
+    background-color: @accent_color;
     color: @accent_fg_color;
-    border-radius: 0 10px 0 8px;
-    font-weight: 700;
-    padding: 3px 9px;
-}
-.layout-modified {
-    color: @warning_color;
-    font-size: 14px;
-    font-weight: 700;
+    border-radius: 50%;
+    padding: 3px;
+    box-shadow: 0 0 8px alpha(@accent_color, 0.55);
 }
 
 /* ── Extension cards em destaque ─────────────────────────────────────── */

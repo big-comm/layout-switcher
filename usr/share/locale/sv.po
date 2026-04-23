@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 14:42\n"
+"POT-Creation-Date: 2026-04-22 22:13-0300\n"
 "PO-Revision-Date: 2026-04-22 14:42\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -12,193 +12,412 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:57
 msgid "Backups"
 msgstr "Säkerhetskopior"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:72
 msgid "Create backup now"
 msgstr "Skapa säkerhetskopia nu"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:74
 msgid "Snapshot current dconf settings"
 msgstr "Ta en ögonblicksbild av aktuella dconf-inställningar"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:87
 msgid "No backups yet"
 msgstr "Inga säkerhetskopior än"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:89
 msgid "A backup is created automatically every time you apply a layout."
 msgstr ""
 "En säkerhetskopia skapas automatiskt varje gång du tillämpar en layout."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:142
 msgid "Latest"
 msgstr "Senaste"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:147
 msgid "Restore this backup"
 msgstr "Återställ denna säkerhetskopia"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:155
 msgid "Delete this backup"
 msgstr "Radera denna säkerhetskopia"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:169
 msgid "Backup created"
 msgstr "Säkerhetskopia skapad"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:172
-#: usr/share/layout-switcher/ui/page_layouts.py:228
 msgid "Backup failed"
 msgstr "Säkerhetskopiering misslyckades"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:176
 msgid "Restore this backup?"
 msgstr "Återställa denna säkerhetskopia?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:178
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr ""
-"Alla aktuella dconf-inställningar kommer att skrivas över med "
+msgstr "Markerade layouter innehåller dina sparade anpassningar — klicka för att återuppta dem eller tillämpa originalet.""Alla aktuella dconf-inställningar kommer att skrivas över med "
 "ögonblicksbilden från {ts}."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:181
-#: usr/share/layout-switcher/ui/dialog_backups.py:206
-#: usr/share/layout-switcher/ui/page_layouts.py:204
-#: usr/share/layout-switcher/ui/page_layouts.py:216
-#: usr/share/layout-switcher/ui/page_themes.py:314
-#: usr/share/layout-switcher/ui/page_effects.py:261
-#: usr/share/layout-switcher/ui/page_effects.py:300
-#: usr/share/layout-switcher/ui/page_fonts.py:451
-#: usr/share/layout-switcher/ui/page_extensions.py:332
-#: usr/share/layout-switcher/ui/page_extensions.py:370
-#: usr/share/layout-switcher/ui/page_extensions.py:645
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:182
 msgid "Restore"
 msgstr "Återställ"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Backup restored"
 msgstr "Säkerhetskopia återställd"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:196
 msgid "Restore failed"
 msgstr "Återställning misslyckades"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:203
 msgid "Delete this backup?"
 msgstr "Ta bort denna säkerhetskopia?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:207
 msgid "Delete"
 msgstr "Ta bort"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Backup deleted"
 msgstr "Säkerhetskopia borttagen"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:230
 msgid "Delete failed"
 msgstr "Borttagning misslyckades"
 
-#: usr/share/layout-switcher/ui/window.py:59
-#: usr/share/layout-switcher/ui/window.py:257
 msgid "Layout Switcher"
 msgstr "Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:167
-#: usr/share/layout-switcher/ui/window.py:168
 msgid "Show Sidebar"
 msgstr "Visa sidofält"
 
-#: usr/share/layout-switcher/ui/window.py:174
-#: usr/share/layout-switcher/ui/window.py:281
-#: usr/share/layout-switcher/ui/window.py:352
 msgid "Layouts"
 msgstr "Layouter"
 
-#: usr/share/layout-switcher/ui/window.py:180
 msgid "Menu"
 msgstr "Meny"
 
-#: usr/share/layout-switcher/ui/window.py:181
 msgid "Main menu"
 msgstr "Huvudmeny"
 
-#: usr/share/layout-switcher/ui/window.py:184
 msgid "Backups…"
 msgstr "Säkerhetskopior…"
 
-#: usr/share/layout-switcher/ui/window.py:185
 msgid "About"
 msgstr "Om"
 
-#: usr/share/layout-switcher/ui/window.py:194
 msgid "Welcome! Choose a desktop layout below to get started."
 msgstr "Välkommen! Välj en skrivbordslayout nedan för att komma igång."
 
-#: usr/share/layout-switcher/ui/window.py:195
 msgid "Got it"
 msgstr "Förstått"
 
-#: usr/share/layout-switcher/ui/window.py:282
-#: usr/share/layout-switcher/ui/window.py:353
 msgid "Fonts"
 msgstr "Typsnitt"
 
-#: usr/share/layout-switcher/ui/window.py:283
-#: usr/share/layout-switcher/ui/window.py:354
 msgid "Themes"
 msgstr "Teman"
 
-#: usr/share/layout-switcher/ui/window.py:284
-#: usr/share/layout-switcher/ui/window.py:355
 msgid "Effects"
 msgstr "Effekter"
 
-#: usr/share/layout-switcher/ui/window.py:285
-#: usr/share/layout-switcher/ui/window.py:356
 msgid "Extensions"
 msgstr "Tillägg"
 
-#: usr/share/layout-switcher/ui/window.py:384
 msgid "Community Layout Switcher"
 msgstr "Community Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:389
 msgid "Layouts, effects and themes for your GNOME desktop."
 msgstr "Layouter, effekter och teman för din GNOME-skrivbordsmiljö."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:42
-msgid "Click a layout to apply"
-msgstr "Klicka på en layout för att tillämpa"
+msgid "Filter themes…"
+msgstr "Filtrera teman…"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:50
-msgid "Layout status"
-msgstr "Layoutstatus"
+msgid "Icons"
+msgstr "Ikoner"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:107
-msgid "Contains your saved customizations"
-msgstr "Innehåller dina sparade anpassningar"
+msgid "No themes found"
+msgstr "Inga teman hittades"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:111
-#: usr/share/layout-switcher/ui/page_layouts.py:179
-#: usr/share/layout-switcher/ui/page_themes.py:264
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Installera teman i ~/.themes eller /usr/share/themes"
+
+msgid "themes available"
+msgstr "teman tillgängliga"
+
+msgid "theme"
+msgstr "tema"
+
 msgid "Active"
 msgstr "Aktiv"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:188
+msgid "Error"
+msgstr "Fel"
+
+msgid "User Themes required"
+msgstr "User Themes krävs"
+
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Installera och aktivera User Themes-tillägget för att använda skalteman."
+
+msgid "Open Extensions Page"
+msgstr "Öppna tilläggssidan"
+
+msgid "Visual effects for your GNOME desktop"
+msgstr "Visuella effekter för din GNOME-skrivbordsmiljö"
+
+msgid "System extension"
+msgstr "Systemtillägg"
+
+msgid "enabled"
+msgstr "aktiverad"
+
+msgid "disabled"
+msgstr "inaktiverad"
+
+msgid "Not installed"
+msgstr "Ej installerad"
+
+#, python-brace-format
+msgid "by {author}"
+msgstr "av {author}"
+
+msgid "On"
+msgstr "På"
+
+msgid "Off"
+msgstr "Av"
+
+msgid "Toggle"
+msgstr "Växla"
+
+msgid "Remove"
+msgstr "Ta bort"
+
+msgid "Settings"
+msgstr "Inställningar"
+
+msgid "Install"
+msgstr "Installera"
+
+msgid "View on GNOME Extensions"
+msgstr "Visa på GNOME Extensions"
+
+msgid "Install effect?"
+msgstr "Installera effekt?"
+
+msgid "Will try to install automatically."
+msgstr "Försöker installera automatiskt."
+
+msgid "Installing…"
+msgstr "Installerar…"
+
+msgid "installed"
+msgstr "installerad"
+
+msgid "Install failed"
+msgstr "Installation misslyckades"
+
+msgid "System extension — cannot remove"
+msgstr "Systemtillägg — kan inte tas bort"
+
+msgid "Remove effect?"
+msgstr "Ta bort effekt?"
+
+msgid "This cannot be undone."
+msgstr "Detta kan inte ångras."
+
+msgid "removed"
+msgstr "borttagen"
+
+msgid "Remove failed"
+msgstr "Borttagning misslyckades"
+
+msgid "System fonts"
+msgstr "Systemteckensnitt"
+
+msgid "Fonts used by the GNOME interface"
+msgstr "Teckensnitt som används av GNOME-gränssnittet"
+
+msgid "Interface"
+msgstr "Gränssnitt"
+
+msgid "Document"
+msgstr "Dokument"
+
+msgid "Monospace"
+msgstr "Monospace"
+
+msgid "Window titles (legacy)"
+msgstr "Fönstertitlar (gammalt)"
+
+msgid "(not set)"
+msgstr "(inte inställt)"
+
+msgid "Choose…"
+msgstr "Välj…"
+
+msgid "Choose font"
+msgstr "Välj teckensnitt"
+
+msgid "Font updated"
+msgstr "Teckensnitt uppdaterat"
+
+msgid "Update failed"
+msgstr "Uppdatering misslyckades"
+
+msgid "Appearance"
+msgstr "Utseende"
+
+msgid "How fonts are rendered on screen"
+msgstr "Hur teckensnitt återges på skärmen"
+
+msgid "Hinting"
+msgstr "Hintning"
+
+msgid "None"
+msgstr "Ingen"
+
+msgid "Slight"
+msgstr "Lätt"
+
+msgid "Medium"
+msgstr "Medel"
+
+msgid "Full"
+msgstr "Fullständig"
+
+msgid "Antialiasing"
+msgstr "Kantutjämning"
+
+msgid "Grayscale"
+msgstr "Gråskala"
+
+msgid "Subpixel (RGBA)"
+msgstr "Subpixel (RGBA)"
+
+msgid "Installed fonts"
+msgstr "Installerade typsnitt"
+
+msgid "Browse font families installed on your system"
+msgstr "Bläddra bland typsnittsfamiljer installerade på ditt system"
+
+msgid "Search fonts…"
+msgstr "Sök typsnitt…"
+
+msgid "Refresh font list"
+msgstr "Uppdatera typsnittslista"
+
+msgid "Loading fonts…"
+msgstr "Laddar typsnitt…"
+
+msgid "No fonts match your search"
+msgstr "Inga typsnitt matchar din sökning"
+
+msgid "(refine search to see more)"
+msgstr "(förfina sökningen för att se fler)"
+
+msgid "fonts"
+msgstr "typsnitt"
+
+msgid "The quick brown fox jumps over the lazy dog 0123"
+msgstr "Flygande bäckasiner söka hwila på mjuka tuvor 0123"
+
+msgid "Install more fonts"
+msgstr "Installera fler typsnitt"
+
+msgid "Browse Google Fonts"
+msgstr "Bläddra bland Google Fonts"
+
+msgid "Opens fonts.google.com in your browser"
+msgstr "Öppnar fonts.google.com i din webbläsare"
+
+msgid "How to install"
+msgstr "Hur man installerar"
+
+msgid ""
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
+"refresh this list."
+msgstr ""
+"Placera .ttf/.otf-filer i ~/.local/share/fonts/ och kör sedan 'fc-cache -f "
+"-v' och uppdatera denna lista."
+
+msgid "Reset to system defaults"
+msgstr "Återställ till systemstandard"
+
+msgid "Reset all font settings?"
+msgstr "Återställ alla teckensnittsinställningar?"
+
+msgid ""
+"Interface, document, monospace and window-title fonts will return to system "
+"defaults. Hinting and antialiasing reset too."
+msgstr ""
+"Gränssnitt, dokument, monospace och fönstertitel-teckensnitt återställs till "
+"systemstandard. Hinting och antialiasing återställs också."
+
+msgid "Reset"
+msgstr "Återställ"
+
+msgid "Fonts reset to defaults"
+msgstr "Teckensnitt återställda till standard"
+
+msgid "Featured"
+msgstr "Utvalda"
+
+msgid "Installed"
+msgstr "Installerade"
+
+msgid "Install extension?"
+msgstr "Installera tillägg?"
+
+msgid "Remove extension?"
+msgstr "Ta bort tillägg?"
+
+msgid "Open GNOME Extensions"
+msgstr "Öppna GNOME Extensions"
+
+msgid "No extensions installed"
+msgstr "Inga tillägg installerade"
+
+msgid "Enabled"
+msgstr "Aktiverad"
+
+msgid "Disabled"
+msgstr "Inaktiverad"
+
+msgid "system"
+msgstr "system"
+
+msgid "Disable All"
+msgstr "Inaktivera alla"
+
+msgid "Enable All"
+msgstr "Aktivera alla"
+
+msgid "Disable all extensions?"
+msgstr "Inaktivera alla tillägg?"
+
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr "Alla tillägg kommer att inaktiveras. Du kan aktivera dem igen senare."
+
+msgid "All extensions disabled"
+msgstr "Alla tillägg inaktiverade"
+
+msgid "All extensions enabled"
+msgstr "Alla tillägg aktiverade"
+
+msgid "Click a layout to apply"
+msgstr "Klicka på en layout för att tillämpa"
+
+msgid "Layout status"
+msgstr "Layoutstatus"
+
+msgid ""
+"Marked layouts contain your saved customizations — click to resume them or "
+"apply the original."
+msgstr "Markerade layouter innehåller dina sparade anpassningar — klicka för att återuppta dem eller tillämpa originalet."
+
+msgid "Contains your saved customizations"
+msgstr "Innehåller dina sparade anpassningar"
+
+msgid "Modified"
+msgstr "Ändrad"
+
 msgid "This layout is already active"
 msgstr "Denna layout är redan aktiv"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:200
 msgid ""
 "You have previously modified this layout. Resume your changes or apply the "
 "original system default?"
@@ -206,15 +425,12 @@ msgstr ""
 "Du har tidigare ändrat denna layout. Vill du återuppta dina ändringar eller "
 "tillämpa systemets ursprungliga standard?"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:205
 msgid "Apply original"
 msgstr "Tillämpa original"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:206
 msgid "Resume my changes"
 msgstr "Återuppta mina ändringar"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:212
 msgid ""
 "Apply this layout? A backup of your current configuration will be created "
 "automatically."
@@ -222,470 +438,44 @@ msgstr ""
 "Vill du tillämpa denna layout? En säkerhetskopia av din nuvarande "
 "konfiguration skapas automatiskt."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:217
 msgid "Apply"
 msgstr "Tillämpa"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:247
 msgid "Applying"
 msgstr "Tillämpas"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:254
 msgid "Snapshot not found"
 msgstr "Ögonblicksbild hittades inte"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:264
 msgid "Layout file not found"
 msgstr "Layoutfil hittades inte"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:276
-#: usr/share/layout-switcher/ui/page_layouts.py:280
-#: usr/share/layout-switcher/ui/page_layouts.py:291
 msgid "applied"
 msgstr "tillämpad"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:281
 msgid "Undo"
 msgstr "Ångra"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:293
-#: usr/share/layout-switcher/ui/page_layouts.py:305
-#: usr/share/layout-switcher/ui/page_themes.py:304
-#: usr/share/layout-switcher/ui/page_effects.py:251
-#: usr/share/layout-switcher/ui/page_extensions.py:322
-#: usr/share/layout-switcher/ui/page_extensions.py:601
-#: usr/share/layout-switcher/ui/page_extensions.py:669
-msgid "Error"
-msgstr "Fel"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:315
 msgid "Layout restored"
 msgstr "Layout återställd"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:317
 msgid "Previous layout restored"
 msgstr "Föregående layout återställd"
 
-#: usr/share/layout-switcher/ui/page_themes.py:71
-msgid "Filter themes…"
-msgstr "Filtrera teman…"
-
-#: usr/share/layout-switcher/ui/page_themes.py:107
-msgid "Icons"
-msgstr "Ikoner"
-
-#: usr/share/layout-switcher/ui/page_themes.py:187
-msgid "No themes found"
-msgstr "Inga teman hittades"
-
-#: usr/share/layout-switcher/ui/page_themes.py:188
-msgid "Install themes to ~/.themes or /usr/share/themes"
-msgstr "Installera teman i ~/.themes eller /usr/share/themes"
-
-#: usr/share/layout-switcher/ui/page_themes.py:195
-msgid "themes available"
-msgstr "teman tillgängliga"
-
-#: usr/share/layout-switcher/ui/page_themes.py:262
-msgid "theme"
-msgstr "tema"
-
-#: usr/share/layout-switcher/ui/page_themes.py:311
-msgid "User Themes required"
-msgstr "User Themes krävs"
-
-#: usr/share/layout-switcher/ui/page_themes.py:312
-msgid "Install and enable the User Themes extension to apply shell themes."
-msgstr ""
-"Installera och aktivera User Themes-tillägget för att använda skalteman."
-
-#: usr/share/layout-switcher/ui/page_themes.py:315
-msgid "Open Extensions Page"
-msgstr "Öppna tilläggssidan"
-
-#: usr/share/layout-switcher/ui/page_effects.py:43
-msgid "Visual effects for your GNOME desktop"
-msgstr "Visuella effekter för din GNOME-skrivbordsmiljö"
-
-#: usr/share/layout-switcher/ui/page_effects.py:105
-#: usr/share/layout-switcher/ui/page_extensions.py:161
-msgid "System extension"
-msgstr "Systemtillägg"
-
-#: usr/share/layout-switcher/ui/page_effects.py:123
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:179
-#: usr/share/layout-switcher/ui/page_extensions.py:318
-#: usr/share/layout-switcher/ui/page_extensions.py:495
-msgid "enabled"
-msgstr "aktiverad"
-
-#: usr/share/layout-switcher/ui/page_effects.py:125
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:181
-#: usr/share/layout-switcher/ui/page_extensions.py:318
-msgid "disabled"
-msgstr "inaktiverad"
-
-#: usr/share/layout-switcher/ui/page_effects.py:127
-#: usr/share/layout-switcher/ui/page_effects.py:202
-#: usr/share/layout-switcher/ui/page_extensions.py:183
-#: usr/share/layout-switcher/ui/page_extensions.py:267
-msgid "Not installed"
-msgstr "Ej installerad"
-
-#: usr/share/layout-switcher/ui/page_effects.py:152
-#: usr/share/layout-switcher/ui/page_extensions.py:210
-#, python-brace-format
-msgid "by {author}"
-msgstr "av {author}"
-
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
-msgid "On"
-msgstr "På"
-
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
-msgid "Off"
-msgstr "Av"
-
-#: usr/share/layout-switcher/ui/page_effects.py:171
-#: usr/share/layout-switcher/ui/page_extensions.py:233
-#: usr/share/layout-switcher/ui/page_extensions.py:588
-msgid "Toggle"
-msgstr "Växla"
-
-#: usr/share/layout-switcher/ui/page_effects.py:179
-#: usr/share/layout-switcher/ui/page_effects.py:183
-#: usr/share/layout-switcher/ui/page_effects.py:301
-#: usr/share/layout-switcher/ui/page_extensions.py:243
-#: usr/share/layout-switcher/ui/page_extensions.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:371
-#: usr/share/layout-switcher/ui/page_extensions.py:611
-#: usr/share/layout-switcher/ui/page_extensions.py:612
-msgid "Remove"
-msgstr "Ta bort"
-
-#: usr/share/layout-switcher/ui/page_effects.py:191
-#: usr/share/layout-switcher/ui/page_extensions.py:255
-msgid "Settings"
-msgstr "Inställningar"
-
-#: usr/share/layout-switcher/ui/page_effects.py:206
-#: usr/share/layout-switcher/ui/page_effects.py:262
-#: usr/share/layout-switcher/ui/page_extensions.py:271
-#: usr/share/layout-switcher/ui/page_extensions.py:333
-msgid "Install"
-msgstr "Installera"
-
-#: usr/share/layout-switcher/ui/page_effects.py:223
-#: usr/share/layout-switcher/ui/page_extensions.py:288
-msgid "View on GNOME Extensions"
-msgstr "Visa på GNOME Extensions"
-
-#: usr/share/layout-switcher/ui/page_effects.py:258
-msgid "Install effect?"
-msgstr "Installera effekt?"
-
-#: usr/share/layout-switcher/ui/page_effects.py:259
-#: usr/share/layout-switcher/ui/page_extensions.py:330
-msgid "Will try to install automatically."
-msgstr "Försöker installera automatiskt."
-
-#: usr/share/layout-switcher/ui/page_effects.py:270
-#: usr/share/layout-switcher/ui/page_extensions.py:339
-msgid "Installing…"
-msgstr "Installerar…"
-
-#: usr/share/layout-switcher/ui/page_effects.py:281
-#: usr/share/layout-switcher/ui/page_extensions.py:351
-#: usr/share/layout-switcher/ui/page_extensions.py:495
-msgid "installed"
-msgstr "installerad"
-
-#: usr/share/layout-switcher/ui/page_effects.py:284
-#: usr/share/layout-switcher/ui/page_extensions.py:354
-msgid "Install failed"
-msgstr "Installation misslyckades"
-
-#: usr/share/layout-switcher/ui/page_effects.py:293
-#: usr/share/layout-switcher/ui/page_extensions.py:363
-msgid "System extension — cannot remove"
-msgstr "Systemtillägg — kan inte tas bort"
-
-#: usr/share/layout-switcher/ui/page_effects.py:297
-msgid "Remove effect?"
-msgstr "Ta bort effekt?"
-
-#: usr/share/layout-switcher/ui/page_effects.py:298
-#: usr/share/layout-switcher/ui/page_extensions.py:368
-msgid "This cannot be undone."
-msgstr "Detta kan inte ångras."
-
-#: usr/share/layout-switcher/ui/page_effects.py:313
-#: usr/share/layout-switcher/ui/page_extensions.py:383
-msgid "removed"
-msgstr "borttagen"
-
-#: usr/share/layout-switcher/ui/page_effects.py:315
-#: usr/share/layout-switcher/ui/page_extensions.py:385
-msgid "Remove failed"
-msgstr "Borttagning misslyckades"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:102
-msgid "System fonts"
-msgstr "Systemteckensnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:103
-msgid "Fonts used by the GNOME interface"
-msgstr "Teckensnitt som används av GNOME-gränssnittet"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:107
-msgid "Interface"
-msgstr "Gränssnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:113
-msgid "Document"
-msgstr "Dokument"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:119
-msgid "Monospace"
-msgstr "Monospace"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:125
-msgid "Window titles (legacy)"
-msgstr "Fönstertitlar (gammalt)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:142
-#: usr/share/layout-switcher/ui/page_fonts.py:486
-msgid "(not set)"
-msgstr "(inte inställt)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:144
-msgid "Choose…"
-msgstr "Välj…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:158
-msgid "Choose font"
-msgstr "Välj teckensnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:174
-msgid "Font updated"
-msgstr "Teckensnitt uppdaterat"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:176
-#: usr/share/layout-switcher/ui/page_fonts.py:241
-msgid "Update failed"
-msgstr "Uppdatering misslyckades"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:185
-msgid "Appearance"
-msgstr "Utseende"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:186
-msgid "How fonts are rendered on screen"
-msgstr "Hur teckensnitt återges på skärmen"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:190
-msgid "Hinting"
-msgstr "Hintning"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:194
-#: usr/share/layout-switcher/ui/page_fonts.py:207
-msgid "None"
-msgstr "Ingen"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:195
-msgid "Slight"
-msgstr "Lätt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:196
-msgid "Medium"
-msgstr "Medel"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:197
-msgid "Full"
-msgstr "Fullständig"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:203
-msgid "Antialiasing"
-msgstr "Kantutjämning"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:208
-msgid "Grayscale"
-msgstr "Gråskala"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:209
-msgid "Subpixel (RGBA)"
-msgstr "Subpixel (RGBA)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:251
-msgid "Installed fonts"
-msgstr "Installerade typsnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:252
-msgid "Browse font families installed on your system"
-msgstr "Bläddra bland typsnittsfamiljer installerade på ditt system"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:259
-msgid "Search fonts…"
-msgstr "Sök typsnitt…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:266
-msgid "Refresh font list"
-msgstr "Uppdatera typsnittslista"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:310
-msgid "Loading fonts…"
-msgstr "Laddar typsnitt…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:340
-msgid "No fonts match your search"
-msgstr "Inga typsnitt matchar din sökning"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:360
-msgid "(refine search to see more)"
-msgstr "(förfina sökningen för att se fler)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:362
-msgid "fonts"
-msgstr "typsnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:380
-msgid "The quick brown fox jumps over the lazy dog 0123"
-msgstr "Flygande bäckasiner söka hwila på mjuka tuvor 0123"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:404
-msgid "Install more fonts"
-msgstr "Installera fler typsnitt"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:407
-msgid "Browse Google Fonts"
-msgstr "Bläddra bland Google Fonts"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:408
-msgid "Opens fonts.google.com in your browser"
-msgstr "Öppnar fonts.google.com i din webbläsare"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:421
-msgid "How to install"
-msgstr "Hur man installerar"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:424
-msgid ""
-"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
-" refresh this list."
-msgstr ""
-"Placera .ttf/.otf-filer i ~/.local/share/fonts/ och kör sedan 'fc-cache -f "
-"-v' och uppdatera denna lista."
-
-#: usr/share/layout-switcher/ui/page_fonts.py:436
-msgid "Reset to system defaults"
-msgstr "Återställ till systemstandard"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:445
-msgid "Reset all font settings?"
-msgstr "Återställ alla teckensnittsinställningar?"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:447
-msgid ""
-"Interface, document, monospace and window-title fonts will return to system "
-"defaults. Hinting and antialiasing reset too."
-msgstr ""
-"Gränssnitt, dokument, monospace och fönstertitel-teckensnitt återställs till"
-" systemstandard. Hinting och antialiasing återställs också."
-
-#: usr/share/layout-switcher/ui/page_fonts.py:452
-msgid "Reset"
-msgstr "Återställ"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:472
-msgid "Fonts reset to defaults"
-msgstr "Teckensnitt återställda till standard"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:69
-msgid "Featured"
-msgstr "Utvalda"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:70
-#: usr/share/layout-switcher/ui/page_extensions.py:482
-msgid "Installed"
-msgstr "Installerade"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:329
-msgid "Install extension?"
-msgstr "Installera tillägg?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:367
-msgid "Remove extension?"
-msgstr "Ta bort tillägg?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:432
-msgid "Open GNOME Extensions"
-msgstr "Öppna GNOME Extensions"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:487
-msgid "No extensions installed"
-msgstr "Inga tillägg installerade"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:503
-msgid "Enabled"
-msgstr "Aktiverad"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:504
-msgid "Disabled"
-msgstr "Inaktiverad"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:580
-msgid "system"
-msgstr "system"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:628
-#: usr/share/layout-switcher/ui/page_extensions.py:646
-msgid "Disable All"
-msgstr "Inaktivera alla"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:628
-msgid "Enable All"
-msgstr "Aktivera alla"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:642
-msgid "Disable all extensions?"
-msgstr "Inaktivera alla tillägg?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:643
-msgid "All extensions will be disabled. You can re-enable them later."
-msgstr "Alla tillägg kommer att inaktiveras. Du kan aktivera dem igen senare."
-
-#: usr/share/layout-switcher/ui/page_extensions.py:663
-msgid "All extensions disabled"
-msgstr "Alla tillägg inaktiverade"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:663
-msgid "All extensions enabled"
-msgstr "Alla tillägg aktiverade"
-
-#: usr/share/layout-switcher/constants.py:143
 msgid "Default Big Gnome layout"
 msgstr "Standard Big Gnome-layout"
 
-#: usr/share/layout-switcher/constants.py:150
-msgid "Traditional desktop with taskbar and system tray"
-msgstr "Traditionellt skrivbord med aktivitetsfält och systemfält"
+msgid "Clean and contemporary desktop"
+msgstr "Rent och modernt skrivbord"
 
-#: usr/share/layout-switcher/constants.py:157
 msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
 msgstr "Centrerad dock-aktivitetsfält, Windows 11 / Deepin / Pop!_OS-stil"
 
-#: usr/share/layout-switcher/constants.py:164
 msgid "Unity-style layout with left dock and top bar"
 msgstr "Unity-stil layout med vänster docka och toppfält"
 
-#: usr/share/layout-switcher/constants.py:171
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Traditionellt skrivbord med aktivitetsfält och systemfält"
+
 msgid "Near-vanilla GNOME with minimal distro tweaks"
 msgstr "Nästan ren GNOME med minimala distributionstweaks"
-
-#: usr/share/layout-switcher/constants.py:178
-msgid "Clean and contemporary desktop"
-msgstr "Rent och modernt skrivbord"

@@ -23,7 +23,7 @@ Community Layout Switcher is the appearance-management tool for [BigCommunity Li
 
 ## Features
 
-- **Layouts** — Apply curated desktop layouts (BigGnome, Classic, Hybrid, G-Unity, Minimal, Modern) with one click. Automatic pre-apply backup; per-layout user snapshots with a Plasma-style *Resume your changes* or *Apply original* prompt when revisiting a customized layout.
+- **Layouts** — Apply curated desktop layouts (BigGnome, Desk UX, Hybrid, G-Unity, Classic, Minimal) with one click. Automatic pre-apply backup; per-layout user snapshots with a Plasma-style *Resume your changes* or *Apply original* prompt when revisiting a customized layout.
 - **Fonts** — Interface / document / monospace / legacy title selectors via `Gtk.FontDialog`, plus hinting and antialiasing controls, a searchable list of installed families with live previews, and quick access to Google Fonts.
 - **Themes** — GTK, icon and shell themes with real previews (actual `folder` icon from each icon theme; accent color parsed from each theme's CSS), search filter and one-click apply.
 - **Effects** — Dedicated page for visual extensions (Desktop Cube, Magic Lamp, Compiz Windows, Desktop Icons NG). Installs prefer `pacman` for stability and fall back to extensions.gnome.org.

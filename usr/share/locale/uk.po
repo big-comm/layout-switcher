@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 14:43\n"
+"POT-Creation-Date: 2026-04-22 22:13-0300\n"
 "PO-Revision-Date: 2026-04-22 14:43\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
@@ -12,191 +12,409 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:57
 msgid "Backups"
 msgstr "Резервні копії"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:72
 msgid "Create backup now"
 msgstr "Створити резервну копію зараз"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:74
 msgid "Snapshot current dconf settings"
 msgstr "Зробити знімок поточних налаштувань dconf"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:87
 msgid "No backups yet"
 msgstr "Резервних копій ще немає"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:89
 msgid "A backup is created automatically every time you apply a layout."
 msgstr ""
 "Резервна копія створюється автоматично щоразу, коли ви застосовуєте макет."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:142
 msgid "Latest"
 msgstr "Остання"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:147
 msgid "Restore this backup"
 msgstr "Відновити цю резервну копію"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:155
 msgid "Delete this backup"
 msgstr "Видалити цю резервну копію"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:169
 msgid "Backup created"
 msgstr "Резервну копію створено"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:172
-#: usr/share/layout-switcher/ui/page_layouts.py:228
 msgid "Backup failed"
 msgstr "Не вдалося створити резервну копію"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:176
 msgid "Restore this backup?"
 msgstr "Відновити цю резервну копію?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:178
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr "Всі поточні налаштування dconf будуть перезаписані знімком від {ts}."
-
-#: usr/share/layout-switcher/ui/dialog_backups.py:181
-#: usr/share/layout-switcher/ui/dialog_backups.py:206
-#: usr/share/layout-switcher/ui/page_layouts.py:204
-#: usr/share/layout-switcher/ui/page_layouts.py:216
-#: usr/share/layout-switcher/ui/page_themes.py:314
-#: usr/share/layout-switcher/ui/page_effects.py:261
-#: usr/share/layout-switcher/ui/page_effects.py:300
-#: usr/share/layout-switcher/ui/page_fonts.py:451
-#: usr/share/layout-switcher/ui/page_extensions.py:332
-#: usr/share/layout-switcher/ui/page_extensions.py:370
-#: usr/share/layout-switcher/ui/page_extensions.py:645
-msgid "Cancel"
+msgstr "Позначені макети містять збережені налаштування — натисніть, щоб відновити їх або застосувати оригінал."msgid "Cancel"
 msgstr "Скасувати"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:182
 msgid "Restore"
 msgstr "Відновити"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Backup restored"
 msgstr "Резервну копію відновлено"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:196
 msgid "Restore failed"
 msgstr "Не вдалося відновити"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:203
 msgid "Delete this backup?"
 msgstr "Видалити цю резервну копію?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:207
 msgid "Delete"
 msgstr "Видалити"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Backup deleted"
 msgstr "Резервну копію видалено"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:230
 msgid "Delete failed"
 msgstr "Не вдалося видалити"
 
-#: usr/share/layout-switcher/ui/window.py:59
-#: usr/share/layout-switcher/ui/window.py:257
 msgid "Layout Switcher"
 msgstr "Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:167
-#: usr/share/layout-switcher/ui/window.py:168
 msgid "Show Sidebar"
 msgstr "Показати бічну панель"
 
-#: usr/share/layout-switcher/ui/window.py:174
-#: usr/share/layout-switcher/ui/window.py:281
-#: usr/share/layout-switcher/ui/window.py:352
 msgid "Layouts"
 msgstr "Макети"
 
-#: usr/share/layout-switcher/ui/window.py:180
 msgid "Menu"
 msgstr "Меню"
 
-#: usr/share/layout-switcher/ui/window.py:181
 msgid "Main menu"
 msgstr "Головне меню"
 
-#: usr/share/layout-switcher/ui/window.py:184
 msgid "Backups…"
 msgstr "Резервні копії…"
 
-#: usr/share/layout-switcher/ui/window.py:185
 msgid "About"
 msgstr "Про програму"
 
-#: usr/share/layout-switcher/ui/window.py:194
 msgid "Welcome! Choose a desktop layout below to get started."
 msgstr "Ласкаво просимо! Виберіть нижче макет робочого столу, щоб почати."
 
-#: usr/share/layout-switcher/ui/window.py:195
 msgid "Got it"
 msgstr "Зрозуміло"
 
-#: usr/share/layout-switcher/ui/window.py:282
-#: usr/share/layout-switcher/ui/window.py:353
 msgid "Fonts"
 msgstr "Шрифти"
 
-#: usr/share/layout-switcher/ui/window.py:283
-#: usr/share/layout-switcher/ui/window.py:354
 msgid "Themes"
 msgstr "Теми"
 
-#: usr/share/layout-switcher/ui/window.py:284
-#: usr/share/layout-switcher/ui/window.py:355
 msgid "Effects"
 msgstr "Ефекти"
 
-#: usr/share/layout-switcher/ui/window.py:285
-#: usr/share/layout-switcher/ui/window.py:356
 msgid "Extensions"
 msgstr "Розширення"
 
-#: usr/share/layout-switcher/ui/window.py:384
 msgid "Community Layout Switcher"
 msgstr "Спільнота Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:389
 msgid "Layouts, effects and themes for your GNOME desktop."
 msgstr "Макети, ефекти та теми для вашого робочого столу GNOME."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:42
-msgid "Click a layout to apply"
-msgstr "Натисніть на макет, щоб застосувати"
+msgid "Filter themes…"
+msgstr "Фільтрувати теми…"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:50
-msgid "Layout status"
-msgstr "Статус макета"
+msgid "Icons"
+msgstr "Іконки"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:107
-msgid "Contains your saved customizations"
-msgstr "Містить ваші збережені налаштування"
+msgid "No themes found"
+msgstr "Теми не знайдено"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:111
-#: usr/share/layout-switcher/ui/page_layouts.py:179
-#: usr/share/layout-switcher/ui/page_themes.py:264
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Встановіть теми в ~/.themes або /usr/share/themes"
+
+msgid "themes available"
+msgstr "доступні теми"
+
+msgid "theme"
+msgstr "тема"
+
 msgid "Active"
 msgstr "Активний"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:188
+msgid "Error"
+msgstr "Помилка"
+
+msgid "User Themes required"
+msgstr "Потрібні користувацькі теми"
+
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Встановіть і увімкніть розширення User Themes, щоб застосувати теми оболонки."
+
+msgid "Open Extensions Page"
+msgstr "Відкрити сторінку розширень"
+
+msgid "Visual effects for your GNOME desktop"
+msgstr "Візуальні ефекти для вашого робочого столу GNOME"
+
+msgid "System extension"
+msgstr "Системне розширення"
+
+msgid "enabled"
+msgstr "увімкнено"
+
+msgid "disabled"
+msgstr "вимкнено"
+
+msgid "Not installed"
+msgstr "Не встановлено"
+
+#, python-brace-format
+msgid "by {author}"
+msgstr "від {author}"
+
+msgid "On"
+msgstr "Увімкнено"
+
+msgid "Off"
+msgstr "Вимкнено"
+
+msgid "Toggle"
+msgstr "Перемкнути"
+
+msgid "Remove"
+msgstr "Видалити"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "Install"
+msgstr "Встановити"
+
+msgid "View on GNOME Extensions"
+msgstr "Переглянути на GNOME Extensions"
+
+msgid "Install effect?"
+msgstr "Встановити ефект?"
+
+msgid "Will try to install automatically."
+msgstr "Спроба автоматичної установки."
+
+msgid "Installing…"
+msgstr "Встановлення…"
+
+msgid "installed"
+msgstr "встановлено"
+
+msgid "Install failed"
+msgstr "Не вдалося встановити"
+
+msgid "System extension — cannot remove"
+msgstr "Системне розширення — не можна видалити"
+
+msgid "Remove effect?"
+msgstr "Видалити ефект?"
+
+msgid "This cannot be undone."
+msgstr "Це не можна скасувати."
+
+msgid "removed"
+msgstr "видалено"
+
+msgid "Remove failed"
+msgstr "Не вдалося видалити"
+
+msgid "System fonts"
+msgstr "Системні шрифти"
+
+msgid "Fonts used by the GNOME interface"
+msgstr "Шрифти, що використовуються інтерфейсом GNOME"
+
+msgid "Interface"
+msgstr "Інтерфейс"
+
+msgid "Document"
+msgstr "Документ"
+
+msgid "Monospace"
+msgstr "Моноширинний"
+
+msgid "Window titles (legacy)"
+msgstr "Заголовки вікон (спадщина)"
+
+msgid "(not set)"
+msgstr "(не встановлено)"
+
+msgid "Choose…"
+msgstr "Вибрати…"
+
+msgid "Choose font"
+msgstr "Вибрати шрифт"
+
+msgid "Font updated"
+msgstr "Шрифт оновлено"
+
+msgid "Update failed"
+msgstr "Оновлення не вдалося"
+
+msgid "Appearance"
+msgstr "Зовнішній вигляд"
+
+msgid "How fonts are rendered on screen"
+msgstr "Як шрифти відображаються на екрані"
+
+msgid "Hinting"
+msgstr "Підказки"
+
+msgid "None"
+msgstr "Відсутні"
+
+msgid "Slight"
+msgstr "Легкі"
+
+msgid "Medium"
+msgstr "Середні"
+
+msgid "Full"
+msgstr "Повні"
+
+msgid "Antialiasing"
+msgstr "Сгладжування"
+
+msgid "Grayscale"
+msgstr "Відтінки сірого"
+
+msgid "Subpixel (RGBA)"
+msgstr "Субпіксель (RGBA)"
+
+msgid "Installed fonts"
+msgstr "Встановлені шрифти"
+
+msgid "Browse font families installed on your system"
+msgstr "Переглядайте сімейства шрифтів, встановлені у вашій системі"
+
+msgid "Search fonts…"
+msgstr "Пошук шрифтів…"
+
+msgid "Refresh font list"
+msgstr "Оновити список шрифтів"
+
+msgid "Loading fonts…"
+msgstr "Завантаження шрифтів…"
+
+msgid "No fonts match your search"
+msgstr "Шрифти, що відповідають пошуку, відсутні"
+
+msgid "(refine search to see more)"
+msgstr "(звузьте пошук, щоб побачити більше)"
+
+msgid "fonts"
+msgstr "шрифтів"
+
+msgid "The quick brown fox jumps over the lazy dog 0123"
+msgstr "Чуєш їх, доцю, га? Кумедна ж ти, прощайся без ґольфів! 0123"
+
+msgid "Install more fonts"
+msgstr "Встановити більше шрифтів"
+
+msgid "Browse Google Fonts"
+msgstr "Переглянути Google Fonts"
+
+msgid "Opens fonts.google.com in your browser"
+msgstr "Відкриває fonts.google.com у вашому браузері"
+
+msgid "How to install"
+msgstr "Як встановити"
+
+msgid ""
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
+"refresh this list."
+msgstr ""
+"Помістіть файли .ttf/.otf у ~/.local/share/fonts/, потім виконайте 'fc-cache "
+"-f -v' і оновіть цей список."
+
+msgid "Reset to system defaults"
+msgstr "Скинути до системних налаштувань"
+
+msgid "Reset all font settings?"
+msgstr "Скинути всі налаштування шрифтів?"
+
+msgid ""
+"Interface, document, monospace and window-title fonts will return to system "
+"defaults. Hinting and antialiasing reset too."
+msgstr ""
+"Шрифти інтерфейсу, документів, моноширинні та заголовків вікон будуть "
+"повернені до системних налаштувань. Підказки та згладжування також скинуться."
+
+msgid "Reset"
+msgstr "Скинути"
+
+msgid "Fonts reset to defaults"
+msgstr "Шрифти скинуті до стандартних"
+
+msgid "Featured"
+msgstr "Рекомендовані"
+
+msgid "Installed"
+msgstr "Встановлені"
+
+msgid "Install extension?"
+msgstr "Встановити розширення?"
+
+msgid "Remove extension?"
+msgstr "Видалити розширення?"
+
+msgid "Open GNOME Extensions"
+msgstr "Відкрити GNOME Extensions"
+
+msgid "No extensions installed"
+msgstr "Розширення не встановлені"
+
+msgid "Enabled"
+msgstr "Увімкнено"
+
+msgid "Disabled"
+msgstr "Вимкнено"
+
+msgid "system"
+msgstr "система"
+
+msgid "Disable All"
+msgstr "Вимкнути все"
+
+msgid "Enable All"
+msgstr "Увімкнути все"
+
+msgid "Disable all extensions?"
+msgstr "Вимкнути всі розширення?"
+
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr "Всі розширення будуть вимкнені. Ви зможете ввімкнути їх пізніше."
+
+msgid "All extensions disabled"
+msgstr "Всі розширення вимкнено"
+
+msgid "All extensions enabled"
+msgstr "Всі розширення увімкнено"
+
+msgid "Click a layout to apply"
+msgstr "Натисніть на макет, щоб застосувати"
+
+msgid "Layout status"
+msgstr "Статус макета"
+
+msgid ""
+"Marked layouts contain your saved customizations — click to resume them or "
+"apply the original."
+msgstr "Позначені макети містять збережені налаштування — натисніть, щоб відновити їх або застосувати оригінал."
+
+msgid "Contains your saved customizations"
+msgstr "Містить ваші збережені налаштування"
+
+msgid "Modified"
+msgstr "Змінено"
+
 msgid "This layout is already active"
 msgstr "Цей макет уже активний"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:200
 msgid ""
 "You have previously modified this layout. Resume your changes or apply the "
 "original system default?"
@@ -204,15 +422,12 @@ msgstr ""
 "Ви раніше змінювали цей макет. Продовжити зміни чи застосувати оригінальні "
 "системні налаштування?"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:205
 msgid "Apply original"
 msgstr "Застосувати оригінал"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:206
 msgid "Resume my changes"
 msgstr "Продовжити мої зміни"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:212
 msgid ""
 "Apply this layout? A backup of your current configuration will be created "
 "automatically."
@@ -220,472 +435,44 @@ msgstr ""
 "Застосувати цей макет? Резервна копія вашої поточної конфігурації буде "
 "створена автоматично."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:217
 msgid "Apply"
 msgstr "Застосувати"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:247
 msgid "Applying"
 msgstr "Застосування"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:254
 msgid "Snapshot not found"
 msgstr "Знімок не знайдено"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:264
 msgid "Layout file not found"
 msgstr "Файл макета не знайдено"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:276
-#: usr/share/layout-switcher/ui/page_layouts.py:280
-#: usr/share/layout-switcher/ui/page_layouts.py:291
 msgid "applied"
 msgstr "застосовано"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:281
 msgid "Undo"
 msgstr "Скасувати"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:293
-#: usr/share/layout-switcher/ui/page_layouts.py:305
-#: usr/share/layout-switcher/ui/page_themes.py:304
-#: usr/share/layout-switcher/ui/page_effects.py:251
-#: usr/share/layout-switcher/ui/page_extensions.py:322
-#: usr/share/layout-switcher/ui/page_extensions.py:601
-#: usr/share/layout-switcher/ui/page_extensions.py:669
-msgid "Error"
-msgstr "Помилка"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:315
 msgid "Layout restored"
 msgstr "Макет відновлено"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:317
 msgid "Previous layout restored"
 msgstr "Попередній макет відновлено"
 
-#: usr/share/layout-switcher/ui/page_themes.py:71
-msgid "Filter themes…"
-msgstr "Фільтрувати теми…"
-
-#: usr/share/layout-switcher/ui/page_themes.py:107
-msgid "Icons"
-msgstr "Іконки"
-
-#: usr/share/layout-switcher/ui/page_themes.py:187
-msgid "No themes found"
-msgstr "Теми не знайдено"
-
-#: usr/share/layout-switcher/ui/page_themes.py:188
-msgid "Install themes to ~/.themes or /usr/share/themes"
-msgstr "Встановіть теми в ~/.themes або /usr/share/themes"
-
-#: usr/share/layout-switcher/ui/page_themes.py:195
-msgid "themes available"
-msgstr "доступні теми"
-
-#: usr/share/layout-switcher/ui/page_themes.py:262
-msgid "theme"
-msgstr "тема"
-
-#: usr/share/layout-switcher/ui/page_themes.py:311
-msgid "User Themes required"
-msgstr "Потрібні користувацькі теми"
-
-#: usr/share/layout-switcher/ui/page_themes.py:312
-msgid "Install and enable the User Themes extension to apply shell themes."
-msgstr ""
-"Встановіть і увімкніть розширення User Themes, щоб застосувати теми "
-"оболонки."
-
-#: usr/share/layout-switcher/ui/page_themes.py:315
-msgid "Open Extensions Page"
-msgstr "Відкрити сторінку розширень"
-
-#: usr/share/layout-switcher/ui/page_effects.py:43
-msgid "Visual effects for your GNOME desktop"
-msgstr "Візуальні ефекти для вашого робочого столу GNOME"
-
-#: usr/share/layout-switcher/ui/page_effects.py:105
-#: usr/share/layout-switcher/ui/page_extensions.py:161
-msgid "System extension"
-msgstr "Системне розширення"
-
-#: usr/share/layout-switcher/ui/page_effects.py:123
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:179
-#: usr/share/layout-switcher/ui/page_extensions.py:318
-#: usr/share/layout-switcher/ui/page_extensions.py:495
-msgid "enabled"
-msgstr "увімкнено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:125
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:181
-#: usr/share/layout-switcher/ui/page_extensions.py:318
-msgid "disabled"
-msgstr "вимкнено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:127
-#: usr/share/layout-switcher/ui/page_effects.py:202
-#: usr/share/layout-switcher/ui/page_extensions.py:183
-#: usr/share/layout-switcher/ui/page_extensions.py:267
-msgid "Not installed"
-msgstr "Не встановлено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:152
-#: usr/share/layout-switcher/ui/page_extensions.py:210
-#, python-brace-format
-msgid "by {author}"
-msgstr "від {author}"
-
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
-msgid "On"
-msgstr "Увімкнено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
-msgid "Off"
-msgstr "Вимкнено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:171
-#: usr/share/layout-switcher/ui/page_extensions.py:233
-#: usr/share/layout-switcher/ui/page_extensions.py:588
-msgid "Toggle"
-msgstr "Перемкнути"
-
-#: usr/share/layout-switcher/ui/page_effects.py:179
-#: usr/share/layout-switcher/ui/page_effects.py:183
-#: usr/share/layout-switcher/ui/page_effects.py:301
-#: usr/share/layout-switcher/ui/page_extensions.py:243
-#: usr/share/layout-switcher/ui/page_extensions.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:371
-#: usr/share/layout-switcher/ui/page_extensions.py:611
-#: usr/share/layout-switcher/ui/page_extensions.py:612
-msgid "Remove"
-msgstr "Видалити"
-
-#: usr/share/layout-switcher/ui/page_effects.py:191
-#: usr/share/layout-switcher/ui/page_extensions.py:255
-msgid "Settings"
-msgstr "Налаштування"
-
-#: usr/share/layout-switcher/ui/page_effects.py:206
-#: usr/share/layout-switcher/ui/page_effects.py:262
-#: usr/share/layout-switcher/ui/page_extensions.py:271
-#: usr/share/layout-switcher/ui/page_extensions.py:333
-msgid "Install"
-msgstr "Встановити"
-
-#: usr/share/layout-switcher/ui/page_effects.py:223
-#: usr/share/layout-switcher/ui/page_extensions.py:288
-msgid "View on GNOME Extensions"
-msgstr "Переглянути на GNOME Extensions"
-
-#: usr/share/layout-switcher/ui/page_effects.py:258
-msgid "Install effect?"
-msgstr "Встановити ефект?"
-
-#: usr/share/layout-switcher/ui/page_effects.py:259
-#: usr/share/layout-switcher/ui/page_extensions.py:330
-msgid "Will try to install automatically."
-msgstr "Спроба автоматичної установки."
-
-#: usr/share/layout-switcher/ui/page_effects.py:270
-#: usr/share/layout-switcher/ui/page_extensions.py:339
-msgid "Installing…"
-msgstr "Встановлення…"
-
-#: usr/share/layout-switcher/ui/page_effects.py:281
-#: usr/share/layout-switcher/ui/page_extensions.py:351
-#: usr/share/layout-switcher/ui/page_extensions.py:495
-msgid "installed"
-msgstr "встановлено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:284
-#: usr/share/layout-switcher/ui/page_extensions.py:354
-msgid "Install failed"
-msgstr "Не вдалося встановити"
-
-#: usr/share/layout-switcher/ui/page_effects.py:293
-#: usr/share/layout-switcher/ui/page_extensions.py:363
-msgid "System extension — cannot remove"
-msgstr "Системне розширення — не можна видалити"
-
-#: usr/share/layout-switcher/ui/page_effects.py:297
-msgid "Remove effect?"
-msgstr "Видалити ефект?"
-
-#: usr/share/layout-switcher/ui/page_effects.py:298
-#: usr/share/layout-switcher/ui/page_extensions.py:368
-msgid "This cannot be undone."
-msgstr "Це не можна скасувати."
-
-#: usr/share/layout-switcher/ui/page_effects.py:313
-#: usr/share/layout-switcher/ui/page_extensions.py:383
-msgid "removed"
-msgstr "видалено"
-
-#: usr/share/layout-switcher/ui/page_effects.py:315
-#: usr/share/layout-switcher/ui/page_extensions.py:385
-msgid "Remove failed"
-msgstr "Не вдалося видалити"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:102
-msgid "System fonts"
-msgstr "Системні шрифти"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:103
-msgid "Fonts used by the GNOME interface"
-msgstr "Шрифти, що використовуються інтерфейсом GNOME"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:107
-msgid "Interface"
-msgstr "Інтерфейс"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:113
-msgid "Document"
-msgstr "Документ"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:119
-msgid "Monospace"
-msgstr "Моноширинний"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:125
-msgid "Window titles (legacy)"
-msgstr "Заголовки вікон (спадщина)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:142
-#: usr/share/layout-switcher/ui/page_fonts.py:486
-msgid "(not set)"
-msgstr "(не встановлено)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:144
-msgid "Choose…"
-msgstr "Вибрати…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:158
-msgid "Choose font"
-msgstr "Вибрати шрифт"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:174
-msgid "Font updated"
-msgstr "Шрифт оновлено"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:176
-#: usr/share/layout-switcher/ui/page_fonts.py:241
-msgid "Update failed"
-msgstr "Оновлення не вдалося"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:185
-msgid "Appearance"
-msgstr "Зовнішній вигляд"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:186
-msgid "How fonts are rendered on screen"
-msgstr "Як шрифти відображаються на екрані"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:190
-msgid "Hinting"
-msgstr "Підказки"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:194
-#: usr/share/layout-switcher/ui/page_fonts.py:207
-msgid "None"
-msgstr "Відсутні"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:195
-msgid "Slight"
-msgstr "Легкі"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:196
-msgid "Medium"
-msgstr "Середні"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:197
-msgid "Full"
-msgstr "Повні"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:203
-msgid "Antialiasing"
-msgstr "Сгладжування"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:208
-msgid "Grayscale"
-msgstr "Відтінки сірого"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:209
-msgid "Subpixel (RGBA)"
-msgstr "Субпіксель (RGBA)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:251
-msgid "Installed fonts"
-msgstr "Встановлені шрифти"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:252
-msgid "Browse font families installed on your system"
-msgstr "Переглядайте сімейства шрифтів, встановлені у вашій системі"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:259
-msgid "Search fonts…"
-msgstr "Пошук шрифтів…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:266
-msgid "Refresh font list"
-msgstr "Оновити список шрифтів"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:310
-msgid "Loading fonts…"
-msgstr "Завантаження шрифтів…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:340
-msgid "No fonts match your search"
-msgstr "Шрифти, що відповідають пошуку, відсутні"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:360
-msgid "(refine search to see more)"
-msgstr "(звузьте пошук, щоб побачити більше)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:362
-msgid "fonts"
-msgstr "шрифтів"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:380
-msgid "The quick brown fox jumps over the lazy dog 0123"
-msgstr "Чуєш їх, доцю, га? Кумедна ж ти, прощайся без ґольфів! 0123"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:404
-msgid "Install more fonts"
-msgstr "Встановити більше шрифтів"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:407
-msgid "Browse Google Fonts"
-msgstr "Переглянути Google Fonts"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:408
-msgid "Opens fonts.google.com in your browser"
-msgstr "Відкриває fonts.google.com у вашому браузері"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:421
-msgid "How to install"
-msgstr "Як встановити"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:424
-msgid ""
-"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
-" refresh this list."
-msgstr ""
-"Помістіть файли .ttf/.otf у ~/.local/share/fonts/, потім виконайте 'fc-cache"
-" -f -v' і оновіть цей список."
-
-#: usr/share/layout-switcher/ui/page_fonts.py:436
-msgid "Reset to system defaults"
-msgstr "Скинути до системних налаштувань"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:445
-msgid "Reset all font settings?"
-msgstr "Скинути всі налаштування шрифтів?"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:447
-msgid ""
-"Interface, document, monospace and window-title fonts will return to system "
-"defaults. Hinting and antialiasing reset too."
-msgstr ""
-"Шрифти інтерфейсу, документів, моноширинні та заголовків вікон будуть "
-"повернені до системних налаштувань. Підказки та згладжування також "
-"скинуться."
-
-#: usr/share/layout-switcher/ui/page_fonts.py:452
-msgid "Reset"
-msgstr "Скинути"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:472
-msgid "Fonts reset to defaults"
-msgstr "Шрифти скинуті до стандартних"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:69
-msgid "Featured"
-msgstr "Рекомендовані"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:70
-#: usr/share/layout-switcher/ui/page_extensions.py:482
-msgid "Installed"
-msgstr "Встановлені"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:329
-msgid "Install extension?"
-msgstr "Встановити розширення?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:367
-msgid "Remove extension?"
-msgstr "Видалити розширення?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:432
-msgid "Open GNOME Extensions"
-msgstr "Відкрити GNOME Extensions"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:487
-msgid "No extensions installed"
-msgstr "Розширення не встановлені"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:503
-msgid "Enabled"
-msgstr "Увімкнено"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:504
-msgid "Disabled"
-msgstr "Вимкнено"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:580
-msgid "system"
-msgstr "система"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:628
-#: usr/share/layout-switcher/ui/page_extensions.py:646
-msgid "Disable All"
-msgstr "Вимкнути все"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:628
-msgid "Enable All"
-msgstr "Увімкнути все"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:642
-msgid "Disable all extensions?"
-msgstr "Вимкнути всі розширення?"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:643
-msgid "All extensions will be disabled. You can re-enable them later."
-msgstr "Всі розширення будуть вимкнені. Ви зможете ввімкнути їх пізніше."
-
-#: usr/share/layout-switcher/ui/page_extensions.py:663
-msgid "All extensions disabled"
-msgstr "Всі розширення вимкнено"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:663
-msgid "All extensions enabled"
-msgstr "Всі розширення увімкнено"
-
-#: usr/share/layout-switcher/constants.py:143
 msgid "Default Big Gnome layout"
 msgstr "Стандартний великий макет Gnome"
 
-#: usr/share/layout-switcher/constants.py:150
-msgid "Traditional desktop with taskbar and system tray"
-msgstr "Традиційний робочий стіл із панеллю завдань і системним лотком"
+msgid "Clean and contemporary desktop"
+msgstr "Чистий і сучасний робочий стіл"
 
-#: usr/share/layout-switcher/constants.py:157
 msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
 msgstr "Центрована панель-док, стиль Windows 11 / Deepin / Pop!_OS"
 
-#: usr/share/layout-switcher/constants.py:164
 msgid "Unity-style layout with left dock and top bar"
 msgstr "Макет у стилі Unity із лівим доком і верхньою панеллю"
 
-#: usr/share/layout-switcher/constants.py:171
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Традиційний робочий стіл із панеллю завдань і системним лотком"
+
 msgid "Near-vanilla GNOME with minimal distro tweaks"
 msgstr "Майже чистий GNOME з мінімальними налаштуваннями дистрибутива"
-
-#: usr/share/layout-switcher/constants.py:178
-msgid "Clean and contemporary desktop"
-msgstr "Чистий і сучасний робочий стіл"

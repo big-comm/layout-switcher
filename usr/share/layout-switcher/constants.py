@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.5.3"
+APP_VERSION = "2.6.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -172,11 +172,11 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
         tr("Default Big Gnome layout"),
     ),
     (
-        "Classic",
-        "classic.txt",
-        "classic.svg",
-        "view-continuous-symbolic",
-        tr("Traditional desktop with taskbar and system tray"),
+        "Desk UX",
+        "desk-ux.txt",
+        "desk-ux.svg",
+        "view-grid-symbolic",
+        tr("Clean and contemporary desktop"),
     ),
     (
         "Hybrid",
@@ -193,17 +193,17 @@ LAYOUTS: List[Tuple[str, str, str, str, str]] = [
         tr("Unity-style layout with left dock and top bar"),
     ),
     (
+        "Classic",
+        "classic.txt",
+        "classic.svg",
+        "view-continuous-symbolic",
+        tr("Traditional desktop with taskbar and system tray"),
+    ),
+    (
         "Minimal",
         "minimal.txt",
         "minimal.svg",
         "view-grid-symbolic",
         tr("Near-vanilla GNOME with minimal distro tweaks"),
-    ),
-    (
-        "Modern",
-        "modern.txt",
-        "modern.svg",
-        "view-grid-symbolic",
-        tr("Clean and contemporary desktop"),
     ),
 ]

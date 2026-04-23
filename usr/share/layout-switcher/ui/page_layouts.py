@@ -40,12 +40,15 @@ class LayoutsPage(Gtk.Box):
         self._build()
 
     def _build(self) -> None:
-        self._status_lbl = Gtk.Label(label=tr("Click a layout to apply"))
+        # Label de status (aplicando/aplicado/erro). Comeca vazio e invisivel —
+        # so aparece quando ha status real para mostrar.
+        self._status_lbl = Gtk.Label(label="")
         self._status_lbl.add_css_class("dim-label")
         self._status_lbl.set_halign(Gtk.Align.START)
         self._status_lbl.set_margin_start(26)
-        self._status_lbl.set_margin_top(4)
-        self._status_lbl.set_margin_bottom(12)
+        self._status_lbl.set_margin_top(6)
+        self._status_lbl.set_margin_bottom(10)
+        self._status_lbl.set_visible(False)
         self._status_lbl.update_property(
             [Gtk.AccessibleProperty.LABEL],
             [tr("Layout status")],
@@ -91,57 +94,68 @@ class LayoutsPage(Gtk.Box):
     def _make_card(self, name, cfg, icon_file, fallback, desc) -> Gtk.Box:
         is_on = name == self._active_layout
         has_snapshot = SnapshotManager.has(self._layout_id(cfg))
-        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         card.add_css_class("layout-card")
         if is_on:
             card.add_css_class("layout-on")
-        card.set_size_request(158, 132)
 
-        # Topo: indicador "modificado" a esquerda + faixa "Ativo" a direita
-        top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        top.set_size_request(-1, 22)
-        if has_snapshot:
-            mod = Gtk.Label(label="●")
-            mod.add_css_class("layout-modified")
-            mod.add_css_class("caption")
-            mod.set_halign(Gtk.Align.START)
-            mod.set_tooltip_text(tr("Contains your saved customizations"))
-            mod.set_margin_start(8)
-            top.append(mod)
-        if is_on:
-            rb = Gtk.Label(label=tr("Active"))
-            rb.add_css_class("layout-ribbon")
-            rb.add_css_class("caption")
-            rb.set_halign(Gtk.Align.END)
-            rb.set_hexpand(True)
-            top.append(rb)
-        card.append(top)
+        # Preview (SVG) com Overlay para sobrepor o badge "Modified" discreto
+        overlay = Gtk.Overlay()
+        overlay.add_css_class("layout-preview")
+        overlay.set_halign(Gtk.Align.CENTER)
 
-        wrap = Gtk.Box()
-        wrap.set_margin_start(10)
-        wrap.set_margin_end(10)
-        wrap.set_margin_bottom(6)
-        wrap.set_vexpand(True)
-        wrap.set_valign(Gtk.Align.CENTER)
-        wrap.set_size_request(-1, 64)
         icon_path = find_file(icon_file, [ICONS_DIR])
         if icon_path:
             pic = Gtk.Picture.new_for_filename(str(icon_path))
             pic.set_content_fit(Gtk.ContentFit.CONTAIN)
-            pic.set_hexpand(True)
-            wrap.append(pic)
+            pic.set_size_request(170, 100)
+            overlay.set_child(pic)
         else:
             ico = Gtk.Image.new_from_icon_name(fallback)
-            ico.set_pixel_size(36)
-            ico.set_hexpand(True)
+            ico.set_pixel_size(56)
             ico.set_halign(Gtk.Align.CENTER)
-            wrap.append(ico)
-        card.append(wrap)
+            ico.set_valign(Gtk.Align.CENTER)
+            overlay.set_child(ico)
 
+        # Badge "Modified" no topo-centro do preview, flutuando um pouco
+        # abaixo da borda superior para nao sobrepor o desenho do layout
+        if has_snapshot:
+            badge = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+            badge.add_css_class("layout-modified-badge")
+            badge.set_halign(Gtk.Align.CENTER)
+            badge.set_valign(Gtk.Align.START)
+            badge.set_margin_top(16)
+            badge.set_tooltip_text(tr("Contains your saved customizations"))
+            badge_icon = Gtk.Image.new_from_icon_name("document-edit-symbolic")
+            badge_icon.set_pixel_size(10)
+            badge.append(badge_icon)
+            badge_lbl = Gtk.Label(label=tr("Modified"))
+            badge_lbl.add_css_class("caption")
+            badge.append(badge_lbl)
+            overlay.add_overlay(badge)
+
+        # Check de ativo no canto superior-direito (reforca o glow neon)
+        if is_on:
+            check = Gtk.Image.new_from_icon_name("emblem-ok-symbolic")
+            check.set_pixel_size(14)
+            check.add_css_class("layout-active-check")
+            check.set_halign(Gtk.Align.END)
+            check.set_valign(Gtk.Align.START)
+            check.set_margin_end(6)
+            check.set_margin_top(14)
+            check.set_tooltip_text(tr("Active"))
+            overlay.add_overlay(check)
+
+        card.append(overlay)
+
+        # Nome do layout (em cor accent + bold quando ativo)
         lbl = Gtk.Label(label=name)
         lbl.add_css_class("heading")
+        lbl.add_css_class("layout-name")
+        if is_on:
+            lbl.add_css_class("layout-name-active")
         lbl.set_halign(Gtk.Align.CENTER)
-        lbl.set_margin_bottom(10)
+        lbl.set_margin_bottom(4)
         card.append(lbl)
 
         # Descricao so aparece no hover como popover elegante, nao poluindo o card
@@ -317,4 +331,5 @@ class LayoutsPage(Gtk.Box):
             text = f"✗ {text}"
         self._status_lbl.add_css_class(css)
         self._status_lbl.set_label(text)
-        self._status_lbl.add_css_class(css)
+        # Torna visivel somente quando ha texto — evita espaco vazio na pagina
+        self._status_lbl.set_visible(bool(text))

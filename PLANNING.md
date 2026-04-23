@@ -85,7 +85,7 @@ ShellReloader.reload_all()
 
 ### Alto
 - [ ] **Outros layouts com formato misto.** Os arquivos
-  `classic.txt`, `minimal.txt`, `modern.txt`, `g-unity.txt` contêm
+  `classic.txt`, `minimal.txt`, `desk-ux.txt`, `g-unity.txt` contêm
   mistura de seções absolutas (`[org/gnome/Console]`) e relativas
   (`[extensions/arcmenu]`, `[keybindings]`). Agora que o loader usa
   `dconf load /`, seções relativas como `[extensions/...]` serão aplicadas em

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 14:33\n"
+"POT-Creation-Date: 2026-04-22 22:13-0300\n"
 "PO-Revision-Date: 2026-04-22 14:33\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -12,582 +12,333 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:57
 msgid "Backups"
 msgstr "Varukoopiad"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:72
 msgid "Create backup now"
 msgstr "Loo varukoopia nüüd"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:74
 msgid "Snapshot current dconf settings"
 msgstr "Tee hetke dconf seadetest hetkepilt"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:87
 msgid "No backups yet"
 msgstr "Varukoopiaid pole veel"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:89
 msgid "A backup is created automatically every time you apply a layout."
 msgstr "Varukoopia luuakse automaatselt iga kord, kui rakendad paigutust."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:142
 msgid "Latest"
 msgstr "Viimane"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:147
 msgid "Restore this backup"
 msgstr "Taasta see varukoopia"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:155
 msgid "Delete this backup"
 msgstr "Kustuta see varukoopia"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:169
 msgid "Backup created"
 msgstr "Varukoopia loodud"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:172
-#: usr/share/layout-switcher/ui/page_layouts.py:228
 msgid "Backup failed"
 msgstr "Varukoopia loomine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:176
 msgid "Restore this backup?"
 msgstr "Taasta see varukoopia?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:178
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr ""
-"Kõik praegused dconf seaded kirjutatakse üle hetkepildiga, mis on tehtud "
+msgstr "Märgistatud paigutused sisaldavad salvestatud kohandusi — klõpsake nende jätkamiseks või algupärase rakendamiseks.""Kõik praegused dconf seaded kirjutatakse üle hetkepildiga, mis on tehtud "
 "{ts}."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:181
-#: usr/share/layout-switcher/ui/dialog_backups.py:206
-#: usr/share/layout-switcher/ui/page_layouts.py:204
-#: usr/share/layout-switcher/ui/page_layouts.py:216
-#: usr/share/layout-switcher/ui/page_themes.py:314
-#: usr/share/layout-switcher/ui/page_effects.py:261
-#: usr/share/layout-switcher/ui/page_effects.py:300
-#: usr/share/layout-switcher/ui/page_fonts.py:451
-#: usr/share/layout-switcher/ui/page_extensions.py:332
-#: usr/share/layout-switcher/ui/page_extensions.py:370
-#: usr/share/layout-switcher/ui/page_extensions.py:645
 msgid "Cancel"
 msgstr "Tühista"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:182
 msgid "Restore"
 msgstr "Taasta"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Backup restored"
 msgstr "Varukoopia taastatud"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:196
 msgid "Restore failed"
 msgstr "Taastamine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:203
 msgid "Delete this backup?"
 msgstr "Kustutada see varukoopia?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:207
 msgid "Delete"
 msgstr "Kustuta"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Backup deleted"
 msgstr "Varukoopia kustutatud"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:230
 msgid "Delete failed"
 msgstr "Kustutamine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/window.py:59
-#: usr/share/layout-switcher/ui/window.py:257
 msgid "Layout Switcher"
 msgstr "Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:167
-#: usr/share/layout-switcher/ui/window.py:168
 msgid "Show Sidebar"
 msgstr "Näita külgriba"
 
-#: usr/share/layout-switcher/ui/window.py:174
-#: usr/share/layout-switcher/ui/window.py:281
-#: usr/share/layout-switcher/ui/window.py:352
 msgid "Layouts"
 msgstr "Paigutused"
 
-#: usr/share/layout-switcher/ui/window.py:180
 msgid "Menu"
 msgstr "Menüü"
 
-#: usr/share/layout-switcher/ui/window.py:181
 msgid "Main menu"
 msgstr "Põhimenuu"
 
-#: usr/share/layout-switcher/ui/window.py:184
 msgid "Backups…"
 msgstr "Varukoopiad…"
 
-#: usr/share/layout-switcher/ui/window.py:185
 msgid "About"
 msgstr "Teave"
 
-#: usr/share/layout-switcher/ui/window.py:194
 msgid "Welcome! Choose a desktop layout below to get started."
 msgstr "Tere tulemast! Alustamiseks vali allolevast töölaua paigutus."
 
-#: usr/share/layout-switcher/ui/window.py:195
 msgid "Got it"
 msgstr "Sain aru"
 
-#: usr/share/layout-switcher/ui/window.py:282
-#: usr/share/layout-switcher/ui/window.py:353
 msgid "Fonts"
 msgstr "Fondid"
 
-#: usr/share/layout-switcher/ui/window.py:283
-#: usr/share/layout-switcher/ui/window.py:354
 msgid "Themes"
 msgstr "Teemad"
 
-#: usr/share/layout-switcher/ui/window.py:284
-#: usr/share/layout-switcher/ui/window.py:355
 msgid "Effects"
 msgstr "Efektid"
 
-#: usr/share/layout-switcher/ui/window.py:285
-#: usr/share/layout-switcher/ui/window.py:356
 msgid "Extensions"
 msgstr "Laiendused"
 
-#: usr/share/layout-switcher/ui/window.py:384
 msgid "Community Layout Switcher"
 msgstr "Community Layout Switcher"
 
-#: usr/share/layout-switcher/ui/window.py:389
 msgid "Layouts, effects and themes for your GNOME desktop."
 msgstr "Paigutused, efektid ja teemad teie GNOME töölauale."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:42
-msgid "Click a layout to apply"
-msgstr "Klõpsake paigutust rakendamiseks"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:50
-msgid "Layout status"
-msgstr "Paigutuse olek"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:107
-msgid "Contains your saved customizations"
-msgstr "Sisaldab teie salvestatud kohandusi"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:111
-#: usr/share/layout-switcher/ui/page_layouts.py:179
-#: usr/share/layout-switcher/ui/page_themes.py:264
-msgid "Active"
-msgstr "Aktiivne"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:188
-msgid "This layout is already active"
-msgstr "See paigutus on juba aktiivne"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:200
-msgid ""
-"You have previously modified this layout. Resume your changes or apply the "
-"original system default?"
-msgstr ""
-"Olete seda paigutust varem muutnud. Kas jätkata muudatustega või rakendada "
-"algne süsteemi vaikeseade?"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:205
-msgid "Apply original"
-msgstr "Rakenda originaal"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:206
-msgid "Resume my changes"
-msgstr "Jätka minu muudatustega"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:212
-msgid ""
-"Apply this layout? A backup of your current configuration will be created "
-"automatically."
-msgstr ""
-"Rakendada see paigutus? Teie praegusest konfiguratsioonist luuakse "
-"automaatselt varukoopia."
-
-#: usr/share/layout-switcher/ui/page_layouts.py:217
-msgid "Apply"
-msgstr "Rakenda"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:247
-msgid "Applying"
-msgstr "Rakendamine"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:254
-msgid "Snapshot not found"
-msgstr "Snapshotti ei leitud"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:264
-msgid "Layout file not found"
-msgstr "Paigutuse faili ei leitud"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:276
-#: usr/share/layout-switcher/ui/page_layouts.py:280
-#: usr/share/layout-switcher/ui/page_layouts.py:291
-msgid "applied"
-msgstr "rakendatud"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:281
-msgid "Undo"
-msgstr "Võta tagasi"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:293
-#: usr/share/layout-switcher/ui/page_layouts.py:305
-#: usr/share/layout-switcher/ui/page_themes.py:304
-#: usr/share/layout-switcher/ui/page_effects.py:251
-#: usr/share/layout-switcher/ui/page_extensions.py:322
-#: usr/share/layout-switcher/ui/page_extensions.py:601
-#: usr/share/layout-switcher/ui/page_extensions.py:669
-msgid "Error"
-msgstr "Viga"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:315
-msgid "Layout restored"
-msgstr "Paigutus taastatud"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:317
-msgid "Previous layout restored"
-msgstr "Eelmine paigutus taastatud"
-
-#: usr/share/layout-switcher/ui/page_themes.py:71
 msgid "Filter themes…"
 msgstr "Filtreeri teemasid…"
 
-#: usr/share/layout-switcher/ui/page_themes.py:107
 msgid "Icons"
 msgstr "Ikoonid"
 
-#: usr/share/layout-switcher/ui/page_themes.py:187
 msgid "No themes found"
 msgstr "Teemasid ei leitud"
 
-#: usr/share/layout-switcher/ui/page_themes.py:188
 msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Paigalda teemad kausta ~/.themes või /usr/share/themes"
 
-#: usr/share/layout-switcher/ui/page_themes.py:195
 msgid "themes available"
 msgstr "teemasid saadaval"
 
-#: usr/share/layout-switcher/ui/page_themes.py:262
 msgid "theme"
 msgstr "teema"
 
-#: usr/share/layout-switcher/ui/page_themes.py:311
+msgid "Active"
+msgstr "Aktiivne"
+
+msgid "Error"
+msgstr "Viga"
+
 msgid "User Themes required"
 msgstr "Vajalikud on kasutajateemad"
 
-#: usr/share/layout-switcher/ui/page_themes.py:312
 msgid "Install and enable the User Themes extension to apply shell themes."
 msgstr ""
 "Paigalda ja lülita sisse User Themes laiendus, et rakendada shell-teemasid."
 
-#: usr/share/layout-switcher/ui/page_themes.py:315
 msgid "Open Extensions Page"
 msgstr "Ava laienduste leht"
 
-#: usr/share/layout-switcher/ui/page_effects.py:43
 msgid "Visual effects for your GNOME desktop"
 msgstr "Visuaalsed efektid sinu GNOME töölauale"
 
-#: usr/share/layout-switcher/ui/page_effects.py:105
-#: usr/share/layout-switcher/ui/page_extensions.py:161
 msgid "System extension"
 msgstr "Süsteemi laiendus"
 
-#: usr/share/layout-switcher/ui/page_effects.py:123
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:179
-#: usr/share/layout-switcher/ui/page_extensions.py:318
-#: usr/share/layout-switcher/ui/page_extensions.py:495
 msgid "enabled"
 msgstr "lubatud"
 
-#: usr/share/layout-switcher/ui/page_effects.py:125
-#: usr/share/layout-switcher/ui/page_effects.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:181
-#: usr/share/layout-switcher/ui/page_extensions.py:318
 msgid "disabled"
 msgstr "keelatud"
 
-#: usr/share/layout-switcher/ui/page_effects.py:127
-#: usr/share/layout-switcher/ui/page_effects.py:202
-#: usr/share/layout-switcher/ui/page_extensions.py:183
-#: usr/share/layout-switcher/ui/page_extensions.py:267
 msgid "Not installed"
 msgstr "Pole paigaldatud"
 
-#: usr/share/layout-switcher/ui/page_effects.py:152
-#: usr/share/layout-switcher/ui/page_extensions.py:210
 #, python-brace-format
 msgid "by {author}"
 msgstr "autorilt {author}"
 
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
 msgid "On"
 msgstr "Sees"
 
-#: usr/share/layout-switcher/ui/page_effects.py:163
-#: usr/share/layout-switcher/ui/page_extensions.py:225
 msgid "Off"
 msgstr "Väljas"
 
-#: usr/share/layout-switcher/ui/page_effects.py:171
-#: usr/share/layout-switcher/ui/page_extensions.py:233
-#: usr/share/layout-switcher/ui/page_extensions.py:588
 msgid "Toggle"
 msgstr "Lülita"
 
-#: usr/share/layout-switcher/ui/page_effects.py:179
-#: usr/share/layout-switcher/ui/page_effects.py:183
-#: usr/share/layout-switcher/ui/page_effects.py:301
-#: usr/share/layout-switcher/ui/page_extensions.py:243
-#: usr/share/layout-switcher/ui/page_extensions.py:247
-#: usr/share/layout-switcher/ui/page_extensions.py:371
-#: usr/share/layout-switcher/ui/page_extensions.py:611
-#: usr/share/layout-switcher/ui/page_extensions.py:612
 msgid "Remove"
 msgstr "Eemalda"
 
-#: usr/share/layout-switcher/ui/page_effects.py:191
-#: usr/share/layout-switcher/ui/page_extensions.py:255
 msgid "Settings"
 msgstr "Seaded"
 
-#: usr/share/layout-switcher/ui/page_effects.py:206
-#: usr/share/layout-switcher/ui/page_effects.py:262
-#: usr/share/layout-switcher/ui/page_extensions.py:271
-#: usr/share/layout-switcher/ui/page_extensions.py:333
 msgid "Install"
 msgstr "Paigalda"
 
-#: usr/share/layout-switcher/ui/page_effects.py:223
-#: usr/share/layout-switcher/ui/page_extensions.py:288
 msgid "View on GNOME Extensions"
 msgstr "Vaata GNOME Extensions'is"
 
-#: usr/share/layout-switcher/ui/page_effects.py:258
 msgid "Install effect?"
 msgstr "Installin efekti?"
 
-#: usr/share/layout-switcher/ui/page_effects.py:259
-#: usr/share/layout-switcher/ui/page_extensions.py:330
 msgid "Will try to install automatically."
 msgstr "Püüan automaatselt installida."
 
-#: usr/share/layout-switcher/ui/page_effects.py:270
-#: usr/share/layout-switcher/ui/page_extensions.py:339
 msgid "Installing…"
 msgstr "Installimine…"
 
-#: usr/share/layout-switcher/ui/page_effects.py:281
-#: usr/share/layout-switcher/ui/page_extensions.py:351
-#: usr/share/layout-switcher/ui/page_extensions.py:495
 msgid "installed"
 msgstr "installitud"
 
-#: usr/share/layout-switcher/ui/page_effects.py:284
-#: usr/share/layout-switcher/ui/page_extensions.py:354
 msgid "Install failed"
 msgstr "Installimine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/page_effects.py:293
-#: usr/share/layout-switcher/ui/page_extensions.py:363
 msgid "System extension — cannot remove"
 msgstr "Süsteemi laiendus — ei saa eemaldada"
 
-#: usr/share/layout-switcher/ui/page_effects.py:297
 msgid "Remove effect?"
 msgstr "Eemaldada efekt?"
 
-#: usr/share/layout-switcher/ui/page_effects.py:298
-#: usr/share/layout-switcher/ui/page_extensions.py:368
 msgid "This cannot be undone."
 msgstr "Seda ei saa tagasi võtta."
 
-#: usr/share/layout-switcher/ui/page_effects.py:313
-#: usr/share/layout-switcher/ui/page_extensions.py:383
 msgid "removed"
 msgstr "eemaldatud"
 
-#: usr/share/layout-switcher/ui/page_effects.py:315
-#: usr/share/layout-switcher/ui/page_extensions.py:385
 msgid "Remove failed"
 msgstr "Eemaldamine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:102
 msgid "System fonts"
 msgstr "Süsteemi fondid"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:103
 msgid "Fonts used by the GNOME interface"
 msgstr "Fondid, mida kasutab GNOME liides"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:107
 msgid "Interface"
 msgstr "Liides"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:113
 msgid "Document"
 msgstr "Dokument"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:119
 msgid "Monospace"
 msgstr "Monospace"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:125
 msgid "Window titles (legacy)"
 msgstr "Akna pealkirjad (pärand)"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:142
-#: usr/share/layout-switcher/ui/page_fonts.py:486
 msgid "(not set)"
 msgstr "(pole määratud)"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:144
 msgid "Choose…"
 msgstr "Vali…"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:158
 msgid "Choose font"
 msgstr "Vali font"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:174
 msgid "Font updated"
 msgstr "Font uuendatud"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:176
-#: usr/share/layout-switcher/ui/page_fonts.py:241
 msgid "Update failed"
 msgstr "Uuendamine ebaõnnestus"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:185
 msgid "Appearance"
 msgstr "Välimus"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:186
 msgid "How fonts are rendered on screen"
 msgstr "Kuidas fondid ekraanil kuvatakse"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:190
 msgid "Hinting"
 msgstr "Viitamine"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:194
-#: usr/share/layout-switcher/ui/page_fonts.py:207
 msgid "None"
 msgstr "Puudub"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:195
 msgid "Slight"
 msgstr "Nõrk"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:196
 msgid "Medium"
 msgstr "Keskmine"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:197
 msgid "Full"
 msgstr "Täielik"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:203
 msgid "Antialiasing"
 msgstr "Servapehmendus"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:208
 msgid "Grayscale"
 msgstr "Halltoonid"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:209
 msgid "Subpixel (RGBA)"
 msgstr "Subpixel (RGBA)"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Installed fonts"
 msgstr "Paigaldatud fondid"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:252
 msgid "Browse font families installed on your system"
 msgstr "Sirvi süsteemi paigaldatud fondiperekondi"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:259
 msgid "Search fonts…"
 msgstr "Otsi fonte…"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:266
 msgid "Refresh font list"
 msgstr "Värskenda fondiloendit"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:310
 msgid "Loading fonts…"
 msgstr "Fondide laadimine…"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:340
 msgid "No fonts match your search"
 msgstr "Otsingule ei vasta ühtegi fonti"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:360
 msgid "(refine search to see more)"
 msgstr "(täpsusta otsingut, et näha rohkem)"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:362
 msgid "fonts"
 msgstr "fonti"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:380
 msgid "The quick brown fox jumps over the lazy dog 0123"
 msgstr "Põdur Zagrebi tšellomängija külmetas kehvas garaažis 0123"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:404
 msgid "Install more fonts"
 msgstr "Paigalda rohkem fonte"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:407
 msgid "Browse Google Fonts"
 msgstr "Sirvi Google Fonte"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:408
 msgid "Opens fonts.google.com in your browser"
 msgstr "Avab fonts.google.com sinu brauseris"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:421
 msgid "How to install"
 msgstr "Kuidas paigaldada"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:424
 msgid ""
-"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
-" refresh this list."
+"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
+"refresh this list."
 msgstr ""
 "Paigalda .ttf/.otf failid kausta ~/.local/share/fonts/ ja seejärel käivita "
 "'fc-cache -f -v' ning värskenda seda nimekirja."
 
-#: usr/share/layout-switcher/ui/page_fonts.py:436
 msgid "Reset to system defaults"
 msgstr "Lähtesta süsteemi vaikeväärtustele"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:445
 msgid "Reset all font settings?"
 msgstr "Lähtestada kõik fondi seaded?"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:447
 msgid ""
 "Interface, document, monospace and window-title fonts will return to system "
 "defaults. Hinting and antialiasing reset too."
@@ -595,97 +346,135 @@ msgstr ""
 "Liidese, dokumendi, monospace’i ja akna pealkirja fondid taastatakse "
 "süsteemi vaikeväärtustele. Samuti lähtestatakse hintimine ja antialiasing."
 
-#: usr/share/layout-switcher/ui/page_fonts.py:452
 msgid "Reset"
 msgstr "Lähtesta"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:472
 msgid "Fonts reset to defaults"
 msgstr "Fondid lähtestatud vaikeväärtustele"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:69
 msgid "Featured"
 msgstr "Esiletõstetud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:70
-#: usr/share/layout-switcher/ui/page_extensions.py:482
 msgid "Installed"
 msgstr "Paigaldatud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:329
 msgid "Install extension?"
 msgstr "Installida laiendus?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:367
 msgid "Remove extension?"
 msgstr "Eemaldada laiendus?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:432
 msgid "Open GNOME Extensions"
 msgstr "Ava GNOME Extensions"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:487
 msgid "No extensions installed"
 msgstr "Ühtegi laiendust pole paigaldatud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:503
 msgid "Enabled"
 msgstr "Lubatud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:504
 msgid "Disabled"
 msgstr "Keelatud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:580
 msgid "system"
 msgstr "süsteem"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:628
-#: usr/share/layout-switcher/ui/page_extensions.py:646
 msgid "Disable All"
 msgstr "Keela kõik"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:628
 msgid "Enable All"
 msgstr "Luba kõik"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:642
 msgid "Disable all extensions?"
 msgstr "Kas soovid keelata kõik laiendused?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:643
 msgid "All extensions will be disabled. You can re-enable them later."
 msgstr "Kõik laiendused keelatakse. Saad need hiljem uuesti lubada."
 
-#: usr/share/layout-switcher/ui/page_extensions.py:663
 msgid "All extensions disabled"
 msgstr "Kõik laiendused keelatud"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:663
 msgid "All extensions enabled"
 msgstr "Kõik laiendused lubatud"
 
-#: usr/share/layout-switcher/constants.py:143
+msgid "Click a layout to apply"
+msgstr "Klõpsake paigutust rakendamiseks"
+
+msgid "Layout status"
+msgstr "Paigutuse olek"
+
+msgid ""
+"Marked layouts contain your saved customizations — click to resume them or "
+"apply the original."
+msgstr "Märgistatud paigutused sisaldavad salvestatud kohandusi — klõpsake nende jätkamiseks või algupärase rakendamiseks."
+
+msgid "Contains your saved customizations"
+msgstr "Sisaldab teie salvestatud kohandusi"
+
+msgid "Modified"
+msgstr "Muudetud"
+
+msgid "This layout is already active"
+msgstr "See paigutus on juba aktiivne"
+
+msgid ""
+"You have previously modified this layout. Resume your changes or apply the "
+"original system default?"
+msgstr ""
+"Olete seda paigutust varem muutnud. Kas jätkata muudatustega või rakendada "
+"algne süsteemi vaikeseade?"
+
+msgid "Apply original"
+msgstr "Rakenda originaal"
+
+msgid "Resume my changes"
+msgstr "Jätka minu muudatustega"
+
+msgid ""
+"Apply this layout? A backup of your current configuration will be created "
+"automatically."
+msgstr ""
+"Rakendada see paigutus? Teie praegusest konfiguratsioonist luuakse "
+"automaatselt varukoopia."
+
+msgid "Apply"
+msgstr "Rakenda"
+
+msgid "Applying"
+msgstr "Rakendamine"
+
+msgid "Snapshot not found"
+msgstr "Snapshotti ei leitud"
+
+msgid "Layout file not found"
+msgstr "Paigutuse faili ei leitud"
+
+msgid "applied"
+msgstr "rakendatud"
+
+msgid "Undo"
+msgstr "Võta tagasi"
+
+msgid "Layout restored"
+msgstr "Paigutus taastatud"
+
+msgid "Previous layout restored"
+msgstr "Eelmine paigutus taastatud"
+
 msgid "Default Big Gnome layout"
 msgstr "Vaikimisi Big Gnome paigutus"
 
-#: usr/share/layout-switcher/constants.py:150
-msgid "Traditional desktop with taskbar and system tray"
-msgstr ""
-"Traditsiooniline töölaua paigutus ülesannete ribaga ja süsteemisalvega"
+msgid "Clean and contemporary desktop"
+msgstr "Puhtas ja kaasaegne töölaua paigutus"
 
-#: usr/share/layout-switcher/constants.py:157
 msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
 msgstr "Keskendatud doki-ülesannete riba, Windows 11 / Deepin / Pop!_OS stiil"
 
-#: usr/share/layout-switcher/constants.py:164
 msgid "Unity-style layout with left dock and top bar"
 msgstr "Unity-laadse paigutusega vasakpoolne dokk ja ülemine riba"
 
-#: usr/share/layout-switcher/constants.py:171
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Traditsiooniline töölaua paigutus ülesannete ribaga ja süsteemisalvega"
+
 msgid "Near-vanilla GNOME with minimal distro tweaks"
 msgstr "Peaaegu puhas GNOME minimaalsete distributsiooni muudatustega"
-
-#: usr/share/layout-switcher/constants.py:178
-msgid "Clean and contemporary desktop"
-msgstr "Puhtas ja kaasaegne töölaua paigutus"
