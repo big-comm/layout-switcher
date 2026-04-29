@@ -126,6 +126,30 @@ class ExtMgr:
                 )
         return results
 
+    @staticmethod
+    def installed_version(uuid: str) -> int:
+        """
+        Retorna a versão (inteiro) da extensão instalada, ou 0 se não houver
+        metadata.json ou se a versão não puder ser interpretada como inteiro.
+        Procura primeiro no diretório do usuário, depois no de sistema.
+        """
+        for base in (EXT_USER_DIR, EXT_SYS_DIR):
+            meta_path = base / uuid / "metadata.json"
+            if not meta_path.exists():
+                continue
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                return 0
+            version = meta.get("version")
+            if isinstance(version, int):
+                return version
+            try:
+                return int(version)
+            except (TypeError, ValueError):
+                return 0
+        return 0
+
     # ── Ativar / Desativar ────────────────────────────────────────────────────
 
     @staticmethod
@@ -296,6 +320,34 @@ class ExtMgr:
 
         except Exception as exc:
             return False, str(exc)
+
+    @staticmethod
+    def update(uuid: str, ego_id: int = 0) -> Tuple[bool, str]:
+        """
+        Atualiza uma extensão para a versão mais recente do EGO.
+
+        Reinstala por cima usando o mesmo fluxo de `install()`. Após o sucesso,
+        re-habilita a extensão se ela estava habilitada antes (assumimos que o
+        chamador chame em extensões já instaladas; do contrário use install).
+        """
+        was_enabled = ExtMgr.is_enabled(uuid)
+        ok, method = ExtMgr.install(uuid, ego_id, "")
+        if not ok:
+            return False, method
+
+        # Invalida cache de info para refletir nova versão na próxima leitura.
+        try:
+            import ego_cache
+
+            ego_cache.json_invalidate("info", f"{uuid}|all")
+        except Exception:
+            pass
+
+        if was_enabled:
+            from shell_reloader import ShellReloader
+
+            ShellReloader.apply_extension_state(uuid, True)
+        return True, method
 
     # ── Remover ───────────────────────────────────────────────────────────────
 

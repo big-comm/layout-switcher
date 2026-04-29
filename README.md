@@ -11,7 +11,7 @@ A GTK4 + libadwaita application for switching GNOME desktop layouts, managing sh
   <img alt="GTK"        src="https://img.shields.io/badge/GTK-4.0-4a86cf.svg">
   <img alt="Libadwaita" src="https://img.shields.io/badge/libadwaita-1.x-3584e4.svg">
   <img alt="GNOME"      src="https://img.shields.io/badge/GNOME-45%2B-4a86cf.svg?logo=gnome&logoColor=white">
-  <img alt="Tests"      src="https://img.shields.io/badge/tests-102%20passing-success.svg">
+  <img alt="Tests"      src="https://img.shields.io/badge/tests-135%20passing-success.svg">
   <img alt="i18n"       src="https://img.shields.io/badge/i18n-28%20languages-blueviolet.svg">
 </p>
 
@@ -27,7 +27,10 @@ Community Layout Switcher is the appearance-management tool for [BigCommunity Li
 - **Fonts** — Interface / document / monospace / legacy title selectors via `Gtk.FontDialog`, plus hinting and antialiasing controls, a searchable list of installed families with live previews, and quick access to Google Fonts.
 - **Themes** — GTK, icon and shell themes with real previews (actual `folder` icon from each icon theme; accent color parsed from each theme's CSS), search filter and one-click apply.
 - **Effects** — Dedicated page for visual extensions (Desktop Cube, Magic Lamp, Compiz Windows, Desktop Icons NG). Installs prefer `pacman` for stability and fall back to extensions.gnome.org.
-- **Extensions** — Compact view of installed extensions with toggle, remove and a shortcut to GNOME Extensions manager.
+- **Extensions** — Three sub-tabs:
+  - **Featured** — curated set with one-click install/toggle/remove.
+  - **Browse** — full search of [extensions.gnome.org](https://extensions.gnome.org) inside the app, with sort, compatibility filter, screenshots carousel, recent comments and direct install.
+  - **Installed** — every installed extension with toggle, remove, *Update* badge and *Update all* button when new versions are available. Optional auto-update is **opt-in** in the main menu.
 - **Backups** — Every apply creates a timestamped dconf dump. A dedicated dialog lists all backups with restore/delete and a manual-snapshot button.
 - **Sync-aware** — Cooperates with the `dconf-sync-gnome.service` from `comm-gnome-config`: the monitor is paused around each apply, user extensions are suspended to avoid transient error states, and the final state is persisted atomically to `~/.config/dconf/settings.gnome`.
 
@@ -86,7 +89,7 @@ python usr/share/layout-switcher/main.py
 ruff check .
 ruff format .
 
-# tests (102 unit tests, no display required)
+# tests (135 unit tests, no display required)
 python -m pytest tests/ -q
 ```
 
@@ -100,8 +103,11 @@ usr/share/layout-switcher/
 ├── backup_manager.py                # timestamped dconf dumps
 ├── snapshot_manager.py              # per-layout user snapshots
 ├── layout_applier.py                # atomic apply orchestration
-├── extension_manager.py             # install / toggle / remove
+├── extension_manager.py             # install / toggle / remove / update
 ├── shell_reloader.py                # D-Bus cascade reload (no logout)
+├── ego_client.py                    # extensions.gnome.org HTTP client
+├── ego_cache.py                     # disk cache (JSON TTL + thumbs LRU)
+├── update_checker.py                # detect & apply EGO updates
 ├── theme_manager.py                 # GTK / icons / shell theme apply
 ├── theme_preview.py                 # folder icon + CSS color extraction
 ├── settings_store.py                # JSON settings + GSettings watcher
@@ -111,7 +117,9 @@ usr/share/layout-switcher/
     ├── page_fonts.py                # font selectors + installed list
     ├── page_themes.py               # GTK / icons / shell with previews
     ├── page_effects.py              # featured visual extensions
-    ├── page_extensions.py           # installed extensions list
+    ├── page_extensions.py           # Featured / Browse / Installed
+    ├── ext_browse_view.py           # paginated EGO search + cards
+    ├── ext_detail_view.py           # carousel + comments + actions
     ├── dialog_backups.py            # backup management dialog
     ├── widgets.py                   # shared custom widgets
     └── styles.py                    # APP_CSS

@@ -50,7 +50,8 @@ msgstr "Restaurar este backup?"
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr "Layouts com marca contêm suas personalizações salvas — clique para retomá-las ou aplicar o original.""Todas as configurações atuais do dconf serão sobrescritas pelo snapshot de "
+msgstr ""
+"Todas as configurações atuais do dconf serão sobrescritas pelo snapshot de "
 "{ts}."
 
 msgid "Cancel"
@@ -191,6 +192,12 @@ msgstr "Configurações"
 
 msgid "Install"
 msgstr "Instalar"
+
+msgid "Details"
+msgstr "Detalhes"
+
+msgid "View extension details"
+msgstr "Ver detalhes da extensão"
 
 msgid "View on GNOME Extensions"
 msgstr "Ver no GNOME Extensions"

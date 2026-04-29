@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 22:13-0300\n"
+"POT-Creation-Date: 2026-04-28 21:34-0300\n"
 "PO-Revision-Date: 2026-04-22 14:35\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Croatian <hr@li.org>\n"
@@ -12,318 +12,458 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: usr/share/layout-switcher/constants.py:184
+msgid "Default Big Gnome layout"
+msgstr "Zadani Big Gnome izgled"
+
+#: usr/share/layout-switcher/constants.py:191
+msgid "Clean and contemporary desktop"
+msgstr "Čista i suvremena radna površina"
+
+#: usr/share/layout-switcher/constants.py:198
+msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
+msgstr "Centrirani dock-traka zadataka, stil Windows 11 / Deepin / Pop!_OS"
+
+#: usr/share/layout-switcher/constants.py:205
+msgid "Unity-style layout with left dock and top bar"
+msgstr "Unity-stil izgleda s lijevim dockom i gornjom trakom"
+
+#: usr/share/layout-switcher/constants.py:212
+msgid "Traditional desktop with taskbar and system tray"
+msgstr "Tradicionalna radna površina s trakom zadataka i sistemskom ladicom"
+
+#: usr/share/layout-switcher/constants.py:219
+msgid "Near-vanilla GNOME with minimal distro tweaks"
+msgstr "Gotovo neizmijenjeni GNOME s minimalnim prilagodbama distribucije"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:57
 msgid "Backups"
 msgstr "Sigurnosne kopije"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:72
 msgid "Create backup now"
 msgstr "Izradi sigurnosnu kopiju sada"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:74
 msgid "Snapshot current dconf settings"
 msgstr "Snimi trenutne dconf postavke"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:87
 msgid "No backups yet"
 msgstr "Još nema sigurnosnih kopija"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:89
 msgid "A backup is created automatically every time you apply a layout."
 msgstr ""
 "Sigurnosna kopija se automatski izrađuje svaki put kad primijenite raspored."
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:142
 msgid "Latest"
 msgstr "Najnovije"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:147
 msgid "Restore this backup"
 msgstr "Vrati ovu sigurnosnu kopiju"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:155
 msgid "Delete this backup"
 msgstr "Izbriši ovu sigurnosnu kopiju"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:169
 msgid "Backup created"
 msgstr "Sigurnosna kopija izrađena"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:172
+#: usr/share/layout-switcher/ui/page_layouts.py:234
 msgid "Backup failed"
 msgstr "Izrada sigurnosne kopije nije uspjela"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:176
 msgid "Restore this backup?"
 msgstr "Želite li vratiti ovu sigurnosnu kopiju?"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:178
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr "Označeni izgledi sadrže spremljene prilagodbe — kliknite da ih nastavite ili primijenite izvorni."msgid "Cancel"
+msgstr ""
+"Označeni izgledi sadrže spremljene prilagodbe — kliknite da ih nastavite ili "
+"primijenite izvorni."
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:181
+#: usr/share/layout-switcher/ui/dialog_backups.py:206
+#: usr/share/layout-switcher/ui/page_themes.py:314
+#: usr/share/layout-switcher/ui/page_effects.py:261
+#: usr/share/layout-switcher/ui/page_effects.py:300
+#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/page_layouts.py:210
+#: usr/share/layout-switcher/ui/page_layouts.py:222
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+#: usr/share/layout-switcher/ui/page_extensions.py:423
+#: usr/share/layout-switcher/ui/page_extensions.py:789
+msgid "Cancel"
 msgstr "Odustani"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:182
 msgid "Restore"
 msgstr "Vrati"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Backup restored"
 msgstr "Sigurnosna kopija vraćena"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:196
 msgid "Restore failed"
 msgstr "Vraćanje nije uspjelo"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:203
 msgid "Delete this backup?"
 msgstr "Izbrisati ovu sigurnosnu kopiju?"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:207
 msgid "Delete"
 msgstr "Izbriši"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Backup deleted"
 msgstr "Sigurnosna kopija izbrisana"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
 msgid "Delete failed"
 msgstr "Brisanje nije uspjelo"
 
-msgid "Layout Switcher"
-msgstr "Layout Switcher"
-
-msgid "Show Sidebar"
-msgstr "Prikaži bočnu traku"
-
-msgid "Layouts"
-msgstr "Izgledi"
-
-msgid "Menu"
-msgstr "Izbornik"
-
-msgid "Main menu"
-msgstr "Glavni izbornik"
-
-msgid "Backups…"
-msgstr "Sigurnosne kopije…"
-
-msgid "About"
-msgstr "O aplikaciji"
-
-msgid "Welcome! Choose a desktop layout below to get started."
-msgstr "Dobrodošli! Odaberite izgled radne površine ispod za početak."
-
-msgid "Got it"
-msgstr "Razumijem"
-
-msgid "Fonts"
-msgstr "Fontovi"
-
-msgid "Themes"
-msgstr "Teme"
-
-msgid "Effects"
-msgstr "Efekti"
-
-msgid "Extensions"
-msgstr "Ekstenzije"
-
-msgid "Community Layout Switcher"
-msgstr "Community Layout Switcher"
-
-msgid "Layouts, effects and themes for your GNOME desktop."
-msgstr "Izgled, efekti i teme za vaš GNOME desktop."
-
+#: usr/share/layout-switcher/ui/page_themes.py:71
 msgid "Filter themes…"
 msgstr "Filtriraj teme…"
 
+#: usr/share/layout-switcher/ui/page_themes.py:107
 msgid "Icons"
 msgstr "Ikone"
 
+#: usr/share/layout-switcher/ui/page_themes.py:187
 msgid "No themes found"
 msgstr "Nema pronađenih tema"
 
+#: usr/share/layout-switcher/ui/page_themes.py:188
 msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Instalirajte teme u ~/.themes ili /usr/share/themes"
 
+#: usr/share/layout-switcher/ui/page_themes.py:195
 msgid "themes available"
 msgstr "dostupnih tema"
 
+#: usr/share/layout-switcher/ui/page_themes.py:262
 msgid "theme"
 msgstr "tema"
 
+#: usr/share/layout-switcher/ui/page_themes.py:264
+#: usr/share/layout-switcher/ui/page_layouts.py:146
+#: usr/share/layout-switcher/ui/page_layouts.py:185
 msgid "Active"
 msgstr "Aktivno"
 
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_effects.py:251
+#: usr/share/layout-switcher/ui/page_layouts.py:309
+#: usr/share/layout-switcher/ui/page_layouts.py:321
+#: usr/share/layout-switcher/ui/page_extensions.py:375
+#: usr/share/layout-switcher/ui/page_extensions.py:689
+#: usr/share/layout-switcher/ui/page_extensions.py:813
 msgid "Error"
 msgstr "Pogreška"
 
+#: usr/share/layout-switcher/ui/page_themes.py:311
 msgid "User Themes required"
 msgstr "Potrebne su korisničke teme"
 
+#: usr/share/layout-switcher/ui/page_themes.py:312
 msgid "Install and enable the User Themes extension to apply shell themes."
 msgstr ""
 "Instalirajte i omogućite User Themes ekstenziju za primjenu tema ljuske."
 
+#: usr/share/layout-switcher/ui/page_themes.py:315
 msgid "Open Extensions Page"
 msgstr "Otvori stranicu ekstenzija"
 
+#: usr/share/layout-switcher/ui/page_effects.py:43
 msgid "Visual effects for your GNOME desktop"
 msgstr "Vizualni efekti za vaš GNOME desktop"
 
+#: usr/share/layout-switcher/ui/page_effects.py:105
+#: usr/share/layout-switcher/ui/page_extensions.py:208
 msgid "System extension"
 msgstr "Sistemска ekstenzija"
 
+#: usr/share/layout-switcher/ui/page_effects.py:123
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:232
+#: usr/share/layout-switcher/ui/page_extensions.py:371
+#: usr/share/layout-switcher/ui/page_extensions.py:558
 msgid "enabled"
 msgstr "omogućeno"
 
+#: usr/share/layout-switcher/ui/page_effects.py:125
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:234
+#: usr/share/layout-switcher/ui/page_extensions.py:371
 msgid "disabled"
 msgstr "onemogućeno"
 
+#: usr/share/layout-switcher/ui/page_effects.py:127
+#: usr/share/layout-switcher/ui/page_effects.py:202
+#: usr/share/layout-switcher/ui/page_extensions.py:236
+#: usr/share/layout-switcher/ui/page_extensions.py:320
 msgid "Not installed"
 msgstr "Nije instalirano"
 
+#: usr/share/layout-switcher/ui/page_effects.py:152
+#: usr/share/layout-switcher/ui/ext_detail_view.py:145
+#: usr/share/layout-switcher/ui/page_extensions.py:263
+#: usr/share/layout-switcher/ui/ext_browse_view.py:365
 #, python-brace-format
 msgid "by {author}"
 msgstr "od {author}"
 
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:278
 msgid "On"
 msgstr "Uključeno"
 
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:278
 msgid "Off"
 msgstr "Isključeno"
 
+#: usr/share/layout-switcher/ui/page_effects.py:171
+#: usr/share/layout-switcher/ui/page_extensions.py:286
+#: usr/share/layout-switcher/ui/page_extensions.py:676
 msgid "Toggle"
 msgstr "Prebaci"
 
+#: usr/share/layout-switcher/ui/page_effects.py:179
+#: usr/share/layout-switcher/ui/page_effects.py:183
+#: usr/share/layout-switcher/ui/page_effects.py:301
+#: usr/share/layout-switcher/ui/page_extensions.py:296
+#: usr/share/layout-switcher/ui/page_extensions.py:300
+#: usr/share/layout-switcher/ui/page_extensions.py:424
+#: usr/share/layout-switcher/ui/page_extensions.py:699
+#: usr/share/layout-switcher/ui/page_extensions.py:700
 msgid "Remove"
 msgstr "Ukloni"
 
+#: usr/share/layout-switcher/ui/page_effects.py:191
+#: usr/share/layout-switcher/ui/page_extensions.py:308
 msgid "Settings"
 msgstr "Postavke"
 
+#: usr/share/layout-switcher/ui/page_effects.py:206
+#: usr/share/layout-switcher/ui/page_effects.py:262
+#: usr/share/layout-switcher/ui/ext_detail_view.py:62
+#: usr/share/layout-switcher/ui/ext_detail_view.py:395
+#: usr/share/layout-switcher/ui/page_extensions.py:324
+#: usr/share/layout-switcher/ui/page_extensions.py:386
+#: usr/share/layout-switcher/ui/ext_browse_view.py:418
 msgid "Install"
 msgstr "Instaliraj"
 
+#: usr/share/layout-switcher/ui/page_effects.py:223
+#: usr/share/layout-switcher/ui/ext_detail_view.py:352
+#: usr/share/layout-switcher/ui/page_extensions.py:341
 msgid "View on GNOME Extensions"
 msgstr "Pogledaj na GNOME Extensions"
 
+#: usr/share/layout-switcher/ui/page_effects.py:258
 msgid "Install effect?"
 msgstr "Instalirati efekt?"
 
+#: usr/share/layout-switcher/ui/page_effects.py:259
+#: usr/share/layout-switcher/ui/page_extensions.py:383
 msgid "Will try to install automatically."
 msgstr "Pokušat će se automatski instalirati."
 
+#: usr/share/layout-switcher/ui/page_effects.py:270
+#: usr/share/layout-switcher/ui/page_extensions.py:392
 msgid "Installing…"
 msgstr "Instalira se…"
 
+#: usr/share/layout-switcher/ui/page_effects.py:281
+#: usr/share/layout-switcher/ui/page_extensions.py:404
+#: usr/share/layout-switcher/ui/page_extensions.py:558
+#: usr/share/layout-switcher/ui/ext_browse_view.py:458
 msgid "installed"
 msgstr "instalirano"
 
+#: usr/share/layout-switcher/ui/page_effects.py:284
+#: usr/share/layout-switcher/ui/page_extensions.py:407
+#: usr/share/layout-switcher/ui/ext_browse_view.py:463
 msgid "Install failed"
 msgstr "Instalacija nije uspjela"
 
+#: usr/share/layout-switcher/ui/page_effects.py:293
+#: usr/share/layout-switcher/ui/page_extensions.py:416
 msgid "System extension — cannot remove"
 msgstr "Sustavna ekstenzija — ne može se ukloniti"
 
+#: usr/share/layout-switcher/ui/page_effects.py:297
 msgid "Remove effect?"
 msgstr "Ukloniti efekt?"
 
+#: usr/share/layout-switcher/ui/page_effects.py:298
+#: usr/share/layout-switcher/ui/page_extensions.py:421
 msgid "This cannot be undone."
 msgstr "Ovo se ne može poništiti."
 
+#: usr/share/layout-switcher/ui/page_effects.py:313
+#: usr/share/layout-switcher/ui/page_extensions.py:436
 msgid "removed"
 msgstr "uklonjeno"
 
+#: usr/share/layout-switcher/ui/page_effects.py:315
+#: usr/share/layout-switcher/ui/page_extensions.py:438
 msgid "Remove failed"
 msgstr "Uklanjanje nije uspjelo"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:102
 msgid "System fonts"
 msgstr "Sustavni fontovi"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:103
 msgid "Fonts used by the GNOME interface"
 msgstr "Fontovi koje koristi GNOME sučelje"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:107
 msgid "Interface"
 msgstr "Sučelje"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:113
 msgid "Document"
 msgstr "Dokument"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:119
 msgid "Monospace"
 msgstr "Monospace"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:125
 msgid "Window titles (legacy)"
 msgstr "Naslovi prozora (naslijeđeno)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:142
+#: usr/share/layout-switcher/ui/page_fonts.py:486
 msgid "(not set)"
 msgstr "(nije postavljeno)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:144
 msgid "Choose…"
 msgstr "Odaberi…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:158
 msgid "Choose font"
 msgstr "Odaberi font"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:174
 msgid "Font updated"
 msgstr "Font ažuriran"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:176
+#: usr/share/layout-switcher/ui/page_fonts.py:241
+#: usr/share/layout-switcher/ui/page_extensions.py:732
 msgid "Update failed"
 msgstr "Ažuriranje nije uspjelo"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:185
 msgid "Appearance"
 msgstr "Izgled"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:186
 msgid "How fonts are rendered on screen"
 msgstr "Kako se fontovi prikazuju na zaslonu"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:190
 msgid "Hinting"
 msgstr "Podešavanje naznaka"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:194
+#: usr/share/layout-switcher/ui/page_fonts.py:207
 msgid "None"
 msgstr "Nema"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:195
 msgid "Slight"
 msgstr "Blago"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:196
 msgid "Medium"
 msgstr "Srednje"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:197
 msgid "Full"
 msgstr "Puno"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:203
 msgid "Antialiasing"
 msgstr "Antialiasing"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:208
 msgid "Grayscale"
 msgstr "Sivo toniranje"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:209
 msgid "Subpixel (RGBA)"
 msgstr "Subpiksel (RGBA)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Installed fonts"
 msgstr "Instalirani fontovi"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:252
 msgid "Browse font families installed on your system"
 msgstr "Pregledajte obitelji fontova instaliranih na vašem sustavu"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:259
 msgid "Search fonts…"
 msgstr "Pretraži fontove…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:266
 msgid "Refresh font list"
 msgstr "Osvježi popis fontova"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:310
 msgid "Loading fonts…"
 msgstr "Učitavanje fontova…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:340
 msgid "No fonts match your search"
 msgstr "Nema fontova koji odgovaraju vašoj pretrazi"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:360
 msgid "(refine search to see more)"
 msgstr "(precizirajte pretragu za više rezultata)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:362
 msgid "fonts"
 msgstr "fontovi"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:380
 msgid "The quick brown fox jumps over the lazy dog 0123"
 msgstr "Gojazni đačić s biciklom drži hmelj i finu vatu u džepu nošnje 0123"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:404
 msgid "Install more fonts"
 msgstr "Instalirajte više fontova"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:407
 msgid "Browse Google Fonts"
 msgstr "Pregledajte Google Fonts"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:408
 msgid "Opens fonts.google.com in your browser"
 msgstr "Otvara fonts.google.com u vašem pregledniku"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:421
 msgid "How to install"
 msgstr "Kako instalirati"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:424
 msgid ""
 "Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
 "refresh this list."
@@ -331,12 +471,15 @@ msgstr ""
 "Postavite .ttf/.otf datoteke u ~/.local/share/fonts/ zatim pokrenite 'fc-"
 "cache -f -v' i osvježite ovaj popis."
 
+#: usr/share/layout-switcher/ui/page_fonts.py:436
 msgid "Reset to system defaults"
 msgstr "Vraćanje na tvorničke postavke sustava"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:445
 msgid "Reset all font settings?"
 msgstr "Želite li resetirati sve postavke fonta?"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:447
 msgid ""
 "Interface, document, monospace and window-title fonts will return to system "
 "defaults. Hinting and antialiasing reset too."
@@ -344,91 +487,48 @@ msgstr ""
 "Fontovi sučelja, dokumenata, monospace i naslova prozora vratit će se na "
 "tvorničke postavke sustava. Također će se resetirati hinting i antialiasing."
 
+#: usr/share/layout-switcher/ui/page_fonts.py:452
 msgid "Reset"
 msgstr "Resetiraj"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:472
 msgid "Fonts reset to defaults"
 msgstr "Fontovi vraćeni na tvorničke postavke"
 
-msgid "Featured"
-msgstr "Istaknuto"
-
-msgid "Installed"
-msgstr "Instalirano"
-
-msgid "Install extension?"
-msgstr "Instalirati proširenje?"
-
-msgid "Remove extension?"
-msgstr "Ukloniti proširenje?"
-
-msgid "Open GNOME Extensions"
-msgstr "Otvori GNOME Extensions"
-
-msgid "No extensions installed"
-msgstr "Nema instaliranih proširenja"
-
-msgid "Enabled"
-msgstr "Omogućeno"
-
-msgid "Disabled"
-msgstr "Onemogućeno"
-
-msgid "system"
-msgstr "sustav"
-
-msgid "Disable All"
-msgstr "Onemogući sve"
-
-msgid "Enable All"
-msgstr "Omogući sve"
-
-msgid "Disable all extensions?"
-msgstr "Onemogućiti sve ekstenzije?"
-
-msgid "All extensions will be disabled. You can re-enable them later."
-msgstr ""
-"Sve će ekstenzije biti onemogućene. Možete ih ponovno omogućiti kasnije."
-
-msgid "All extensions disabled"
-msgstr "Sve ekstenzije onemogućene"
-
-msgid "All extensions enabled"
-msgstr "Sve ekstenzije omogućene"
-
-msgid "Click a layout to apply"
-msgstr "Kliknite izgled za primjenu"
-
+#: usr/share/layout-switcher/ui/page_layouts.py:54
 msgid "Layout status"
 msgstr "Status izgleda"
 
-msgid ""
-"Marked layouts contain your saved customizations — click to resume them or "
-"apply the original."
-msgstr "Označeni izgledi sadrže spremljene prilagodbe — kliknite da ih nastavite ili primijenite izvorni."
-
+#: usr/share/layout-switcher/ui/page_layouts.py:128
 msgid "Contains your saved customizations"
 msgstr "Sadrži vaše spremljene prilagodbe"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:132
 msgid "Modified"
 msgstr "Izmijenjeno"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:194
 msgid "This layout is already active"
 msgstr "Ovaj izgled je već aktivan"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+#, fuzzy
 msgid ""
-"You have previously modified this layout. Resume your changes or apply the "
-"original system default?"
+"You have previously modified this layout. Apply the original system default "
+"or resume your changes?"
 msgstr ""
 "Prije ste mijenjali ovaj izgled. Želite li nastaviti s promjenama ili "
 "primijeniti izvorne sistemske postavke?"
 
-msgid "Apply original"
-msgstr "Primijeni izvorno"
-
+#: usr/share/layout-switcher/ui/page_layouts.py:211
 msgid "Resume my changes"
 msgstr "Nastavi moje promjene"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:212
+msgid "Apply original"
+msgstr "Primijeni izvorno"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:218
 msgid ""
 "Apply this layout? A backup of your current configuration will be created "
 "automatically."
@@ -436,44 +536,405 @@ msgstr ""
 "Primijeniti ovaj izgled? Sigurnosna kopija vaše trenutne konfiguracije bit "
 "će automatski kreirana."
 
+#: usr/share/layout-switcher/ui/page_layouts.py:223
 msgid "Apply"
 msgstr "Primijeni"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:253
 msgid "Applying"
 msgstr "Primjena"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:260
 msgid "Snapshot not found"
 msgstr "Snimka nije pronađena"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:280
 msgid "Layout file not found"
 msgstr "Datoteka izgleda nije pronađena"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:292
+#: usr/share/layout-switcher/ui/page_layouts.py:296
+#: usr/share/layout-switcher/ui/page_layouts.py:307
 msgid "applied"
 msgstr "primijenjeno"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:297
 msgid "Undo"
 msgstr "Poništi"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:331
 msgid "Layout restored"
 msgstr "Izgled vraćen"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:333
 msgid "Previous layout restored"
 msgstr "Prethodni izgled vraćen"
 
-msgid "Default Big Gnome layout"
-msgstr "Zadani Big Gnome izgled"
+#: usr/share/layout-switcher/ui/window.py:60
+#: usr/share/layout-switcher/ui/window.py:278
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
 
-msgid "Clean and contemporary desktop"
-msgstr "Čista i suvremena radna površina"
+#: usr/share/layout-switcher/ui/window.py:168
+#: usr/share/layout-switcher/ui/window.py:169
+msgid "Show Sidebar"
+msgstr "Prikaži bočnu traku"
 
-msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
-msgstr "Centrirani dock-traka zadataka, stil Windows 11 / Deepin / Pop!_OS"
+#: usr/share/layout-switcher/ui/window.py:175
+#: usr/share/layout-switcher/ui/window.py:302
+#: usr/share/layout-switcher/ui/window.py:373
+msgid "Layouts"
+msgstr "Izgledi"
 
-msgid "Unity-style layout with left dock and top bar"
-msgstr "Unity-stil izgleda s lijevim dockom i gornjom trakom"
+#: usr/share/layout-switcher/ui/window.py:181
+msgid "Menu"
+msgstr "Izbornik"
 
-msgid "Traditional desktop with taskbar and system tray"
-msgstr "Tradicionalna radna površina s trakom zadataka i sistemskom ladicom"
+#: usr/share/layout-switcher/ui/window.py:182
+msgid "Main menu"
+msgstr "Glavni izbornik"
 
-msgid "Near-vanilla GNOME with minimal distro tweaks"
-msgstr "Gotovo neizmijenjeni GNOME s minimalnim prilagodbama distribucije"
+#: usr/share/layout-switcher/ui/window.py:186
+msgid "Check for updates"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/window.py:187
+#, fuzzy
+msgid "Auto-update extensions"
+msgstr "Sistemска ekstenzija"
+
+#: usr/share/layout-switcher/ui/window.py:189
+msgid "Backups…"
+msgstr "Sigurnosne kopije…"
+
+#: usr/share/layout-switcher/ui/window.py:190
+msgid "About"
+msgstr "O aplikaciji"
+
+#: usr/share/layout-switcher/ui/window.py:199
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr "Dobrodošli! Odaberite izgled radne površine ispod za početak."
+
+#: usr/share/layout-switcher/ui/window.py:200
+msgid "Got it"
+msgstr "Razumijem"
+
+#: usr/share/layout-switcher/ui/window.py:303
+#: usr/share/layout-switcher/ui/window.py:374
+msgid "Fonts"
+msgstr "Fontovi"
+
+#: usr/share/layout-switcher/ui/window.py:304
+#: usr/share/layout-switcher/ui/window.py:375
+msgid "Themes"
+msgstr "Teme"
+
+#: usr/share/layout-switcher/ui/window.py:305
+#: usr/share/layout-switcher/ui/window.py:376
+msgid "Effects"
+msgstr "Efekti"
+
+#: usr/share/layout-switcher/ui/window.py:306
+#: usr/share/layout-switcher/ui/window.py:377
+msgid "Extensions"
+msgstr "Ekstenzije"
+
+#: usr/share/layout-switcher/ui/window.py:405
+msgid "Community Layout Switcher"
+msgstr "Community Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:410
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "Izgled, efekti i teme za vaš GNOME desktop."
+
+#: usr/share/layout-switcher/ui/window.py:457
+#, fuzzy
+msgid "All extensions up to date"
+msgstr "Sve ekstenzije onemogućene"
+
+#: usr/share/layout-switcher/ui/window.py:469
+#, python-brace-format
+msgid "Auto-updated {n} extensions"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/window.py:474
+#, fuzzy, python-brace-format
+msgid "{n} update(s) available"
+msgstr "dostupnih tema"
+
+#: usr/share/layout-switcher/ui/window.py:481
+#, fuzzy
+msgid "Auto-update enabled"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/window.py:481
+#, fuzzy
+msgid "Auto-update disabled"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:101
+#, fuzzy
+msgid "Loading extension details…"
+msgstr "Učitavanje fontova…"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:108
+msgid "Could not load details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:109
+#: usr/share/layout-switcher/ui/ext_browse_view.py:158
+msgid "Check your network connection and try again."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:112
+#: usr/share/layout-switcher/ui/ext_browse_view.py:161
+msgid "Retry"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:204
+#, python-brace-format
+msgid "{n} ratings"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:207
+msgid "downloads"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:210
+msgid "compatibility"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:252
+msgid "Description"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:267
+msgid "Recent comments"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:280
+msgid "View all comments on extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:341
+msgid "Links"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:348
+msgid "Homepage"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:357
+#, python-brace-format
+msgid "License: {lic}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:385
+#: usr/share/layout-switcher/ui/page_extensions.py:564
+#: usr/share/layout-switcher/ui/page_extensions.py:650
+#: usr/share/layout-switcher/ui/page_extensions.py:661
+#, fuzzy
+msgid "Update"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:390
+msgid "Open prefs"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:407
+msgid "Working…"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:425
+#, fuzzy, python-brace-format
+msgid "{name} installed"
+msgstr "instalirano"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:429
+#, fuzzy
+msgid "Operation failed"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:82
+msgid "Featured"
+msgstr "Istaknuto"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:83
+#: usr/share/layout-switcher/ui/page_extensions.py:118
+msgid "Browse"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:84
+#: usr/share/layout-switcher/ui/page_extensions.py:544
+#: usr/share/layout-switcher/ui/ext_browse_view.py:412
+msgid "Installed"
+msgstr "Instalirano"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:220
+#, fuzzy
+msgid "Update available"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:382
+msgid "Install extension?"
+msgstr "Instalirati proširenje?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:420
+msgid "Remove extension?"
+msgstr "Ukloniti proširenje?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:486
+#: usr/share/layout-switcher/ui/page_extensions.py:564
+#, fuzzy
+msgid "Update all"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:494
+msgid "Open GNOME Extensions"
+msgstr "Otvori GNOME Extensions"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:550
+msgid "No extensions installed"
+msgstr "Nema instaliranih proširenja"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:560
+#, fuzzy
+msgid "update available"
+msgstr "dostupnih tema"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:572
+msgid "Enabled"
+msgstr "Omogućeno"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:573
+msgid "Disabled"
+msgstr "Onemogućeno"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:655
+#, python-brace-format
+msgid "Update from v{old} to v{new}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:668
+msgid "system"
+msgstr "sustav"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:727
+#, python-brace-format
+msgid "{name} updated to v{ver}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:756
+#, fuzzy, python-brace-format
+msgid "Updated {n} extensions"
+msgstr "Sistemска ekstenzija"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:761
+#, fuzzy, python-brace-format
+msgid "Updated {n}/{t}; failed: {f}"
+msgstr "Ažuriranje nije uspjelo"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:772
+#: usr/share/layout-switcher/ui/page_extensions.py:790
+msgid "Disable All"
+msgstr "Onemogući sve"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:772
+msgid "Enable All"
+msgstr "Omogući sve"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:786
+msgid "Disable all extensions?"
+msgstr "Onemogućiti sve ekstenzije?"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:787
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr ""
+"Sve će ekstenzije biti onemogućene. Možete ih ponovno omogućiti kasnije."
+
+#: usr/share/layout-switcher/ui/page_extensions.py:807
+msgid "All extensions disabled"
+msgstr "Sve ekstenzije onemogućene"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:807
+msgid "All extensions enabled"
+msgstr "Sve ekstenzije omogućene"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:77
+msgid "Search extensions on extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:85
+msgid "Sort by"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:96
+#, python-brace-format
+msgid "Only compatible with GNOME {ver}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:123
+#, fuzzy
+msgid "Browse extensions"
+msgstr "Sistemска ekstenzija"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:124
+msgid "Search above or hit Enter to load popular extensions."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:127
+msgid "Load popular"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:143
+#, fuzzy
+msgid "Loading…"
+msgstr "Učitavanje fontova…"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:150
+msgid "No results"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:151
+msgid "Try a different search or sort."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:157
+msgid "Could not reach extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:195
+msgid "Previous page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:206
+msgid "Next page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:217
+msgid "Shell"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:263
+#, python-brace-format
+msgid "Page {p} of {t}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:332
+#, python-brace-format
+msgid "{name} — open details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:402
+msgid "Details"
+msgstr ""
+
+#~ msgid "Click a layout to apply"
+#~ msgstr "Kliknite izgled za primjenu"
+
+#~ msgid ""
+#~ "Marked layouts contain your saved customizations — click to resume them "
+#~ "or apply the original."
+#~ msgstr ""
+#~ "Označeni izgledi sadrže spremljene prilagodbe — kliknite da ih nastavite "
+#~ "ili primijenite izvorni."

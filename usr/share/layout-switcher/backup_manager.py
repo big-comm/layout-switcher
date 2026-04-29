@@ -133,11 +133,18 @@ class BackupManager:
         # Import aqui para evitar ciclo (layout_applier nao importa backup).
         from layout_applier import LayoutApplier
 
-        ok, out = LayoutApplier.load_dconf_safely(data, persist=True)
+        local_dtp_monitors = LayoutApplier._read_dtp_monitor_keys()
+        before = LayoutApplier._enabled_extensions()
+        ok, out = LayoutApplier.load_dconf_safely(
+            data,
+            persist=True,
+            dtp_local_monitors=local_dtp_monitors,
+        )
         if not ok:
             return False, f"dconf load failed: {out}"
 
-        ShellReloader.reload_all()
+        after = LayoutApplier._enabled_extensions()
+        ShellReloader.reload_all(before_uuids=before, after_uuids=after)
         return True, out
 
     # ── Privado ───────────────────────────────────────────────────────────────

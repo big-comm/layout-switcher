@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 22:13-0300\n"
+"POT-Creation-Date: 2026-04-28 21:34-0300\n"
 "PO-Revision-Date: 2026-04-22 14:32\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Greek <el@li.org>\n"
@@ -12,327 +12,464 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: usr/share/layout-switcher/constants.py:184
+msgid "Default Big Gnome layout"
+msgstr "Προεπιλεγμένη διάταξη Big Gnome"
+
+#: usr/share/layout-switcher/constants.py:191
+msgid "Clean and contemporary desktop"
+msgstr "Καθαρή και σύγχρονη επιφάνεια εργασίας"
+
+#: usr/share/layout-switcher/constants.py:198
+msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
+msgstr "Κεντραρισμένο dock-γραμμή εργασιών, στυλ Windows 11 / Deepin / Pop!_OS"
+
+#: usr/share/layout-switcher/constants.py:205
+msgid "Unity-style layout with left dock and top bar"
+msgstr "Διάταξη στυλ Unity με αριστερό dock και πάνω γραμμή"
+
+#: usr/share/layout-switcher/constants.py:212
+msgid "Traditional desktop with taskbar and system tray"
+msgstr ""
+"Παραδοσιακός επιφάνεια εργασίας με γραμμή εργασιών και δίσκο συστήματος"
+
+#: usr/share/layout-switcher/constants.py:219
+msgid "Near-vanilla GNOME with minimal distro tweaks"
+msgstr "Σχεδόν καθαρό GNOME με ελάχιστες τροποποιήσεις διανομής"
+
+#: usr/share/layout-switcher/ui/dialog_backups.py:57
 msgid "Backups"
 msgstr "Αντίγραφα ασφαλείας"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:72
 msgid "Create backup now"
 msgstr "Δημιουργία αντιγράφου ασφαλείας τώρα"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:74
 msgid "Snapshot current dconf settings"
 msgstr "Λήψη στιγμιότυπου τρεχουσών ρυθμίσεων dconf"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:87
 msgid "No backups yet"
 msgstr "Δεν υπάρχουν αντίγραφα ασφαλείας ακόμα"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:89
 msgid "A backup is created automatically every time you apply a layout."
 msgstr ""
 "Ένα αντίγραφο ασφαλείας δημιουργείται αυτόματα κάθε φορά που εφαρμόζετε ένα "
 "layout."
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:142
 msgid "Latest"
 msgstr "Τελευταίο"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:147
 msgid "Restore this backup"
 msgstr "Επαναφορά αυτού του αντιγράφου ασφαλείας"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:155
 msgid "Delete this backup"
 msgstr "Διαγραφή αυτού του αντιγράφου ασφαλείας"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:169
 msgid "Backup created"
 msgstr "Το αντίγραφο ασφαλείας δημιουργήθηκε"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:172
+#: usr/share/layout-switcher/ui/page_layouts.py:234
 msgid "Backup failed"
 msgstr "Η δημιουργία αντιγράφου ασφαλείας απέτυχε"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:176
 msgid "Restore this backup?"
 msgstr "Να επαναφερθεί αυτό το αντίγραφο ασφαλείας;"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:178
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr "Οι επισημασμένες διατάξεις περιέχουν τις αποθηκευμένες προσαρμογές σας — κάντε κλικ για να τις συνεχίσετε ή να εφαρμόσετε την αρχική.""Όλες οι τρέχουσες ρυθμίσεις dconf θα αντικατασταθούν με το στιγμιότυπο από "
-"{ts}."
+msgstr ""
+"Οι επισημασμένες διατάξεις περιέχουν τις αποθηκευμένες προσαρμογές σας — "
+"κάντε κλικ για να τις συνεχίσετε ή να εφαρμόσετε την αρχική.Όλες οι "
+"τρέχουσες ρυθμίσεις dconf θα αντικατασταθούν με το στιγμιότυπο από {ts}."
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:181
+#: usr/share/layout-switcher/ui/dialog_backups.py:206
+#: usr/share/layout-switcher/ui/page_themes.py:314
+#: usr/share/layout-switcher/ui/page_effects.py:261
+#: usr/share/layout-switcher/ui/page_effects.py:300
+#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/page_layouts.py:210
+#: usr/share/layout-switcher/ui/page_layouts.py:222
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+#: usr/share/layout-switcher/ui/page_extensions.py:423
+#: usr/share/layout-switcher/ui/page_extensions.py:789
 msgid "Cancel"
 msgstr "Ακύρωση"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:182
 msgid "Restore"
 msgstr "Επαναφορά"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Backup restored"
 msgstr "Το αντίγραφο ασφαλείας επαναφέρθηκε"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:196
 msgid "Restore failed"
 msgstr "Η επαναφορά απέτυχε"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:203
 msgid "Delete this backup?"
 msgstr "Να διαγραφεί αυτό το αντίγραφο ασφαλείας;"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:207
 msgid "Delete"
 msgstr "Διαγραφή"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Backup deleted"
 msgstr "Το αντίγραφο ασφαλείας διαγράφηκε"
 
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
 msgid "Delete failed"
 msgstr "Η διαγραφή απέτυχε"
 
-msgid "Layout Switcher"
-msgstr "Layout Switcher"
-
-msgid "Show Sidebar"
-msgstr "Εμφάνιση πλαϊνής στήλης"
-
-msgid "Layouts"
-msgstr "Διατάξεις"
-
-msgid "Menu"
-msgstr "Μενού"
-
-msgid "Main menu"
-msgstr "Κύριο μενού"
-
-msgid "Backups…"
-msgstr "Αντίγραφα ασφαλείας…"
-
-msgid "About"
-msgstr "Σχετικά"
-
-msgid "Welcome! Choose a desktop layout below to get started."
-msgstr ""
-"Καλώς ήρθατε! Επιλέξτε μια διάταξη επιφάνειας εργασίας παρακάτω για να "
-"ξεκινήσετε.|NL|"
-
-msgid "Got it"
-msgstr "Κατάλαβα"
-
-msgid "Fonts"
-msgstr "Γραμματοσειρές"
-
-msgid "Themes"
-msgstr "Θέματα"
-
-msgid "Effects"
-msgstr "Εφέ"
-
-msgid "Extensions"
-msgstr "Επεκτάσεις"
-
-msgid "Community Layout Switcher"
-msgstr "Κοινότητα Layout Switcher"
-
-msgid "Layouts, effects and themes for your GNOME desktop."
-msgstr "Διατάξεις, εφέ και θέματα για την επιφάνεια εργασίας GNOME σας."
-
+#: usr/share/layout-switcher/ui/page_themes.py:71
 msgid "Filter themes…"
 msgstr "Φιλτράρισμα θεμάτων…"
 
+#: usr/share/layout-switcher/ui/page_themes.py:107
 msgid "Icons"
 msgstr "Εικονίδια"
 
+#: usr/share/layout-switcher/ui/page_themes.py:187
 msgid "No themes found"
 msgstr "Δεν βρέθηκαν θέματα"
 
+#: usr/share/layout-switcher/ui/page_themes.py:188
 msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Εγκαταστήστε θέματα στο ~/.themes ή /usr/share/themes"
 
+#: usr/share/layout-switcher/ui/page_themes.py:195
 msgid "themes available"
 msgstr "διαθέσιμα θέματα"
 
+#: usr/share/layout-switcher/ui/page_themes.py:262
 msgid "theme"
 msgstr "θέμα"
 
+#: usr/share/layout-switcher/ui/page_themes.py:264
+#: usr/share/layout-switcher/ui/page_layouts.py:146
+#: usr/share/layout-switcher/ui/page_layouts.py:185
 msgid "Active"
 msgstr "Ενεργό"
 
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_effects.py:251
+#: usr/share/layout-switcher/ui/page_layouts.py:309
+#: usr/share/layout-switcher/ui/page_layouts.py:321
+#: usr/share/layout-switcher/ui/page_extensions.py:375
+#: usr/share/layout-switcher/ui/page_extensions.py:689
+#: usr/share/layout-switcher/ui/page_extensions.py:813
 msgid "Error"
 msgstr "Σφάλμα"
 
+#: usr/share/layout-switcher/ui/page_themes.py:311
 msgid "User Themes required"
 msgstr "Απαιτούνται User Themes"
 
+#: usr/share/layout-switcher/ui/page_themes.py:312
 msgid "Install and enable the User Themes extension to apply shell themes."
 msgstr ""
 "Εγκαταστήστε και ενεργοποιήστε την επέκταση User Themes για να εφαρμόσετε "
 "θέματα κελύφους."
 
+#: usr/share/layout-switcher/ui/page_themes.py:315
 msgid "Open Extensions Page"
 msgstr "Άνοιγμα σελίδας Επεκτάσεων"
 
+#: usr/share/layout-switcher/ui/page_effects.py:43
 msgid "Visual effects for your GNOME desktop"
 msgstr "Οπτικά εφέ για την επιφάνεια εργασίας GNOME σας"
 
+#: usr/share/layout-switcher/ui/page_effects.py:105
+#: usr/share/layout-switcher/ui/page_extensions.py:208
 msgid "System extension"
 msgstr "Επέκταση συστήματος"
 
+#: usr/share/layout-switcher/ui/page_effects.py:123
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:232
+#: usr/share/layout-switcher/ui/page_extensions.py:371
+#: usr/share/layout-switcher/ui/page_extensions.py:558
 msgid "enabled"
 msgstr "ενεργοποιημένο"
 
+#: usr/share/layout-switcher/ui/page_effects.py:125
+#: usr/share/layout-switcher/ui/page_effects.py:247
+#: usr/share/layout-switcher/ui/page_extensions.py:234
+#: usr/share/layout-switcher/ui/page_extensions.py:371
 msgid "disabled"
 msgstr "απενεργοποιημένο"
 
+#: usr/share/layout-switcher/ui/page_effects.py:127
+#: usr/share/layout-switcher/ui/page_effects.py:202
+#: usr/share/layout-switcher/ui/page_extensions.py:236
+#: usr/share/layout-switcher/ui/page_extensions.py:320
 msgid "Not installed"
 msgstr "Δεν είναι εγκατεστημένο"
 
+#: usr/share/layout-switcher/ui/page_effects.py:152
+#: usr/share/layout-switcher/ui/ext_detail_view.py:145
+#: usr/share/layout-switcher/ui/page_extensions.py:263
+#: usr/share/layout-switcher/ui/ext_browse_view.py:365
 #, python-brace-format
 msgid "by {author}"
 msgstr "από {author}"
 
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:278
 msgid "On"
 msgstr "Ενεργό"
 
+#: usr/share/layout-switcher/ui/page_effects.py:163
+#: usr/share/layout-switcher/ui/page_extensions.py:278
 msgid "Off"
 msgstr "Ανενεργό"
 
+#: usr/share/layout-switcher/ui/page_effects.py:171
+#: usr/share/layout-switcher/ui/page_extensions.py:286
+#: usr/share/layout-switcher/ui/page_extensions.py:676
 msgid "Toggle"
 msgstr "Εναλλαγή"
 
+#: usr/share/layout-switcher/ui/page_effects.py:179
+#: usr/share/layout-switcher/ui/page_effects.py:183
+#: usr/share/layout-switcher/ui/page_effects.py:301
+#: usr/share/layout-switcher/ui/page_extensions.py:296
+#: usr/share/layout-switcher/ui/page_extensions.py:300
+#: usr/share/layout-switcher/ui/page_extensions.py:424
+#: usr/share/layout-switcher/ui/page_extensions.py:699
+#: usr/share/layout-switcher/ui/page_extensions.py:700
 msgid "Remove"
 msgstr "Αφαίρεση"
 
+#: usr/share/layout-switcher/ui/page_effects.py:191
+#: usr/share/layout-switcher/ui/page_extensions.py:308
 msgid "Settings"
 msgstr "Ρυθμίσεις"
 
+#: usr/share/layout-switcher/ui/page_effects.py:206
+#: usr/share/layout-switcher/ui/page_effects.py:262
+#: usr/share/layout-switcher/ui/ext_detail_view.py:62
+#: usr/share/layout-switcher/ui/ext_detail_view.py:395
+#: usr/share/layout-switcher/ui/page_extensions.py:324
+#: usr/share/layout-switcher/ui/page_extensions.py:386
+#: usr/share/layout-switcher/ui/ext_browse_view.py:418
 msgid "Install"
 msgstr "Εγκατάσταση"
 
+#: usr/share/layout-switcher/ui/page_effects.py:223
+#: usr/share/layout-switcher/ui/ext_detail_view.py:352
+#: usr/share/layout-switcher/ui/page_extensions.py:341
 msgid "View on GNOME Extensions"
 msgstr "Προβολή στο GNOME Extensions"
 
+#: usr/share/layout-switcher/ui/page_effects.py:258
 msgid "Install effect?"
 msgstr "Εγκατάσταση εφέ;"
 
+#: usr/share/layout-switcher/ui/page_effects.py:259
+#: usr/share/layout-switcher/ui/page_extensions.py:383
 msgid "Will try to install automatically."
 msgstr "Θα προσπαθήσει να εγκατασταθεί αυτόματα."
 
+#: usr/share/layout-switcher/ui/page_effects.py:270
+#: usr/share/layout-switcher/ui/page_extensions.py:392
 msgid "Installing…"
 msgstr "Εγκατάσταση…"
 
+#: usr/share/layout-switcher/ui/page_effects.py:281
+#: usr/share/layout-switcher/ui/page_extensions.py:404
+#: usr/share/layout-switcher/ui/page_extensions.py:558
+#: usr/share/layout-switcher/ui/ext_browse_view.py:458
 msgid "installed"
 msgstr "εγκαταστάθηκε"
 
+#: usr/share/layout-switcher/ui/page_effects.py:284
+#: usr/share/layout-switcher/ui/page_extensions.py:407
+#: usr/share/layout-switcher/ui/ext_browse_view.py:463
 msgid "Install failed"
 msgstr "Η εγκατάσταση απέτυχε"
 
+#: usr/share/layout-switcher/ui/page_effects.py:293
+#: usr/share/layout-switcher/ui/page_extensions.py:416
 msgid "System extension — cannot remove"
 msgstr "Επέκταση συστήματος — δεν μπορεί να αφαιρεθεί"
 
+#: usr/share/layout-switcher/ui/page_effects.py:297
 msgid "Remove effect?"
 msgstr "Αφαίρεση εφέ;"
 
+#: usr/share/layout-switcher/ui/page_effects.py:298
+#: usr/share/layout-switcher/ui/page_extensions.py:421
 msgid "This cannot be undone."
 msgstr "Αυτό δεν μπορεί να αναιρεθεί."
 
+#: usr/share/layout-switcher/ui/page_effects.py:313
+#: usr/share/layout-switcher/ui/page_extensions.py:436
 msgid "removed"
 msgstr "αφαιρέθηκε"
 
+#: usr/share/layout-switcher/ui/page_effects.py:315
+#: usr/share/layout-switcher/ui/page_extensions.py:438
 msgid "Remove failed"
 msgstr "Η αφαίρεση απέτυχε"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:102
 msgid "System fonts"
 msgstr "Γραμματοσειρές συστήματος"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:103
 msgid "Fonts used by the GNOME interface"
 msgstr "Γραμματοσειρές που χρησιμοποιούνται από το περιβάλλον GNOME"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:107
 msgid "Interface"
 msgstr "Περιβάλλον"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:113
 msgid "Document"
 msgstr "Έγγραφο"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:119
 msgid "Monospace"
 msgstr "Μονοδιάστατη (Monospace)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:125
 msgid "Window titles (legacy)"
 msgstr "Τίτλοι παραθύρων (παλαιά έκδοση)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:142
+#: usr/share/layout-switcher/ui/page_fonts.py:486
 msgid "(not set)"
 msgstr "(δεν έχει οριστεί)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:144
 msgid "Choose…"
 msgstr "Επιλογή…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:158
 msgid "Choose font"
 msgstr "Επιλογή γραμματοσειράς"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:174
 msgid "Font updated"
 msgstr "Η γραμματοσειρά ενημερώθηκε"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:176
+#: usr/share/layout-switcher/ui/page_fonts.py:241
+#: usr/share/layout-switcher/ui/page_extensions.py:732
 msgid "Update failed"
 msgstr "Η ενημέρωση απέτυχε"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:185
 msgid "Appearance"
 msgstr "Εμφάνιση"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:186
 msgid "How fonts are rendered on screen"
 msgstr "Πώς αποδίδονται οι γραμματοσειρές στην οθόνη"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:190
 msgid "Hinting"
 msgstr "Υπόδειξη"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:194
+#: usr/share/layout-switcher/ui/page_fonts.py:207
 msgid "None"
 msgstr "Καμία"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:195
 msgid "Slight"
 msgstr "Ελαφριά"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:196
 msgid "Medium"
 msgstr "Μέτρια"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:197
 msgid "Full"
 msgstr "Πλήρης"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:203
 msgid "Antialiasing"
 msgstr "Αντιαλίασινγκ"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:208
 msgid "Grayscale"
 msgstr "Αποχρώσεις του γκρι"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:209
 msgid "Subpixel (RGBA)"
 msgstr "Υποπίξελ (RGBA)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Installed fonts"
 msgstr "Εγκατεστημένες γραμματοσειρές"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:252
 msgid "Browse font families installed on your system"
 msgstr ""
 "Περιηγηθείτε στις οικογένειες γραμματοσειρών που είναι εγκατεστημένες στο "
 "σύστημά σας"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:259
 msgid "Search fonts…"
 msgstr "Αναζήτηση γραμματοσειρών…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:266
 msgid "Refresh font list"
 msgstr "Ανανέωση λίστας γραμματοσειρών"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:310
 msgid "Loading fonts…"
 msgstr "Φόρτωση γραμματοσειρών…"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:340
 msgid "No fonts match your search"
 msgstr "Καμία γραμματοσειρά δεν ταιριάζει με την αναζήτησή σας"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:360
 msgid "(refine search to see more)"
 msgstr "(συμπληρώστε την αναζήτηση για να δείτε περισσότερα)"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:362
 msgid "fonts"
 msgstr "γραμματοσειρές"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:380
 msgid "The quick brown fox jumps over the lazy dog 0123"
 msgstr "Θέλει αρετή και τόλμη η ελευθερία 0123"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:404
 msgid "Install more fonts"
 msgstr "Εγκατάσταση περισσότερων γραμματοσειρών"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:407
 msgid "Browse Google Fonts"
 msgstr "Περιήγηση στο Google Fonts"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:408
 msgid "Opens fonts.google.com in your browser"
 msgstr "Ανοίγει το fonts.google.com στον περιηγητή σας"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:421
 msgid "How to install"
 msgstr "Πώς να εγκαταστήσετε"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:424
 msgid ""
 "Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
 "refresh this list."
@@ -340,12 +477,15 @@ msgstr ""
 "Τοποθετήστε αρχεία .ttf/.otf στο ~/.local/share/fonts/ και στη συνέχεια "
 "εκτελέστε 'fc-cache -f -v' και ανανεώστε αυτή τη λίστα."
 
+#: usr/share/layout-switcher/ui/page_fonts.py:436
 msgid "Reset to system defaults"
 msgstr "Επαναφορά στις προεπιλογές συστήματος"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:445
 msgid "Reset all font settings?"
 msgstr "Να επαναφερθούν όλες οι ρυθμίσεις γραμματοσειράς;"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:447
 msgid ""
 "Interface, document, monospace and window-title fonts will return to system "
 "defaults. Hinting and antialiasing reset too."
@@ -354,92 +494,48 @@ msgstr ""
 "επανέλθουν στις προεπιλογές συστήματος. Επαναφέρονται επίσης το hinting και "
 "το antialiasing."
 
+#: usr/share/layout-switcher/ui/page_fonts.py:452
 msgid "Reset"
 msgstr "Επαναφορά"
 
+#: usr/share/layout-switcher/ui/page_fonts.py:472
 msgid "Fonts reset to defaults"
 msgstr "Οι γραμματοσειρές επαναφέρθηκαν στις προεπιλογές"
 
-msgid "Featured"
-msgstr "Επιλεγμένα"
-
-msgid "Installed"
-msgstr "Εγκατεστημένα"
-
-msgid "Install extension?"
-msgstr "Να εγκατασταθεί η επέκταση;"
-
-msgid "Remove extension?"
-msgstr "Να αφαιρεθεί η επέκταση;"
-
-msgid "Open GNOME Extensions"
-msgstr "Άνοιγμα GNOME Extensions"
-
-msgid "No extensions installed"
-msgstr "Δεν υπάρχουν εγκατεστημένες επεκτάσεις"
-
-msgid "Enabled"
-msgstr "Ενεργοποιημένο"
-
-msgid "Disabled"
-msgstr "Απενεργοποιημένο"
-
-msgid "system"
-msgstr "σύστημα"
-
-msgid "Disable All"
-msgstr "Απενεργοποίηση όλων"
-
-msgid "Enable All"
-msgstr "Ενεργοποίηση όλων"
-
-msgid "Disable all extensions?"
-msgstr "Να απενεργοποιηθούν όλες οι επεκτάσεις;"
-
-msgid "All extensions will be disabled. You can re-enable them later."
-msgstr ""
-"Όλες οι επεκτάσεις θα απενεργοποιηθούν. Μπορείτε να τις ενεργοποιήσετε ξανά "
-"αργότερα."
-
-msgid "All extensions disabled"
-msgstr "Όλες οι επεκτάσεις απενεργοποιήθηκαν"
-
-msgid "All extensions enabled"
-msgstr "Όλες οι επεκτάσεις ενεργοποιήθηκαν"
-
-msgid "Click a layout to apply"
-msgstr "Κάντε κλικ σε μια διάταξη για εφαρμογή"
-
+#: usr/share/layout-switcher/ui/page_layouts.py:54
 msgid "Layout status"
 msgstr "Κατάσταση διάταξης"
 
-msgid ""
-"Marked layouts contain your saved customizations — click to resume them or "
-"apply the original."
-msgstr "Οι επισημασμένες διατάξεις περιέχουν τις αποθηκευμένες προσαρμογές σας — κάντε κλικ για να τις συνεχίσετε ή να εφαρμόσετε την αρχική."
-
+#: usr/share/layout-switcher/ui/page_layouts.py:128
 msgid "Contains your saved customizations"
 msgstr "Περιέχει τις αποθηκευμένες προσαρμογές σας"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:132
 msgid "Modified"
 msgstr "Τροποποιήθηκε"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:194
 msgid "This layout is already active"
 msgstr "Αυτή η διάταξη είναι ήδη ενεργή"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+#, fuzzy
 msgid ""
-"You have previously modified this layout. Resume your changes or apply the "
-"original system default?"
+"You have previously modified this layout. Apply the original system default "
+"or resume your changes?"
 msgstr ""
 "Έχετε προηγουμένως τροποποιήσει αυτή τη διάταξη. Να συνεχίσετε τις αλλαγές "
 "σας ή να εφαρμόσετε την αρχική προεπιλογή συστήματος;"
 
-msgid "Apply original"
-msgstr "Εφαρμογή αρχικού"
-
+#: usr/share/layout-switcher/ui/page_layouts.py:211
 msgid "Resume my changes"
 msgstr "Συνέχιση των αλλαγών μου"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:212
+msgid "Apply original"
+msgstr "Εφαρμογή αρχικού"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:218
 msgid ""
 "Apply this layout? A backup of your current configuration will be created "
 "automatically."
@@ -447,45 +543,408 @@ msgstr ""
 "Να εφαρμοστεί αυτή η διάταξη; Θα δημιουργηθεί αυτόματα ένα αντίγραφο "
 "ασφαλείας της τρέχουσας ρύθμισής σας."
 
+#: usr/share/layout-switcher/ui/page_layouts.py:223
 msgid "Apply"
 msgstr "Εφαρμογή"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:253
 msgid "Applying"
 msgstr "Εφαρμογή"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:260
 msgid "Snapshot not found"
 msgstr "Το στιγμιότυπο δεν βρέθηκε"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:280
 msgid "Layout file not found"
 msgstr "Το αρχείο διάταξης δεν βρέθηκε"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:292
+#: usr/share/layout-switcher/ui/page_layouts.py:296
+#: usr/share/layout-switcher/ui/page_layouts.py:307
 msgid "applied"
 msgstr "εφαρμόστηκε"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:297
 msgid "Undo"
 msgstr "Αναίρεση"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:331
 msgid "Layout restored"
 msgstr "Η διάταξη επαναφέρθηκε"
 
+#: usr/share/layout-switcher/ui/page_layouts.py:333
 msgid "Previous layout restored"
 msgstr "Η προηγούμενη διάταξη επαναφέρθηκε"
 
-msgid "Default Big Gnome layout"
-msgstr "Προεπιλεγμένη διάταξη Big Gnome"
+#: usr/share/layout-switcher/ui/window.py:60
+#: usr/share/layout-switcher/ui/window.py:278
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
 
-msgid "Clean and contemporary desktop"
-msgstr "Καθαρή και σύγχρονη επιφάνεια εργασίας"
+#: usr/share/layout-switcher/ui/window.py:168
+#: usr/share/layout-switcher/ui/window.py:169
+msgid "Show Sidebar"
+msgstr "Εμφάνιση πλαϊνής στήλης"
 
-msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
-msgstr "Κεντραρισμένο dock-γραμμή εργασιών, στυλ Windows 11 / Deepin / Pop!_OS"
+#: usr/share/layout-switcher/ui/window.py:175
+#: usr/share/layout-switcher/ui/window.py:302
+#: usr/share/layout-switcher/ui/window.py:373
+msgid "Layouts"
+msgstr "Διατάξεις"
 
-msgid "Unity-style layout with left dock and top bar"
-msgstr "Διάταξη στυλ Unity με αριστερό dock και πάνω γραμμή"
+#: usr/share/layout-switcher/ui/window.py:181
+msgid "Menu"
+msgstr "Μενού"
 
-msgid "Traditional desktop with taskbar and system tray"
+#: usr/share/layout-switcher/ui/window.py:182
+msgid "Main menu"
+msgstr "Κύριο μενού"
+
+#: usr/share/layout-switcher/ui/window.py:186
+msgid "Check for updates"
 msgstr ""
-"Παραδοσιακός επιφάνεια εργασίας με γραμμή εργασιών και δίσκο συστήματος"
 
-msgid "Near-vanilla GNOME with minimal distro tweaks"
-msgstr "Σχεδόν καθαρό GNOME με ελάχιστες τροποποιήσεις διανομής"
+#: usr/share/layout-switcher/ui/window.py:187
+#, fuzzy
+msgid "Auto-update extensions"
+msgstr "Επέκταση συστήματος"
+
+#: usr/share/layout-switcher/ui/window.py:189
+msgid "Backups…"
+msgstr "Αντίγραφα ασφαλείας…"
+
+#: usr/share/layout-switcher/ui/window.py:190
+msgid "About"
+msgstr "Σχετικά"
+
+#: usr/share/layout-switcher/ui/window.py:199
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr ""
+"Καλώς ήρθατε! Επιλέξτε μια διάταξη επιφάνειας εργασίας παρακάτω για να "
+"ξεκινήσετε.|NL|"
+
+#: usr/share/layout-switcher/ui/window.py:200
+msgid "Got it"
+msgstr "Κατάλαβα"
+
+#: usr/share/layout-switcher/ui/window.py:303
+#: usr/share/layout-switcher/ui/window.py:374
+msgid "Fonts"
+msgstr "Γραμματοσειρές"
+
+#: usr/share/layout-switcher/ui/window.py:304
+#: usr/share/layout-switcher/ui/window.py:375
+msgid "Themes"
+msgstr "Θέματα"
+
+#: usr/share/layout-switcher/ui/window.py:305
+#: usr/share/layout-switcher/ui/window.py:376
+msgid "Effects"
+msgstr "Εφέ"
+
+#: usr/share/layout-switcher/ui/window.py:306
+#: usr/share/layout-switcher/ui/window.py:377
+msgid "Extensions"
+msgstr "Επεκτάσεις"
+
+#: usr/share/layout-switcher/ui/window.py:405
+msgid "Community Layout Switcher"
+msgstr "Κοινότητα Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:410
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "Διατάξεις, εφέ και θέματα για την επιφάνεια εργασίας GNOME σας."
+
+#: usr/share/layout-switcher/ui/window.py:457
+#, fuzzy
+msgid "All extensions up to date"
+msgstr "Όλες οι επεκτάσεις απενεργοποιήθηκαν"
+
+#: usr/share/layout-switcher/ui/window.py:469
+#, python-brace-format
+msgid "Auto-updated {n} extensions"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/window.py:474
+#, fuzzy, python-brace-format
+msgid "{n} update(s) available"
+msgstr "διαθέσιμα θέματα"
+
+#: usr/share/layout-switcher/ui/window.py:481
+#, fuzzy
+msgid "Auto-update enabled"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/window.py:481
+#, fuzzy
+msgid "Auto-update disabled"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:101
+#, fuzzy
+msgid "Loading extension details…"
+msgstr "Φόρτωση γραμματοσειρών…"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:108
+msgid "Could not load details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:109
+#: usr/share/layout-switcher/ui/ext_browse_view.py:158
+msgid "Check your network connection and try again."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:112
+#: usr/share/layout-switcher/ui/ext_browse_view.py:161
+msgid "Retry"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:204
+#, python-brace-format
+msgid "{n} ratings"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:207
+msgid "downloads"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:210
+msgid "compatibility"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:252
+msgid "Description"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:267
+msgid "Recent comments"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:280
+msgid "View all comments on extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:341
+msgid "Links"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:348
+msgid "Homepage"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:357
+#, python-brace-format
+msgid "License: {lic}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:385
+#: usr/share/layout-switcher/ui/page_extensions.py:564
+#: usr/share/layout-switcher/ui/page_extensions.py:650
+#: usr/share/layout-switcher/ui/page_extensions.py:661
+#, fuzzy
+msgid "Update"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:390
+msgid "Open prefs"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:407
+msgid "Working…"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:425
+#, fuzzy, python-brace-format
+msgid "{name} installed"
+msgstr "εγκαταστάθηκε"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:429
+#, fuzzy
+msgid "Operation failed"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:82
+msgid "Featured"
+msgstr "Επιλεγμένα"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:83
+#: usr/share/layout-switcher/ui/page_extensions.py:118
+msgid "Browse"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:84
+#: usr/share/layout-switcher/ui/page_extensions.py:544
+#: usr/share/layout-switcher/ui/ext_browse_view.py:412
+msgid "Installed"
+msgstr "Εγκατεστημένα"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:220
+#, fuzzy
+msgid "Update available"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:382
+msgid "Install extension?"
+msgstr "Να εγκατασταθεί η επέκταση;"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:420
+msgid "Remove extension?"
+msgstr "Να αφαιρεθεί η επέκταση;"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:486
+#: usr/share/layout-switcher/ui/page_extensions.py:564
+#, fuzzy
+msgid "Update all"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:494
+msgid "Open GNOME Extensions"
+msgstr "Άνοιγμα GNOME Extensions"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:550
+msgid "No extensions installed"
+msgstr "Δεν υπάρχουν εγκατεστημένες επεκτάσεις"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:560
+#, fuzzy
+msgid "update available"
+msgstr "διαθέσιμα θέματα"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:572
+msgid "Enabled"
+msgstr "Ενεργοποιημένο"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:573
+msgid "Disabled"
+msgstr "Απενεργοποιημένο"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:655
+#, python-brace-format
+msgid "Update from v{old} to v{new}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:668
+msgid "system"
+msgstr "σύστημα"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:727
+#, python-brace-format
+msgid "{name} updated to v{ver}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_extensions.py:756
+#, fuzzy, python-brace-format
+msgid "Updated {n} extensions"
+msgstr "Επέκταση συστήματος"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:761
+#, fuzzy, python-brace-format
+msgid "Updated {n}/{t}; failed: {f}"
+msgstr "Η ενημέρωση απέτυχε"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:772
+#: usr/share/layout-switcher/ui/page_extensions.py:790
+msgid "Disable All"
+msgstr "Απενεργοποίηση όλων"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:772
+msgid "Enable All"
+msgstr "Ενεργοποίηση όλων"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:786
+msgid "Disable all extensions?"
+msgstr "Να απενεργοποιηθούν όλες οι επεκτάσεις;"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:787
+msgid "All extensions will be disabled. You can re-enable them later."
+msgstr ""
+"Όλες οι επεκτάσεις θα απενεργοποιηθούν. Μπορείτε να τις ενεργοποιήσετε ξανά "
+"αργότερα."
+
+#: usr/share/layout-switcher/ui/page_extensions.py:807
+msgid "All extensions disabled"
+msgstr "Όλες οι επεκτάσεις απενεργοποιήθηκαν"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:807
+msgid "All extensions enabled"
+msgstr "Όλες οι επεκτάσεις ενεργοποιήθηκαν"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:77
+msgid "Search extensions on extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:85
+msgid "Sort by"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:96
+#, python-brace-format
+msgid "Only compatible with GNOME {ver}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:123
+#, fuzzy
+msgid "Browse extensions"
+msgstr "Επέκταση συστήματος"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:124
+msgid "Search above or hit Enter to load popular extensions."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:127
+msgid "Load popular"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:143
+#, fuzzy
+msgid "Loading…"
+msgstr "Φόρτωση γραμματοσειρών…"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:150
+msgid "No results"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:151
+msgid "Try a different search or sort."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:157
+msgid "Could not reach extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:195
+msgid "Previous page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:206
+msgid "Next page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:217
+msgid "Shell"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:263
+#, python-brace-format
+msgid "Page {p} of {t}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:332
+#, python-brace-format
+msgid "{name} — open details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:402
+msgid "Details"
+msgstr ""
+
+#~ msgid "Click a layout to apply"
+#~ msgstr "Κάντε κλικ σε μια διάταξη για εφαρμογή"
+
+#~ msgid ""
+#~ "Marked layouts contain your saved customizations — click to resume them "
+#~ "or apply the original."
+#~ msgstr ""
+#~ "Οι επισημασμένες διατάξεις περιέχουν τις αποθηκευμένες προσαρμογές σας — "
+#~ "κάντε κλικ για να τις συνεχίσετε ή να εφαρμόσετε την αρχική."

@@ -203,15 +203,15 @@ class LayoutsPage(Gtk.Box):
         if has_snapshot:
             d.set_body(
                 tr(
-                    "You have previously modified this layout. Resume your "
-                    "changes or apply the original system default?"
+                    "You have previously modified this layout. Apply the "
+                    "original system default or resume your changes?"
                 )
             )
             d.add_response("cancel", tr("Cancel"))
-            d.add_response("original", tr("Apply original"))
             d.add_response("resume", tr("Resume my changes"))
-            d.set_response_appearance("resume", Adw.ResponseAppearance.SUGGESTED)
-            d.set_default_response("resume")
+            d.add_response("original", tr("Apply original"))
+            d.set_response_appearance("original", Adw.ResponseAppearance.SUGGESTED)
+            d.set_default_response("original")
         else:
             d.set_body(
                 tr(
@@ -259,11 +259,21 @@ class LayoutsPage(Gtk.Box):
                 if not data:
                     GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
                     return
-                ok, err = LayoutApplier.load_dconf_safely(data, persist=True)
+                local_dtp_monitors = LayoutApplier._read_dtp_monitor_keys()
+                before = LayoutApplier._enabled_extensions()
+                ok, err = LayoutApplier.load_dconf_safely(
+                    data,
+                    persist=True,
+                    dtp_local_monitors=local_dtp_monitors,
+                )
                 if ok:
                     from shell_reloader import ShellReloader
 
-                    ShellReloader.reload_all()
+                    after = LayoutApplier._enabled_extensions()
+                    ShellReloader.reload_all(
+                        before_uuids=before,
+                        after_uuids=after,
+                    )
             else:
                 path = find_file(cfg, ["layouts"])
                 if not path:

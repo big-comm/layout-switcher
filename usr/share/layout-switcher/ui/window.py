@@ -17,7 +17,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
-from constants import APP_VERSION, ICON_NAME, tr
+import update_checker
+from constants import APP_VERSION, ICON_NAME, UPDATE_CHECK_INTERVAL, tr
 from settings_store import GSettingsMonitor, Settings
 from ui.dialog_backups import BackupsDialog
 from ui.page_effects import EffectsPage
@@ -181,6 +182,10 @@ class MainWindow(Adw.ApplicationWindow):
         menu_btn.update_property([Gtk.AccessibleProperty.LABEL], [tr("Main menu")])
 
         menu = Gio.Menu()
+        ext_section = Gio.Menu()
+        ext_section.append(tr("Check for updates"), "app.check-updates")
+        ext_section.append(tr("Auto-update extensions"), "app.toggle-auto-update")
+        menu.append_section(None, ext_section)
         menu.append(tr("Backups…"), "app.backups")
         menu.append(tr("About"), "app.about")
         menu_btn.set_menu_model(menu)
@@ -242,7 +247,23 @@ class MainWindow(Adw.ApplicationWindow):
         backups_action.connect("activate", lambda a, p: self._show_backups())
         self.get_application().add_action(backups_action)
 
+        # Register check-updates action (manual trigger)
+        check_action = Gio.SimpleAction.new("check-updates", None)
+        check_action.connect("activate", lambda a, p: self._run_update_check(manual=True))
+        self.get_application().add_action(check_action)
+
+        # Register stateful auto-update toggle (matches Settings 'ext_auto_update')
+        auto_state = GLib.Variant.new_boolean(bool(self._prefs.get("ext_auto_update", False)))
+        auto_action = Gio.SimpleAction.new_stateful("toggle-auto-update", None, auto_state)
+        auto_action.connect("activate", self._on_toggle_auto_update)
+        self.get_application().add_action(auto_action)
+
         GLib.idle_add(self._nav.select_row, self._nav_rows["layouts"])
+
+        # Run a non-blocking update check shortly after the window is built.
+        GLib.timeout_add_seconds(5, self._initial_update_check)
+        # And periodically every UPDATE_CHECK_INTERVAL seconds while the app is open.
+        GLib.timeout_add_seconds(UPDATE_CHECK_INTERVAL, self._periodic_update_check)
 
     # ── Sidebar ───────────────────────────────────────────────────────────────
 
@@ -400,3 +421,61 @@ class MainWindow(Adw.ApplicationWindow):
         t = Adw.Toast.new(msg)
         t.set_timeout(5)
         self._toast_overlay.add_toast(t)
+
+    # ── Verificação de atualizações ───────────────────────────────────────────
+
+    def _initial_update_check(self) -> bool:
+        """One-shot disparado 5s após a janela abrir."""
+        self._run_update_check(manual=False)
+        return False  # GLib.SOURCE_REMOVE
+
+    def _periodic_update_check(self) -> bool:
+        """Re-checa periodicamente enquanto a janela estiver aberta."""
+        self._run_update_check(manual=False)
+        return True  # GLib.SOURCE_CONTINUE
+
+    def _run_update_check(self, manual: bool) -> None:
+        """
+        Roda a verificação de updates fora da UI thread; aplica auto-update se
+        `ext_auto_update` estiver habilitado, do contrário só notifica.
+        """
+
+        def task():
+            try:
+                updates = update_checker.check_all()
+            except Exception:
+                updates = {}
+            update_checker.mark_checked(self._prefs)
+            GLib.idle_add(self._on_update_check_done, updates, manual)
+
+        self._pool.submit(task)
+
+    def _on_update_check_done(self, updates: Dict, manual: bool) -> bool:
+        self._ext_page.set_updates(updates)
+        if not updates:
+            if manual:
+                self._toast(tr("All extensions up to date"))
+            return False
+        if self._prefs.get("ext_auto_update", False):
+            # Aplica em background; o page_extensions já sabe re-renderizar via
+            # set_updates({}) quando termina, então delegamos.
+            def apply_task():
+                values = list(updates.values())
+                results = update_checker.apply_all(values)
+                ok_count = sum(1 for _, ok, _ in results if ok)
+                GLib.idle_add(self._ext_page.set_updates, {})
+                GLib.idle_add(
+                    self._toast,
+                    tr("Auto-updated {n} extensions").format(n=ok_count),
+                )
+
+            self._pool.submit(apply_task)
+        else:
+            self._toast(tr("{n} update(s) available").format(n=len(updates)))
+        return False
+
+    def _on_toggle_auto_update(self, action, _param) -> None:
+        new_val = not action.get_state().get_boolean()
+        action.set_state(GLib.Variant.new_boolean(new_val))
+        self._prefs.set("ext_auto_update", new_val)
+        self._toast(tr("Auto-update enabled") if new_val else tr("Auto-update disabled"))

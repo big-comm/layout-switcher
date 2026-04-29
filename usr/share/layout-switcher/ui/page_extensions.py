@@ -19,9 +19,12 @@ gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 from gi.repository import Adw, GLib, Gtk, Pango
 
+import update_checker
 from constants import FEATURED_EXTENSIONS, tr
 from extension_manager import ExtMgr
 from shell_reloader import ShellReloader
+from ui.ext_browse_view import ExtBrowseView
+from ui.ext_detail_view import ExtDetailView
 from utils import run_cmd
 
 
@@ -35,38 +38,30 @@ class ExtensionsPage(Gtk.Box):
         self._pool = pool
         self._toast = toast_cb
         self._ext_sub = "featured"
+        # uuid → UpdateInfo. Populated by MainWindow after running the checker.
+        self._updates: Dict[str, update_checker.UpdateInfo] = {}
         self._build()
 
+    def set_updates(self, updates: Dict[str, update_checker.UpdateInfo]) -> None:
+        """Recebe o dict de atualizações disponíveis e atualiza a UI."""
+        self._updates = dict(updates or {})
+        # Re-render: featured cards podem ganhar badge, installed list precisa
+        # mostrar o botão "Update all" e badges por linha.
+        self.rebuild_featured()
+        self.refresh_installed()
+
     def _build(self) -> None:
-        # ── Cabeçalho ─────────────────────────────────────────────────────────
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox.set_margin_start(26)
-        hbox.set_margin_end(22)
-        hbox.set_margin_top(12)
-        hbox.set_margin_bottom(8)
-        hbox.set_hexpand(True)
-
-        # spacer to push global button to the right
-        spacer = Gtk.Box()
-        spacer.set_hexpand(True)
-        hbox.append(spacer)
-
-        self._global_btn = Gtk.Button()
-        self._global_btn.add_css_class("global-btn")
-        self._global_btn.set_valign(Gtk.Align.CENTER)
-        self._refresh_global_btn()
-        self._global_btn.connect("clicked", self._on_global_toggle)
-        hbox.append(self._global_btn)
-        self.append(hbox)
-
-        # ── Sub-abas ───────────────────────────────────────────────────────────
+        # ── Sub-abas + botão global na mesma linha, no topo ───────────────────
         tab_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         tab_bar.set_margin_start(26)
+        tab_bar.set_margin_end(22)
+        tab_bar.set_margin_top(8)
         tab_bar.set_margin_bottom(10)
 
         self._tab_btns: Dict[str, Gtk.Button] = {}
         for key, label in [
             ("featured", tr("Featured")),
+            ("browse", tr("Browse")),
             ("installed", tr("Installed")),
         ]:
             btn = Gtk.Button(label=label)
@@ -78,6 +73,20 @@ class ExtensionsPage(Gtk.Box):
             btn.connect("clicked", lambda b, k=key: self._switch_sub(k))
             tab_bar.append(btn)
             self._tab_btns[key] = btn
+
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        tab_bar.append(spacer)
+
+        # Botão global "Desativar todas" só aparece na aba Instaladas.
+        self._global_btn = Gtk.Button()
+        self._global_btn.add_css_class("global-btn")
+        self._global_btn.set_valign(Gtk.Align.CENTER)
+        self._refresh_global_btn()
+        self._global_btn.connect("clicked", self._on_global_toggle)
+        self._global_btn.set_visible(self._ext_sub == "installed")
+        tab_bar.append(self._global_btn)
+
         self.append(tab_bar)
 
         # ── Stack de conteúdo ─────────────────────────────────────────────────
@@ -86,8 +95,41 @@ class ExtensionsPage(Gtk.Box):
         self._stack.set_transition_duration(120)
         self._stack.set_vexpand(True)
         self._stack.add_named(self._build_featured_sub(), "featured")
+        self._stack.add_named(self._build_browse_sub(), "browse")
         self._stack.add_named(self._build_installed_sub(), "installed")
         self.append(self._stack)
+
+    def _build_browse_sub(self) -> Gtk.Widget:
+        # NavigationView permite empurrar a página de detalhes em cima da lista.
+        self._browse_nav = Adw.NavigationView()
+
+        self._browse_view = ExtBrowseView(
+            pool=self._pool,
+            toast_cb=self._toast,
+            on_open_detail=self._open_detail,
+            on_after_install=self._on_browse_installed,
+        )
+        root_page = Adw.NavigationPage()
+        root_page.set_title(tr("Browse"))
+        root_page.set_child(self._browse_view)
+        self._browse_nav.add(root_page)
+        return self._browse_nav
+
+    def _open_detail(self, uuid: str, pk: int) -> None:
+        """Abre a página de detalhes empurrando-a no NavigationView do Browse."""
+        detail = ExtDetailView(
+            uuid=uuid,
+            pk=pk,
+            pool=self._pool,
+            toast_cb=self._toast,
+            on_after_install=self._on_browse_installed,
+        )
+        self._browse_nav.push(detail)
+
+    def _on_browse_installed(self) -> None:
+        """Hook chamado pelo ExtBrowseView depois de instalar uma extensão."""
+        self.rebuild_featured()
+        self.refresh_installed()
 
     def _switch_sub(self, key: str) -> None:
         self._ext_sub = key
@@ -97,6 +139,10 @@ class ExtensionsPage(Gtk.Box):
                 btn.add_css_class("sub-on")
             else:
                 btn.remove_css_class("sub-on")
+
+        # Botão "Desativar todas" só faz sentido na aba Instaladas.
+        if hasattr(self, "_global_btn"):
+            self._global_btn.set_visible(key == "installed")
 
         if key == "installed":
             GLib.idle_add(self.refresh_installed)
@@ -169,6 +215,12 @@ class ExtensionsPage(Gtk.Box):
 
         if installed:
             self._build_feat_installed(inner, ext, card, enabled)
+            if ext["uuid"] in self._updates:
+                upd_lbl = Gtk.Label(label=tr("Update available"))
+                upd_lbl.add_css_class("caption")
+                upd_lbl.add_css_class("accent")
+                upd_lbl.set_halign(Gtk.Align.START)
+                inner.append(upd_lbl)
         else:
             self._build_feat_not_installed(inner, ext, card)
 
@@ -416,7 +468,7 @@ class ExtensionsPage(Gtk.Box):
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         # Barra superior: contagem + botão abrir GNOME Extensions
-        toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         toolbar.set_margin_start(22)
         toolbar.set_margin_end(22)
         toolbar.set_margin_top(6)
@@ -428,6 +480,15 @@ class ExtensionsPage(Gtk.Box):
         self._inst_count_lbl.set_halign(Gtk.Align.START)
         self._inst_count_lbl.set_hexpand(True)
         toolbar.append(self._inst_count_lbl)
+
+        # "Update all" button — visível apenas quando há atualizações pendentes.
+        self._update_all_btn = Gtk.Button(label=tr("Update all"))
+        self._update_all_btn.add_css_class("suggested-action")
+        self._update_all_btn.add_css_class("pill")
+        self._update_all_btn.set_valign(Gtk.Align.CENTER)
+        self._update_all_btn.set_visible(False)
+        self._update_all_btn.connect("clicked", lambda b: self._do_update_all())
+        toolbar.append(self._update_all_btn)
 
         open_btn = Gtk.Button(label=tr("Open GNOME Extensions"))
         open_btn.add_css_class("flat")
@@ -483,6 +544,7 @@ class ExtensionsPage(Gtk.Box):
 
         if not exts:
             self._inst_count_lbl.set_label("")
+            self._update_all_btn.set_visible(False)
             ph = Adw.StatusPage(
                 title=tr("No extensions installed"),
                 icon_name="application-x-addon-symbolic",
@@ -491,8 +553,14 @@ class ExtensionsPage(Gtk.Box):
             return
 
         enabled_count = sum(1 for e in exts if e["enabled"])
-        self._inst_count_lbl.set_label(
-            f"{len(exts)} {tr('installed')}  ·  {enabled_count} {tr('enabled')}"
+        update_count = sum(1 for e in exts if e["uuid"] in self._updates)
+        summary = f"{len(exts)} {tr('installed')}  ·  {enabled_count} {tr('enabled')}"
+        if update_count > 0:
+            summary += f"  ·  {update_count} {tr('update available')}"
+        self._inst_count_lbl.set_label(summary)
+        self._update_all_btn.set_visible(update_count > 0)
+        self._update_all_btn.set_label(
+            f"{tr('Update all')} ({update_count})" if update_count > 1 else tr("Update")
         )
 
         # Divide em dois grupos: Habilitadas e Desabilitadas
@@ -576,6 +644,25 @@ class ExtensionsPage(Gtk.Box):
         ctrl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         ctrl.set_valign(Gtk.Align.CENTER)
 
+        update_info = self._updates.get(ext["uuid"])
+        if update_info is not None:
+            up_btn = Gtk.Button(label=tr("Update"))
+            up_btn.add_css_class("suggested-action")
+            up_btn.add_css_class("pill")
+            up_btn.set_valign(Gtk.Align.CENTER)
+            up_btn.set_tooltip_text(
+                tr("Update from v{old} to v{new}").format(
+                    old=update_info.current_version, new=update_info.latest_version
+                )
+            )
+            up_btn.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [f"{tr('Update')} {ext['name']}"],
+            )
+            uuid_capture = ext["uuid"]
+            up_btn.connect("clicked", lambda b, _u=uuid_capture: self._do_update_one(_u))
+            ctrl.append(up_btn)
+
         if not is_user:
             sys_l = Gtk.Label(label=tr("system"))
             sys_l.add_css_class("caption")
@@ -620,6 +707,62 @@ class ExtensionsPage(Gtk.Box):
         inner.append(ctrl)
         row.set_child(inner)
         return row
+
+    # ── Atualizações ──────────────────────────────────────────────────────────
+
+    def _do_update_one(self, uuid: str) -> None:
+        info = self._updates.get(uuid)
+        if info is None:
+            return
+
+        def task():
+            ok, msg = update_checker.apply_update(info)
+            if ok:
+                self._updates.pop(uuid, None)
+                GLib.idle_add(self.rebuild_featured)
+                GLib.idle_add(self.refresh_installed)
+                GLib.idle_add(
+                    self._toast,
+                    tr("{name} updated to v{ver}").format(
+                        name=uuid.split("@")[0], ver=info.latest_version
+                    ),
+                )
+            else:
+                GLib.idle_add(self._toast, tr("Update failed") + f": {msg}")
+
+        self._pool.submit(task)
+
+    def _do_update_all(self) -> None:
+        if not self._updates:
+            return
+        # snapshot da lista para iterar (a UI pode mexer no dict durante o loop)
+        snapshot = list(self._updates.values())
+        total = len(snapshot)
+
+        def task():
+            failed = []
+            for info in snapshot:
+                ok, msg = update_checker.apply_update(info)
+                if ok:
+                    self._updates.pop(info.uuid, None)
+                else:
+                    failed.append(info.uuid)
+            GLib.idle_add(self.rebuild_featured)
+            GLib.idle_add(self.refresh_installed)
+            if not failed:
+                GLib.idle_add(
+                    self._toast,
+                    tr("Updated {n} extensions").format(n=total),
+                )
+            else:
+                GLib.idle_add(
+                    self._toast,
+                    tr("Updated {n}/{t}; failed: {f}").format(
+                        n=total - len(failed), t=total, f=len(failed)
+                    ),
+                )
+
+        self._pool.submit(task)
 
     # ── Toggle global ─────────────────────────────────────────────────────────
 

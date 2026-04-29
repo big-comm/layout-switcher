@@ -13,8 +13,7 @@ Nenhuma estratégia exige logout ou encerramento de sessão.
 DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
-import shutil
-from typing import Tuple
+from typing import Iterable, Optional, Tuple
 
 from constants import (
     DBUS_EVAL_IFACE,
@@ -92,33 +91,68 @@ class ShellReloader:
     # ── Recarga geral ─────────────────────────────────────────────────────────
 
     @staticmethod
-    def reload_all() -> None:
+    def reload_all(
+        before_uuids: Optional[Iterable[str]] = None,
+        after_uuids: Optional[Iterable[str]] = None,
+    ) -> None:
         """
-        Solicita recarga geral de extensões ao Shell.
-        Tenta múltiplas estratégias; nunca levanta exceção.
+        Aplica diff de extensões via D-Bus por UUID. Em GS 45+ não existe mais
+        reload global (``ReloadExtension`` virou deprecated, ``gnome-extensions
+        reset`` exige UUID), então fazemos só o mínimo necessário:
+
+          - UUIDs em ``before − after`` → ``DisableExtension`` (Shell descarrega).
+          - UUIDs em ``after − before`` → ``EnableExtension`` (Shell inicia).
+          - UUIDs que já estavam ligados e continuam → **não tocados**. O
+            ``dconf load`` já reescreveu o estado deles; gsettings reativo
+            propaga as mudanças para a extensão rodando. Forçar
+            disable/enable por UUID em extensões que já estão OK é arriscado:
+            se o método ``disable()`` interno der erro (panelManager null,
+            etc.), a extensão fica em estado ERROR e zumbi na tela até
+            logout.
+
+        Em sessão X11 mantém ``reexec_self()`` como reforço final.
+        Nunca levanta exceção.
         """
-        # Estratégia 1: D-Bus Extensions API (GS 40+, Wayland-safe)
-        run_cmd(
-            [
-                "gdbus",
-                "call",
-                "--session",
-                "--dest",
-                DBUS_SHELL_NAME,
-                "--object-path",
-                DBUS_EXT_PATH,
-                "--method",
-                f"{DBUS_EXT_IFACE}.ReloadExtension",
-                "",
-            ],
-            timeout=5,
-        )
+        before_set = {u for u in (before_uuids or []) if u}
+        after_set = {u for u in (after_uuids or []) if u}
 
-        # Estratégia 2: gnome-extensions CLI
-        if shutil.which("gnome-extensions"):
-            run_cmd(["gnome-extensions", "reset"], timeout=5)
+        # Disable extensions that should no longer be running.
+        for uuid in sorted(before_set - after_set):
+            run_cmd(
+                [
+                    "gdbus",
+                    "call",
+                    "--session",
+                    "--dest",
+                    DBUS_SHELL_NAME,
+                    "--object-path",
+                    DBUS_EXT_PATH,
+                    "--method",
+                    f"{DBUS_EXT_IFACE}.DisableExtension",
+                    uuid,
+                ],
+                timeout=5,
+            )
 
-        # Estratégia 3: Eval reexec (X11 somente — ignorado silenciosamente no Wayland)
+        # Enable newly added extensions.
+        for uuid in sorted(after_set - before_set):
+            run_cmd(
+                [
+                    "gdbus",
+                    "call",
+                    "--session",
+                    "--dest",
+                    DBUS_SHELL_NAME,
+                    "--object-path",
+                    DBUS_EXT_PATH,
+                    "--method",
+                    f"{DBUS_EXT_IFACE}.EnableExtension",
+                    uuid,
+                ],
+                timeout=5,
+            )
+
+        # X11 reinforcement (ignored on Wayland)
         if not is_wayland():
             run_cmd(
                 [

@@ -144,6 +144,88 @@ class TestListInstalled:
             assert result[0]["uuid"] == "broken-ext@foo.com"
 
 
+class TestInstalledVersion:
+    def test_reads_int_version(self, tmp_path):
+        ext_dir = tmp_path / "ext-a@foo.com"
+        ext_dir.mkdir()
+        (ext_dir / "metadata.json").write_text('{"version": 7}')
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"),
+        ):
+            assert ExtMgr.installed_version("ext-a@foo.com") == 7
+
+    def test_reads_string_version(self, tmp_path):
+        ext_dir = tmp_path / "ext-b@foo.com"
+        ext_dir.mkdir()
+        (ext_dir / "metadata.json").write_text('{"version": "12"}')
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"),
+        ):
+            assert ExtMgr.installed_version("ext-b@foo.com") == 12
+
+    def test_no_metadata_returns_zero(self, tmp_path):
+        ext_dir = tmp_path / "ext-c@foo.com"
+        ext_dir.mkdir()
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"),
+        ):
+            assert ExtMgr.installed_version("ext-c@foo.com") == 0
+
+    def test_malformed_metadata_returns_zero(self, tmp_path):
+        ext_dir = tmp_path / "ext-d@foo.com"
+        ext_dir.mkdir()
+        (ext_dir / "metadata.json").write_text("not json")
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.EXT_SYS_DIR", tmp_path / "sys"),
+        ):
+            assert ExtMgr.installed_version("ext-d@foo.com") == 0
+
+
+class TestUpdate:
+    def test_calls_install_and_reenables(self):
+        with (
+            patch("extension_manager.ExtMgr.is_enabled", return_value=True),
+            patch(
+                "extension_manager.ExtMgr.install",
+                return_value=(True, "gnome-extensions"),
+            ),
+            patch(
+                "shell_reloader.ShellReloader.apply_extension_state",
+                return_value=(True, ""),
+            ) as mock_apply,
+        ):
+            ok, method = ExtMgr.update("uuid@x.com", ego_id=42)
+            assert ok is True
+            assert method == "gnome-extensions"
+            mock_apply.assert_called_once_with("uuid@x.com", True)
+
+    def test_no_reenable_when_disabled(self):
+        with (
+            patch("extension_manager.ExtMgr.is_enabled", return_value=False),
+            patch("extension_manager.ExtMgr.install", return_value=(True, "ego-download")),
+            patch("shell_reloader.ShellReloader.apply_extension_state") as mock_apply,
+        ):
+            ok, method = ExtMgr.update("uuid@x.com", ego_id=42)
+            assert ok is True
+            mock_apply.assert_not_called()
+
+    def test_failure_propagates(self):
+        with (
+            patch("extension_manager.ExtMgr.is_enabled", return_value=True),
+            patch(
+                "extension_manager.ExtMgr.install",
+                return_value=(False, "no method"),
+            ),
+        ):
+            ok, msg = ExtMgr.update("uuid@x.com", ego_id=42)
+            assert ok is False
+            assert "no method" in msg
+
+
 class TestRemove:
     def test_remove_user_extension(self, tmp_path):
         ext_dir = tmp_path / "test-ext@foo.com"

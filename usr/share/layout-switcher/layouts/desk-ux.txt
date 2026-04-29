@@ -420,8 +420,9 @@ sleep-inactive-ac-type='nothing'
 [org/gnome/shell]
 app-picker-layout=[{'AudioVideo': <{'position': <0>}>, 'Office': <{'position': <1>}>, 'Utilities': <{'position': <2>}>, 'Settings': <{'position': <3>}>, 'Network': <{'position': <4>}>, 'Game': <{'position': <5>}>, 'WebApps': <{'position': <6>}>}]
 command-history=['ajustes', 'r']
+disable-user-extensions=false
 disabled-extensions=['ddterm@amezin.github.com', 'just-perfection-desktop@just-perfection', 'GPaste@gnome-shell-extensions.gnome.org', 'light-style@gnome-shell-extensions.gcampax.github.com', 'dash-to-dock@micxgx.gmail.com', 'apps-menu@gnome-shell-extensions.gcampax.github.com']
-enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'CoverflowAltTab@dmo60.de', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'blur-my-shell@aunetx', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'appindicatorsupport@rgcjonas.gmail.com']
+enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'CoverflowAltTab@dmo60.de', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'blur-my-shell@aunetx', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'appindicatorsupport@rgcjonas.gmail.com', 'bignetscreen-helper@bigcommunity.org']
 favorite-apps=['org.gnome.Nautilus.desktop', 'brave-browser.desktop', 'org.communitybig.ashyterm.desktop', 'org.gnome.Calculator.desktop', 'org.gnome.TextEditor.desktop', 'org.gnome.Calendar.desktop']
 welcome-dialog-last-shown-version='43.2'
 
@@ -498,6 +499,7 @@ open-clipboard-dialog-shortcut=['<Super>v']
 swap-copy-shortcut=true
 
 [org/gnome/shell/extensions/dash-to-dock]
+always-center-icons=false
 animation-time=0.49999999999999994
 apply-custom-theme=false
 autohide-in-fullscreen=true
@@ -508,28 +510,36 @@ custom-background-color=true
 custom-theme-shrink=true
 customize-alphas=true
 dash-max-icon-size=39
+disable-overview-on-startup=false
+dock-fixed=true
 dock-position='BOTTOM'
+extend-height=true
 height-fraction=0.90000000000000002
 hide-delay=0.099999999999999686
+icon-size-fixed=false
 intellihide-mode='FOCUS_APPLICATION_WINDOWS'
 max-alpha=0.80000000000000004
 multi-monitor=true
 preferred-monitor=-2
 preferred-monitor-by-connector='Virtual-1'
 pressure-threshold=100.0
+preview-size-scale=0.0
 require-pressure-to-show=true
+running-indicator-style='DOTS'
 scroll-action='switch-workspace'
 show-mounts=false
 transparency-mode='FIXED'
 
 [org/gnome/shell/extensions/dash-to-panel]
 animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
+appicon-margin=0
+appicon-padding=4
 dot-position='BOTTOM'
 extension-version=73
 hotkeys-overlay-combo='TEMPORARILY'
-panel-anchors='{"unknown-unknown":"MIDDLE"}'
-panel-element-positions='{"unknown-unknown":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"centerMonitor"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}'
-panel-lengths='{}'
+panel-anchors='{"RHT-0x00000000":"MIDDLE"}'
+panel-element-positions='{"RHT-0x00000000":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"centerMonitor"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}'
+panel-lengths='{"RHT-0x00000000":100}'
 panel-positions='{}'
 panel-sizes='{}'
 prefs-opened=false

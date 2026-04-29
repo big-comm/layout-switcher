@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.6.0"
+APP_VERSION = "2.7.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -66,8 +66,20 @@ CONFIG_DIR = Path.home() / ".config" / "big-appearance"
 BACKUP_DIR = CONFIG_DIR / "backups"
 SETTINGS_FILE = CONFIG_DIR / "settings.json"
 
+CACHE_DIR = Path.home() / ".cache" / "layout-switcher"
+EGO_CACHE_DIR = CACHE_DIR / "ego"
+EGO_THUMBS_DIR = CACHE_DIR / "thumbs"
+
 LAYOUTS_DIR = "layouts"
 ICONS_DIR = "icons"
+
+# ── extensions.gnome.org ──────────────────────────────────────────────────────
+EGO_BASE_URL = "https://extensions.gnome.org"
+EGO_USER_AGENT = "LayoutSwitcher/{version} (+https://communitybig.org)"
+EGO_CACHE_TTL_SEARCH = 60 * 60  # 1h
+EGO_CACHE_TTL_INFO = 60 * 60 * 24  # 24h
+EGO_THUMBS_MAX_BYTES = 50 * 1024 * 1024  # 50 MiB
+UPDATE_CHECK_INTERVAL = 60 * 60 * 12  # 12h
 
 # ── Diretórios de extensões GNOME ─────────────────────────────────────────────
 EXT_USER_DIR = Path.home() / ".local" / "share" / "gnome-shell" / "extensions"

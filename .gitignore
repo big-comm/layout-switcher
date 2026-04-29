@@ -22,6 +22,9 @@ htmlcov/
 # ── Audit output (local analysis reports) ───────────────────────────────────
 .audit/
 
+# ── Local-only context dump for Claude / dev notes ──────────────────────────
+CONTEXT.md
+
 # ── Editor / IDE ────────────────────────────────────────────────────────────
 .vscode/
 .idea/
