@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.7.0"
+APP_VERSION = "2.7.1"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -133,8 +133,8 @@ COLOR_MAP: Dict[str, str] = {
 # ── Extensões em destaque ─────────────────────────────────────────────────────
 FEATURED_EXTENSIONS: List[Dict] = [
     {
-        "name": "Desktop Cube",
-        "description": "Rotate workspaces on a 3D cube",
+        "name": tr("Desktop Cube"),
+        "description": tr("Rotate workspaces on a 3D cube"),
         "uuid": "desktop-cube@schneegans.github.com",
         "ego_id": 4648,
         "pkg": "gnome-shell-extension-desktop-cube",
@@ -143,8 +143,8 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "has_settings": False,
     },
     {
-        "name": "Magic Lamp",
-        "description": "Genie effect when minimizing windows",
+        "name": tr("Magic Lamp"),
+        "description": tr("Genie effect when minimizing windows"),
         "uuid": "compiz-alike-magic-lamp-effect@hermes83.github.com",
         "ego_id": 3740,
         "pkg": "gnome-shell-extension-compiz-alike-magic-lamp-effect",
@@ -153,8 +153,8 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "has_settings": False,
     },
     {
-        "name": "Compiz Windows",
-        "description": "Wobbly windows and extra animations",
+        "name": tr("Compiz Windows"),
+        "description": tr("Wobbly windows and extra animations"),
         "uuid": "compiz-windows-effect@hermes83.github.com",
         "ego_id": 3210,
         "pkg": "gnome-shell-extension-compiz-windows-effect",
@@ -163,8 +163,8 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "has_settings": False,
     },
     {
-        "name": "Desktop Icons NG",
-        "description": "Files and folders on your desktop",
+        "name": tr("Desktop Icons NG"),
+        "description": tr("Files and folders on your desktop"),
         "uuid": "ding@rastersoft.com",
         "ego_id": 2087,
         "pkg": "gnome-shell-extension-desktop-icons-ng",

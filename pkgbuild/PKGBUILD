@@ -44,28 +44,31 @@ check() {
 package() {
     cd "${srcdir}/${pkgname}"
 
-    # Determine the correct source directory
+    # Determine the correct source directory.
+    # Use a local var — sobrescrever ${srcdir} (gerenciado pelo makepkg) quebra
+    # builds incrementais e qualquer convenção de empacotamento.
+    local pkgsrc
     if [ -d "${pkgname}" ]; then
-        srcdir="${srcdir}/${pkgname}/${pkgname}"
+        pkgsrc="${srcdir}/${pkgname}/${pkgname}"
     else
-        srcdir="${srcdir}/${pkgname}"
+        pkgsrc="${srcdir}/${pkgname}"
     fi
 
     # Install files
     local dirs=("usr" "etc" "opt")
     for dir in "${dirs[@]}"; do
-        if [ -d "${srcdir}/${dir}" ]; then
-            cp -a "${srcdir}/${dir}" "${pkgdir}/"
+        if [ -d "${pkgsrc}/${dir}" ]; then
+            cp -a "${pkgsrc}/${dir}" "${pkgdir}/"
         fi
     done
 
     # Install license file if present
-    if [ -f "LICENSE" ]; then
-        install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    if [ -f "${pkgsrc}/LICENSE" ]; then
+        install -Dm644 "${pkgsrc}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
     fi
 
     # Install documentation if present
-    if [ -f "README.md" ]; then
-        install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+    if [ -f "${pkgsrc}/README.md" ]; then
+        install -Dm644 "${pkgsrc}/README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
     fi
 }

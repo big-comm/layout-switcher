@@ -118,13 +118,12 @@ class EffectsPage(Gtk.Box):
 
         card.append(inner)
 
-        card_label = ext["name"]
         if installed and enabled:
-            card_label = f"{ext['name']} ({tr('enabled')})"
+            card_label = tr("{name} (enabled)").format(name=ext["name"])
         elif installed:
-            card_label = f"{ext['name']} ({tr('disabled')})"
+            card_label = tr("{name} (disabled)").format(name=ext["name"])
         else:
-            card_label = f"{ext['name']} ({tr('Not installed')})"
+            card_label = tr("{name} (not installed)").format(name=ext["name"])
         card.update_property([Gtk.AccessibleProperty.LABEL], [card_label])
         return card
 

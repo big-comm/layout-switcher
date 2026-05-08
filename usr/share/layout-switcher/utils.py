@@ -24,6 +24,32 @@ from constants import COLOR_MAP
 
 log = logging.getLogger("layout-switcher")
 
+
+def atomic_write_text(dest: Path, data: str, encoding: str = "utf-8") -> None:
+    """
+    Escreve ``data`` em ``dest`` de forma atômica e durável.
+
+    Estratégia: escreve num ``.tmp`` irmão, faz flush+fsync do conteúdo, troca
+    via rename atômico e fsync no diretório pai (durabilidade do metadado em
+    ext4/btrfs/etc.). Levanta OSError em falha — caller decide o que fazer.
+    """
+    dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".tmp") if dest.suffix else dest.with_name(dest.name + ".tmp")
+    with open(tmp, "w", encoding=encoding) as fh:
+        fh.write(data)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, dest)
+    try:
+        dir_fd = os.open(str(dest.parent), os.O_DIRECTORY)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
+    except OSError as exc:
+        log.debug("dir fsync skipped for %s: %s", dest.parent, exc)
+
 # ── Subprocess ────────────────────────────────────────────────────────────────
 
 

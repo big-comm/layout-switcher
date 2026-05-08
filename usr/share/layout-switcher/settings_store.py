@@ -13,6 +13,7 @@ import json
 from typing import Callable, Dict, List, Tuple
 
 from constants import CONFIG_DIR, SETTINGS_FILE
+from utils import atomic_write_text
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 
@@ -40,18 +41,14 @@ class Settings:
     def set(self, key: str, value) -> None:
         self._data[key] = value
         try:
-            tmp = SETTINGS_FILE.with_suffix(".tmp")
-            tmp.write_text(json.dumps(self._data, indent=2), encoding="utf-8")
-            tmp.replace(SETTINGS_FILE)  # atômico no POSIX
+            atomic_write_text(SETTINGS_FILE, json.dumps(self._data, indent=2))
         except Exception:
             pass
 
     def delete(self, key: str) -> None:
         self._data.pop(key, None)
         try:
-            tmp = SETTINGS_FILE.with_suffix(".tmp")
-            tmp.write_text(json.dumps(self._data, indent=2), encoding="utf-8")
-            tmp.replace(SETTINGS_FILE)
+            atomic_write_text(SETTINGS_FILE, json.dumps(self._data, indent=2))
         except Exception:
             pass
 

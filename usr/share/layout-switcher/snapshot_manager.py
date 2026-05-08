@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from constants import CONFIG_DIR
-from utils import run_cmd
+from utils import atomic_write_text, run_cmd
 
 log = logging.getLogger("layout-switcher")
 
@@ -69,9 +69,7 @@ class SnapshotManager:
 
         dest = cls._path_for(layout_id)
         try:
-            tmp = dest.with_suffix(".dconf.tmp")
-            tmp.write_text(data, encoding="utf-8")
-            tmp.replace(dest)
+            atomic_write_text(dest, data)
             log.debug("snapshot saved: %s (%d bytes)", dest, len(data))
             return True, str(dest)
         except Exception as exc:

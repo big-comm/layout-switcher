@@ -192,7 +192,7 @@ class ThemesPage(Gtk.Box):
             return
 
         # Contador discreto
-        count_lbl = Gtk.Label(label=f"{len(names)} {tr('themes available')}")
+        count_lbl = Gtk.Label(label=tr("{n} themes available").format(n=len(names)))
         count_lbl.add_css_class("caption")
         count_lbl.add_css_class("dim-label")
         count_lbl.set_halign(Gtk.Align.START)
@@ -259,9 +259,9 @@ class ThemesPage(Gtk.Box):
 
         row.set_child(inner)
 
-        a11y_label = f"{name} {tr('theme')}"
+        a11y_label = tr("{name} theme").format(name=name)
         if is_on:
-            a11y_label += f" ({tr('Active')})"
+            a11y_label += " (" + tr("Active") + ")"
         row.update_property([Gtk.AccessibleProperty.LABEL], [a11y_label])
         return row
 

@@ -21,6 +21,10 @@ import zipfile
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+# Cap defensivo para o download da .zip de extensão. Extensões reais raramente
+# passam de 5 MiB; valor folgado para não rejeitar pacotes legítimos.
+_MAX_EXT_ZIP_BYTES = 50 * 1024 * 1024  # 50 MiB
+
 from constants import EXT_SYS_DIR, EXT_USER_DIR
 from utils import dconf_read, dconf_write, gnome_shell_version, gsettings_get, run_cmd
 
@@ -287,7 +291,10 @@ class ExtMgr:
                         ct = resp.headers.get("Content-Type", "")
                         if "text/html" in ct:
                             return False, "server returned HTML instead of zip"
-                        data = resp.read()
+                        chunk = resp.read(_MAX_EXT_ZIP_BYTES + 1)
+                        if len(chunk) > _MAX_EXT_ZIP_BYTES:
+                            return False, f"download exceeded {_MAX_EXT_ZIP_BYTES} bytes"
+                        data = chunk
                     break
                 except (urllib.error.URLError, OSError) as net_err:
                     last_err = str(net_err)
@@ -309,9 +316,15 @@ class ExtMgr:
             tmp_path.write_bytes(data)
 
             with zipfile.ZipFile(str(tmp_path)) as zf:
-                # security: prevent path traversal
+                # security: prevent path traversal (zip-slip).
+                # Resolve cada caminho final e exige que ele permaneça dentro de `dest`.
+                dest_resolved = dest.resolve()
                 for member in zf.namelist():
-                    if ".." in member or member.startswith("/"):
+                    target = (dest_resolved / member).resolve()
+                    try:
+                        target.relative_to(dest_resolved)
+                    except ValueError:
+                        # caminho escapa do destino — ignora
                         continue
                     zf.extract(member, str(dest))
 

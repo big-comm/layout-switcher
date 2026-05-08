@@ -18,8 +18,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from constants import BACKUP_DIR
-from shell_reloader import ShellReloader
-from utils import run_cmd
+from utils import atomic_write_text, run_cmd
 
 
 class BackupManager:
@@ -47,25 +46,26 @@ class BackupManager:
 
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         dest = BACKUP_DIR / f"backup_{ts}.dconf"
-        tmp = dest.with_suffix(".tmp")
 
         try:
-            tmp.write_text(data, encoding="utf-8")
-            tmp.replace(dest)
+            atomic_write_text(dest, data)
         except Exception as exc:
-            tmp.unlink(missing_ok=True)
             return False, f"write failed: {exc}"
 
-        # Atualiza symlink "latest" de forma atômica
+        # Atualiza symlink "latest" de forma atômica.
+        # symlink é conveniência (latest() faz fallback para o arquivo mais novo),
+        # então qualquer erro aqui é silenciado.
         lnk = BACKUP_DIR / "latest.dconf"
+        lnk_tmp = BACKUP_DIR / "latest.dconf.tmp"
         try:
-            lnk_tmp = BACKUP_DIR / "latest.dconf.tmp"
-            if lnk_tmp.exists() or lnk_tmp.is_symlink():
-                lnk_tmp.unlink()
+            lnk_tmp.unlink(missing_ok=True)
             lnk_tmp.symlink_to(dest.name)  # symlink relativo
-            lnk_tmp.replace(lnk)  # rename atômico
-        except Exception:
-            pass  # symlink é conveniência, não obrigatório
+            os.replace(str(lnk_tmp), str(lnk))  # rename atômico
+        except OSError:
+            try:
+                lnk_tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
 
         cls._prune()
         return True, str(dest)
@@ -115,16 +115,18 @@ class BackupManager:
     @classmethod
     def restore(cls, path: Path) -> Tuple[bool, str]:
         """
-        Restaura um backup via dconf load, usando a orquestração atômica do
-        ``LayoutApplier`` (para-sync-monitor, pausa extensões, carrega,
-        persiste em ``settings.gnome``, reativa tudo).
+        Restaura um backup usando ``LayoutApplier.load_dconf_safely``:
+        pausa watcher (lock), desabilita extensões em ordem, escreve
+        ``settings.gnome`` atomicamente e faz ``dconf load``. O listener
+        de gsettings do Shell reabilita as extensões via mudança em
+        ``enabled-extensions``, sem reload manual.
 
         Retorna (True, "") ou (False, mensagem_erro).
         """
         if not path or not path.exists():
             return False, "backup file not found"
         try:
-            data = path.read_text(encoding="utf-8")
+            data = path.read_text(encoding="utf-8", errors="replace")
         except Exception as exc:
             return False, f"cannot read backup: {exc}"
         if len(data) < cls.MIN_BYTES:
@@ -133,18 +135,16 @@ class BackupManager:
         # Import aqui para evitar ciclo (layout_applier nao importa backup).
         from layout_applier import LayoutApplier
 
-        local_dtp_monitors = LayoutApplier._read_dtp_monitor_keys()
+        # Backups são dumps locais — DTP monitor IDs já correspondem ao hardware
+        # atual, não precisa pré-reescrita.
         before = LayoutApplier._enabled_extensions()
         ok, out = LayoutApplier.load_dconf_safely(
             data,
             persist=True,
-            dtp_local_monitors=local_dtp_monitors,
+            before_uuids=before,
         )
         if not ok:
             return False, f"dconf load failed: {out}"
-
-        after = LayoutApplier._enabled_extensions()
-        ShellReloader.reload_all(before_uuids=before, after_uuids=after)
         return True, out
 
     # ── Privado ───────────────────────────────────────────────────────────────

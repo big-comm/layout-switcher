@@ -1,48 +1,77 @@
 # SPDX-License-Identifier: MIT
 """
-layout_applier.py — Aplica layouts de desktop via dconf (sessao ativa).
+layout_applier.py — Apply desktop layouts via dconf (live session).
 
-Trabalha em conjunto com ``startgnome-community`` (do pacote
-``comm-gnome-config``), que no login faz::
+Works together with ``comm-gnome-config``:
 
-  1. ``dconf reset -f /``
-  2. ``dconf load / < ~/.config/dconf/settings.gnome``
+  * ``startgnome-community`` — at login, does::
 
-Portanto, o estado de inicializacao da sessao depende inteiramente do
-conteudo de ``settings.gnome``. Se uma chave nao esta nesse arquivo, ela
-volta ao default do GNOME no proximo login (gtk-theme volta para Adwaita,
-user-theme some, etc.) — visivel como "flash" do GNOME vanilla.
+        dconf reset -f /
+        dconf load / < ~/.config/dconf/settings.gnome
+        # Shell starts AFTER load → no race, clean state every login
 
-Os layout files do switcher NAO sao dumps completos do dconf: eles sao
-recortes focados em extensoes do dock, topbar, app-picker e similares.
-Chaves de tema (interface, user-theme), fontes e configuracoes pessoais
-nao aparecem porque sao prerrogativa do usuario / do skel do
-``comm-gnome-config``.
+  * ``dconf-sync-gnome.service`` (running ``dconf-sync-monitor-gnome``)
+    — watches the live dconf and re-dumps it to ``settings.gnome``
+    whenever it changes, with a 2s debounce. On comm-gnome-config
+    ≥ 26.05.07 it honours the lock file at
+    ``$XDG_RUNTIME_DIR/dconf-sync-gnome.lock`` and skips dumps while
+    the lock is held — the mechanism we use to write settings.gnome
+    atomically here without the watcher clobbering it.
 
-ANTIGO (errado): ``apply()`` fazia ``dconf reset -f /`` + ``dconf load
-layout_file`` + ``dconf dump > settings.gnome``. O reset destruia chaves
-preservadas pelo skel; o dump capturava o estado mutilado e gravava em
-settings.gnome — corrompendo o arquivo que o ``startgnome-community``
-usaria nos proximos logins.
+Architectural reality: in runtime, gnome-shell is alive and listening
+on dconf change-signals. Mass mutation (``dconf reset -f /``) fires
+hundreds of Notify signals; any extension whose ``disable()`` left
+orphan handlers behind crashes with ``this._settings is null``,
+corrupting its state for the rest of the session (panel transparency
+loss, dock blur missing, etc.). We can't fix every extension's
+``disable()``, so we don't trigger those signals.
 
-NOVO: ``apply()`` faz MERGE per-key entre o ``settings.gnome`` atual e o
-layout file. Chaves do layout sobrescrevem chaves correspondentes; chaves
-exclusivas do settings (tema, fontes, etc.) sao preservadas. O merge
-resultante e que vai para ``dconf load`` e para ``settings.gnome``.
+Strategy:
 
-Fluxo atomico::
+  * ``settings.gnome`` is the absolute source of truth — written
+    atomically with the layout text, with the lock held so the watcher
+    won't clobber it. Next login is guaranteed clean regardless of
+    runtime quirks.
+  * Live apply: surgical reset of orphan keys in
+    ``/org/gnome/shell/extensions/`` (keys present in live dconf but
+    absent from the target layout), then ``dconf load`` of the target.
+    The surgical reset fixes layout cross-contamination — e.g. minimal
+    sets ``blur-my-shell/panel/blur=false`` and biggnome doesn't mention
+    that key (expecting default ``true``); without the reset, biggnome
+    inherits minimal's ``false`` because ``dconf load`` is purely
+    additive (it sets but never clears).
+  * No global ``dconf reset -f /`` — that fires Notify on every key in
+    dconf and any extension whose ``disable()`` left orphan handlers
+    behind crashes with ``this._settings is null``. Scoping the reset
+    to extension storage and restricting it to keys actually leaving
+    keeps the signal storm small enough to not trip the orphan handlers.
+  * Per-extension disable is still ordered (sorted UUID DBus calls) to
+    avoid the cross-extension teardown SIGSEGV documented in
+    ``_disable_extensions_in_order``.
+  * No ``reload_all`` after the load — the Shell's gsettings listener
+    on ``enabled-extensions`` already enables UUIDs as they appear.
+    Calling ``EnableExtension`` again races with that listener and
+    causes double-init.
 
-  1. ler settings.gnome (estado completo atual)
-  2. ler layout_file (recorte do layout)
-  3. merge per-key: layout vence chaves comuns; settings preserva o resto
+Per-machine fixup: dash-to-panel stores some keys as a JSON dict keyed
+by monitor id (``vendor-serial`` at runtime, ``unknown-unknown`` in VMs
+without EDID). The layout file ships with whatever ids it was generated
+under; we rewrite those keys in the text BEFORE the load so live dconf
+ends up with the local hardware ids.
+
+Flow::
+
+  1. read layout_file, rewrite DTP monitor-keyed values to local ids
+  2. read before = enabled-extensions
+  3. acquire lock file
   4. stop dconf-sync-gnome.service
-  5. gsettings disable-user-extensions=true (pausa shell de reagir)
-  6. dconf reset -f /        (zera dconf user db)
-  7. dconf load /            (carrega o MERGE — completo, com tema)
-  8. dconf dump / > settings.gnome   (persiste merge para proximo login)
-  9. gsettings disable-user-extensions=false
-  10. start dconf-sync-gnome.service
-  11. ShellReloader.reload_all()
+  5. DisableExtension via DBus per UUID, in sorted order
+  6. dconf reset <key> for each orphan in /org/gnome/shell/extensions/
+     (key in live dump but not in layout text)
+  7. atomic write settings.gnome = layout text  (clean, no garbage)
+  8. dconf load / < layout
+  9. start dconf-sync-gnome.service              (watcher honours lock)
+ 10. release lock file
 
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
@@ -52,7 +81,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Iterable, List, Optional, Set, Tuple
 
 from shell_reloader import ShellReloader
 from utils import run_cmd
@@ -61,6 +90,21 @@ log = logging.getLogger("layout-switcher")
 
 SETTINGS_GNOME = Path.home() / ".config" / "dconf" / "settings.gnome"
 SYNC_SERVICE = "dconf-sync-gnome.service"
+
+# comm-gnome-config's QT-theme path watcher fires whenever
+# ~/.config/dconf/user is touched (dconf load does that). The watcher
+# itself only writes to ~/.config/Kvantum/* and ~/.config/kdeglobals
+# (no dconf round-trip), but ``startgnome-community`` stops it during
+# its own reset+load — we mirror that for consistency and to avoid the
+# extra fs activity racing with our atomic write of settings.gnome.
+QT_THEME_WATCHER = "sync-gnome-theme-to-qt.path"
+
+# Lock honoured by comm-gnome-config's dconf-sync-monitor-gnome (≥ 26.05.07):
+# while present, the watcher skips its dconf→file dump, so we can
+# atomically write settings.gnome without it being clobbered.
+_SYNC_LOCK_PATH = Path(
+    os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
+) / "dconf-sync-gnome.lock"
 
 # dash-to-panel stores some settings as JSON dicts keyed by monitor ID
 # (e.g. ``"unknown-unknown"`` in VMs, ``"DEL-S2719DGF-..."`` on real
@@ -77,20 +121,58 @@ _DTP_MONITOR_KEYED = (
     "panel-lengths",
 )
 
+# Paths where we're allowed to reset orphan keys (keys present in live
+# dconf but absent from the target layout). Restricted to extension
+# storage: that's where layout differences cause visible damage
+# (e.g. minimal sets blur-my-shell/panel/blur=false; biggnome doesn't
+# mention the key, expecting the default true; without a targeted
+# reset, blur stays off after switching). Other paths (settings-daemon,
+# notification app history, third-party apps) are off-limits — resetting
+# them would lose unrelated user state.
+_ORPHAN_RESET_PREFIXES = (
+    "/org/gnome/shell/extensions/",
+)
+
+# Extensions that should NOT be disabled at the start of a layout switch.
+#
+# user-theme is special: it owns the global ``StTheme`` (Main.loadTheme).
+# Other visual extensions (blur-my-shell, dash-to-dock) register their
+# stylesheets on top of whatever StTheme is current at the time of their
+# enable(). If we disable user-theme during the switch, StTheme reverts
+# to the default GNOME theme; subsequent re-enables run against that
+# default. By the time user-theme's enable() runs again and rebuilds
+# StTheme, blur-my-shell's panel-class wiring has already happened
+# against the wrong theme — and the rebuild doesn't re-trigger
+# blur-my-shell's _set_should_override_panel(), so the panel's
+# ``.transparent-panel`` class either isn't set or has no matching rule.
+#
+# user-theme has no setting watchers that the dconf load's Notify
+# storm would crash, so it's safe to leave enabled throughout.
+_NO_DISABLE = frozenset({
+    "user-theme@gnome-shell-extensions.gcampax.github.com",
+})
+
 
 class LayoutApplier:
-    """Aplica layout com reset+load, protegendo extensoes e monitor de sync."""
+    """Aplica layout em sessão viva: write atômico em settings.gnome +
+    best-effort dconf load. Coordena com o watcher do comm-gnome-config
+    via lock file. Não usa dconf reset (perigoso com Shell rodando)."""
 
-    _SETTLE_SEC = 0.5  # time for Shell to process disable-user-extensions
+    # DBus DisableExtension is synchronous — the extension is fully disabled
+    # when the call returns. The gap lets the GLib event loop drain any
+    # pending idle callbacks queued by the extension's disable() body before
+    # we move on; some extensions (blur-my-shell, dash-to-dock) need >20ms.
+    _DISABLE_STEP_SEC = 0.1
+    _SETTLE_SEC = 0.5  # final settle after last disable, before dconf load
     _MIN_DUMP_BYTES = 100
 
     # ── Helpers de infraestrutura ────────────────────────────────────────────
 
     @staticmethod
-    def _has_sync_service() -> bool:
-        """True se o servico dconf-sync-gnome do comm-gnome-config existe."""
+    def _has_user_unit(unit: str) -> bool:
+        """True if a systemd --user unit exists on this machine."""
         ok, _ = run_cmd(
-            ["systemctl", "--user", "cat", SYNC_SERVICE],
+            ["systemctl", "--user", "cat", unit],
             timeout=5,
         )
         return ok
@@ -98,39 +180,252 @@ class LayoutApplier:
     @classmethod
     def _sync_service(cls, action: str) -> None:
         """start/stop do dconf-sync-gnome (silencioso se ausente)."""
-        if not cls._has_sync_service():
+        if not cls._has_user_unit(SYNC_SERVICE):
             return
         run_cmd(
             ["systemctl", "--user", action, SYNC_SERVICE],
             timeout=10,
         )
 
+    @classmethod
+    def _qt_theme_watcher(cls, action: str) -> None:
+        """start/stop do sync-gnome-theme-to-qt.path (silencioso se ausente)."""
+        if not cls._has_user_unit(QT_THEME_WATCHER):
+            return
+        run_cmd(
+            ["systemctl", "--user", action, QT_THEME_WATCHER],
+            timeout=10,
+        )
+
     @staticmethod
-    def _pause_extensions(pause: bool) -> None:
-        """Liga/desliga todas as extensoes de usuario via gsettings."""
+    def _sync_lock_acquire() -> None:
+        """
+        Create the watcher-coordination lock file. Compatible with
+        comm-gnome-config ≥ 26.05.07; older versions silently ignore
+        the file (so this is a no-op for them — they'll dump the live
+        dconf normally, picking up settings.gnome via the next change).
+        """
+        try:
+            _SYNC_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+            _SYNC_LOCK_PATH.write_text(f"{os.getpid()}\n")
+        except OSError as exc:
+            log.debug("could not create sync lock: %s", exc)
+
+    @staticmethod
+    def _sync_lock_release() -> None:
+        """Remove the watcher-coordination lock. Idempotent."""
+        try:
+            _SYNC_LOCK_PATH.unlink(missing_ok=True)
+        except OSError as exc:
+            log.debug("could not remove sync lock: %s", exc)
+
+    @staticmethod
+    def _parse_dconf_dump_paths(text: str) -> Set[str]:
+        """
+        Parse a dconf dump and return the set of full key paths it contains.
+
+        Format::
+
+            [section/path]
+            key1=value1
+            key2=value2
+
+        A line ``key=value`` under section ``[a/b]`` produces ``/a/b/key``.
+        Blank lines and lines without ``=`` (other than section headers)
+        are ignored.
+        """
+        paths: Set[str] = set()
+        section = ""
+        for raw in text.splitlines():
+            line = raw.rstrip("\r")
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = "/" + stripped[1:-1].strip("/")
+                continue
+            if "=" not in line:
+                continue
+            key, _, _value = line.partition("=")
+            key = key.strip()
+            if not key or not section:
+                continue
+            paths.add(f"{section}/{key}")
+        return paths
+
+    @classmethod
+    def _reset_orphan_keys(cls, target_text: str) -> int:
+        """
+        Reset keys present in live dconf but absent from ``target_text``,
+        restricted to ``_ORPHAN_RESET_PREFIXES`` (extension storage only).
+
+        Why this exists: ``dconf load`` is purely additive — it sets the
+        keys in its input but never clears keys that aren't there. So if
+        the previous layout (e.g. minimal) set
+        ``blur-my-shell/panel/blur=false`` and the new layout (biggnome)
+        doesn't mention that key (expecting the default ``true``), the
+        loaded biggnome inherits minimal's ``false`` and the panel blur
+        stays off.
+
+        Restricting to ``/org/gnome/shell/extensions/`` keeps the signal
+        storm small (and skips paths where reset would lose unrelated user
+        state — settings-daemon caches, notification app history, etc.).
+        Extensions are already disabled when this runs, so the Notify
+        signals fire mostly into dead code.
+
+        Returns the number of keys reset.
+        """
+        ok, dump = run_cmd(["dconf", "dump", "/"], timeout=15)
+        if not ok or not dump:
+            return 0
+        live_paths = cls._parse_dconf_dump_paths(dump)
+        target_paths = cls._parse_dconf_dump_paths(target_text)
+        orphans = sorted(
+            p
+            for p in (live_paths - target_paths)
+            if any(p.startswith(pre) for pre in _ORPHAN_RESET_PREFIXES)
+        )
+        n = 0
+        for path in orphans:
+            ok2, _msg = run_cmd(["dconf", "reset", path], timeout=5)
+            if ok2:
+                n += 1
+            time.sleep(0.01)
+        if n:
+            log.info("reset %d orphan key(s) before load", n)
+        return n
+
+    # Extensions that own visual state (CSS, panel actors, theme
+    # references) and don't recover it cleanly from a plain
+    # Disable→Enable cycle. We ReloadExtension these after the dconf
+    # load so they re-init their JS module from scratch — same effect
+    # as a logout, but per-extension. Other UUIDs (gsconnect, pamac,
+    # appindicators, etc.) restore fine via Shell's auto-enable path.
+    #
+    # ``user-theme`` is intentionally NOT here: it stays enabled
+    # throughout (see ``_NO_DISABLE``) so the global ``StTheme`` never
+    # reverts to default mid-switch, and other extensions register
+    # their stylesheets on top of the live Big-Blue theme.
+    _RELOAD_AFTER_LOAD = (
+        "blur-my-shell@aunetx",
+        "dash-to-dock@micxgx.gmail.com",
+        "dash-to-panel@jderose9.github.com",
+        "big-shot@bigcommunity.org",
+    )
+
+    @classmethod
+    def _pulse_overview(cls) -> None:
+        """
+        Briefly toggle ``org.gnome.Shell.OverviewActive`` true→false to
+        force a CSS style recompute on Main.panel.
+
+        Why this exists: after a layout switch, even when every extension
+        has been reloaded against the correct dconf state and every CSS
+        class on the panel actor matches what the post-logout state
+        would have, ``Main.panel`` still renders with its pre-switch
+        cached style. Big-Blue.css's ``#panel { rgba(0, 0, 0, 0.65) }``
+        rule isn't applied — the panel reads as opaque black.
+
+        The trigger that fixes it is the ``:overview`` pseudo-class
+        being added to Main.panel and removed: that pseudo-class change
+        invalidates St's style cache and forces the panel to re-evaluate
+        every CSS rule. Empirically, no other event reliably triggers
+        the same recompute (theme name toggle, gnome-extensions
+        disable+enable user-theme, ReloadExtension, dconf key writes —
+        all tested, none work). Manually clicking Activities then
+        clicking the desktop is what users were doing as a workaround.
+
+        ``OverviewActive`` is a writable D-Bus property on
+        ``org.gnome.Shell``; setting it true→false replicates that
+        click sequence without any user input. The brief overview
+        flash is visible but acceptable as the cost of transparency
+        actually working at runtime.
+        """
         run_cmd(
             [
-                "gsettings",
-                "set",
-                "org.gnome.shell",
-                "disable-user-extensions",
-                "true" if pause else "false",
+                "gdbus", "call", "--session",
+                "--dest", "org.gnome.Shell",
+                "--object-path", "/org/gnome/Shell",
+                "--method", "org.freedesktop.DBus.Properties.Set",
+                "org.gnome.Shell", "OverviewActive", "<true>",
+            ],
+            timeout=5,
+        )
+        # Just enough for Shell to add the :overview pseudo-class to
+        # Main.panel and run the show animation past the style-recompute
+        # frame. Shorter sleeps occasionally race past the recompute and
+        # the panel stays opaque.
+        time.sleep(0.4)
+        run_cmd(
+            [
+                "gdbus", "call", "--session",
+                "--dest", "org.gnome.Shell",
+                "--object-path", "/org/gnome/Shell",
+                "--method", "org.freedesktop.DBus.Properties.Set",
+                "org.gnome.Shell", "OverviewActive", "<false>",
             ],
             timeout=5,
         )
 
     @classmethod
-    def _persist_to_settings_file(cls) -> Tuple[bool, str]:
+    def _reload_visual_extensions(cls, uuids: Iterable[str]) -> None:
         """
-        Grava ``dconf dump /`` em ``~/.config/dconf/settings.gnome`` de forma
-        atomica (``.tmp`` -> rename, com ``.bak`` do anterior), reproduzindo
-        o comportamento do ``dconf-sync-monitor-gnome``.
+        Call ReloadExtension via DBus for visually-stateful UUIDs.
+
+        Only acts on UUIDs in the intersection of ``uuids`` and
+        ``_RELOAD_AFTER_LOAD``, preserving the order declared in
+        ``_RELOAD_AFTER_LOAD`` (NOT alphabetical). Sleeps briefly between
+        reloads so each extension's enable() body finishes before the
+        next reload starts (same rationale as ``_DISABLE_STEP_SEC``).
         """
-        ok, data = run_cmd(["dconf", "dump", "/"], timeout=15)
-        if not ok:
-            return False, f"dconf dump failed: {data}"
+        present = {u for u in uuids if u}
+        for uuid in cls._RELOAD_AFTER_LOAD:
+            if uuid not in present:
+                continue
+            ShellReloader.reload_extension(uuid)
+            time.sleep(cls._DISABLE_STEP_SEC)
+
+    @classmethod
+    def _disable_extensions_in_order(cls, uuids: Iterable[str]) -> None:
+        """
+        Disable each extension via DBus, in sorted UUID order, with a
+        small delay between calls.
+
+        We do NOT use ``gsettings set ... disable-user-extensions=true``
+        for this because that triggers an async cascade where the Shell
+        disables extensions in implementation-defined (non-deterministic)
+        order and runs them concurrently. That race caused gnome-shell
+        SIGSEGV on real layout transitions: ``copyous`` ``disable()``
+        called ``theme.destroy()``, which fired a signal handler bound
+        inside dash-to-panel's ``enable()``; the handler then read
+        ``Me.settings.get_string()`` on dash-to-panel — but DTP had
+        already been torn down, so ``Me.settings`` was null. JS errors
+        cascaded into disposed-object accesses and the Shell crashed
+        back to GDM.
+
+        Sorted UUIDs put ``copyous@…`` before ``dash-to-panel@…``
+        (``c`` < ``d``), so cross-extension callbacks during ``copyous``'s
+        teardown still see a live DTP. The 0.1s gap lets each extension's
+        ``disable()`` body run to completion before the next one starts.
+        """
+        for uuid in sorted({u for u in uuids if u and u not in _NO_DISABLE}):
+            ShellReloader.enable_extension_dbus(uuid, enable=False)
+            time.sleep(cls._DISABLE_STEP_SEC)
+
+    @classmethod
+    def _persist_to_settings_file(cls, data: str) -> Tuple[bool, str]:
+        """
+        Atomically write ``data`` (the layout text) to
+        ``~/.config/dconf/settings.gnome``.
+
+        The layout file is the single source of truth for the desktop
+        state, so the persisted file is a verbatim copy of it (with DTP
+        monitor keys already rewritten to local IDs by the caller).
+        Atomic via ``.tmp`` + rename, with a ``.bak`` of the previous
+        version, mirroring ``dconf-sync-monitor-gnome``'s behaviour.
+        """
         if not data or len(data) < cls._MIN_DUMP_BYTES:
-            return False, "dconf dump produced empty/tiny output"
+            return False, "layout text is empty/tiny"
 
         try:
             SETTINGS_GNOME.parent.mkdir(parents=True, exist_ok=True)
@@ -146,8 +441,6 @@ class LayoutApplier:
                 except Exception as exc:
                     log.debug("could not create .bak: %s", exc)
             tmp.replace(SETTINGS_GNOME)
-            # fsync the directory so the rename itself reaches disk —
-            # mirrors the behaviour of dconf-sync-stop-gnome (sync FILE).
             try:
                 dir_fd = os.open(str(SETTINGS_GNOME.parent), os.O_DIRECTORY)
                 try:
@@ -159,84 +452,6 @@ class LayoutApplier:
             return True, str(SETTINGS_GNOME)
         except Exception as exc:
             return False, f"write failed: {exc}"
-
-    # ── Parse / merge de dumps dconf ─────────────────────────────────────────
-
-    @staticmethod
-    def _parse_dconf_dump(text: str) -> Dict[str, Dict[str, str]]:
-        """
-        Parse a ``dconf dump`` output into ``{section: {key: value}}``.
-
-        Format produced by ``dconf dump /`` is::
-
-            [section/path]
-            key=value
-            another=value
-
-            [other/section]
-            ...
-
-        Values are kept as raw GVariant strings (unparsed). Blank lines
-        and lines that don't match section/key=value are ignored.
-        """
-        sections: Dict[str, Dict[str, str]] = {}
-        current: str = ""
-        for line in text.splitlines():
-            stripped = line.strip()
-            if not stripped:
-                continue
-            if stripped.startswith("[") and stripped.endswith("]"):
-                current = stripped[1:-1]
-                sections.setdefault(current, {})
-                continue
-            if "=" in stripped and current:
-                key, value = stripped.split("=", 1)
-                sections[current][key.strip()] = value.strip()
-        return sections
-
-    @staticmethod
-    def _serialize_dconf_dump(sections: Dict[str, Dict[str, str]]) -> str:
-        """Render ``{section: {key: value}}`` back to dconf dump format."""
-        chunks: List[str] = []
-        for section in sorted(sections):
-            keys = sections[section]
-            if not keys:
-                continue
-            chunks.append(f"[{section}]")
-            for key in sorted(keys):
-                chunks.append(f"{key}={keys[key]}")
-            chunks.append("")
-        return "\n".join(chunks).rstrip() + "\n"
-
-    @classmethod
-    def _merge_layout_into_settings(cls, layout_text: str, settings_text: str) -> str:
-        """
-        Merge per-key: layout overrides settings on shared keys; keys
-        present only in settings (tema, fontes, configs pessoais) are
-        preserved; keys present only in the layout are added.
-
-        Returns the merged dump as a string ready for ``dconf load /``.
-        """
-        layout_sections = cls._parse_dconf_dump(layout_text)
-        settings_sections = cls._parse_dconf_dump(settings_text) if settings_text else {}
-        merged: Dict[str, Dict[str, str]] = {
-            section: dict(keys) for section, keys in settings_sections.items()
-        }
-        for section, keys in layout_sections.items():
-            merged.setdefault(section, {})
-            merged[section].update(keys)
-        return cls._serialize_dconf_dump(merged)
-
-    @classmethod
-    def _load_current_settings_text(cls) -> str:
-        """Read ``~/.config/dconf/settings.gnome`` if present, else ``""``."""
-        if not SETTINGS_GNOME.exists():
-            return ""
-        try:
-            return SETTINGS_GNOME.read_text(encoding="utf-8")
-        except OSError as exc:
-            log.debug("failed to read settings.gnome: %s", exc)
-            return ""
 
     @staticmethod
     def _enabled_extensions() -> List[str]:
@@ -287,8 +502,8 @@ class LayoutApplier:
         layout generated on a VM with no EDID, which won't match the actual
         identifier DTP computes at runtime.
 
-        Must be called *before* ``dconf reset -f /``, since the reset
-        wipes the dconf fallback values.
+        Must be called *before* the ``dconf load``, since the rewrite
+        is what makes the loaded data carry local-machine IDs.
         """
         keys = cls._read_dtp_monitor_ids_from_mutter()
         if keys:
@@ -346,38 +561,48 @@ class LayoutApplier:
         return ids
 
     @classmethod
-    def _migrate_dtp_keys_for_local_monitors(cls, local_keys: Set[str]) -> None:
+    def _rewrite_dtp_keys_in_text(cls, text: str, local_keys: Set[str]) -> str:
         """
-        After ``dconf load`` has applied the layout (which carries dash-to-panel
-        JSON keys from whatever machine generated the file), rewrite each
-        monitor-keyed value so the JSON keys match the local machine's monitor
-        IDs. Replicates the layout's value across all known local IDs.
+        Rewrite dash-to-panel monitor-keyed values in a dconf dump string so
+        the JSON keys match the local machine's monitor IDs.
 
-        Without this, on next login dash-to-panel briefly renders defaults
-        (centered "pill" at the bottom of the screen) while it migrates the
-        layout's foreign keys to the local ones — visible as a 1s flash.
+        Layout files are typically generated on a different machine — they
+        ship with foreign monitor IDs (or ``unknown-unknown`` in VMs). At
+        login, DTP looks up its config by the runtime-computed local id
+        (``vendor-serial`` per panelSettings.js) and falls back to vanilla
+        defaults when nothing matches — that fallback is what causes the
+        visible flash on the way to the desktop. Pre-rewriting the layout
+        text fixes the file we persist AND the data we feed to dconf load,
+        so both sides see the right keys without any post-load patching.
         """
         if not local_keys:
-            return
-        for k in _DTP_MONITOR_KEYED:
-            path = f"{_DTP_BASE}/{k}"
-            ok, raw = run_cmd(["dconf", "read", path], timeout=5)
-            if not ok:
+            return text
+        out_lines: List[str] = []
+        for line in text.splitlines():
+            if "=" not in line:
+                out_lines.append(line)
                 continue
-            d = cls._parse_dtp_json(raw)
+            key, _, value = line.partition("=")
+            if key.strip() not in _DTP_MONITOR_KEYED:
+                out_lines.append(line)
+                continue
+            d = cls._parse_dtp_json(value.strip())
             if not d:
+                out_lines.append(line)
                 continue
             if set(d.keys()) == local_keys:
+                out_lines.append(line)
                 continue
-            # Use the first JSON value as the canonical layout intent and
-            # replicate it under each local monitor ID.
             source = next(iter(d.values()))
             new_d = {lk: source for lk in local_keys}
             new_json = json.dumps(new_d, separators=(",", ":"))
-            # GVariant string syntax: single-quoted, backslash-escape backslash
-            # and single quote (JSON itself uses double quotes, no escape needed).
             escaped = new_json.replace("\\", "\\\\").replace("'", "\\'")
-            run_cmd(["dconf", "write", path, f"'{escaped}'"], timeout=5)
+            out_lines.append(f"{key}='{escaped}'")
+        # Preserve trailing newline if the input had one.
+        joined = "\n".join(out_lines)
+        if text.endswith("\n") and not joined.endswith("\n"):
+            joined += "\n"
+        return joined
 
     # ── API publica ──────────────────────────────────────────────────────────
 
@@ -386,47 +611,70 @@ class LayoutApplier:
         cls,
         data: str,
         persist: bool = True,
-        dtp_local_monitors: Set[str] = None,
+        before_uuids: Optional[Iterable[str]] = None,
     ) -> Tuple[bool, str]:
         """
-        Aplica um dump dconf em ``/`` usando reset+load (REPLACE, nao MERGE),
-        com orquestracao completa: para o monitor, pausa extensoes, reseta,
-        carrega, persiste no settings.gnome e restaura tudo no fim.
+        Apply ``data`` (a full dconf dump) to live dconf, and atomically
+        write it to ``settings.gnome`` so the next login is clean.
 
-        Shared entre ``apply()`` (layout) e ``BackupManager.restore()``.
-        Nao chama ``ShellReloader.reload_all()`` — cabe ao chamador.
+        Flow:
+          1. acquire lock                       (watcher won't dump)
+          2. stop dconf-sync-gnome.service       (also gated by lock)
+          3. disable ``before_uuids`` via DBus   (sorted, see
+             ``_disable_extensions_in_order``)
+          4. settle so disable() callbacks drain
+          5. surgical reset of orphan extension keys (see
+             ``_reset_orphan_keys``)
+          6. atomic write settings.gnome = data  (clean, no garbage)
+          7. dconf load < data
+          8. ReloadExtension on visually-stateful UUIDs (see
+             ``_reload_visual_extensions``) — fresh JS module init so
+             CSS/actor state matches the new dconf values
+          9. start dconf-sync-gnome.service      (still skips dump until
+             we release the lock OR settings.gnome is fresh enough)
+         10. release lock
 
-        Se ``dtp_local_monitors`` for informado, reescreve as chaves
-        monitor-keyed do dash-to-panel logo após o load para usar os IDs
-        do hardware local — evita o flash da pill no próximo login.
+        Why no global ``dconf reset -f /`` in runtime: with gnome-shell
+        alive, the reset fires Notify on every key in dconf. Extensions
+        whose ``disable()`` left orphan signal handlers behind crash
+        with ``this._settings is null`` and stay broken for the rest of
+        the session. The surgical orphan-only reset above keeps the
+        Notify storm small (only keys actually leaving fire) and scoped
+        to extension storage (no risk to user data elsewhere).
 
-        Retorna (True, "") em sucesso ou (False, mensagem_erro).
+        Why no ``reload_all`` after the load: ``dconf load`` writes
+        ``enabled-extensions``, which fires the Shell's gsettings listener
+        and enables each UUID. Calling ``EnableExtension`` again races
+        with that listener and double-inits the extension.
+
+        ``persist=False`` skips the settings.gnome write — used by callers
+        that already wrote it themselves (e.g. snapshots).
         """
         if not data or not data.strip():
             return False, "empty dconf data"
 
-        # 1. Stop the sync monitor so it does not capture intermediate states.
-        cls._sync_service("stop")
-
-        # 2. Pause extensions BEFORE any dconf change — otherwise they react
-        #    to reset signals with empty schemas and go into an error state.
-        cls._pause_extensions(pause=True)
-        time.sleep(cls._SETTLE_SEC)
-
-        ok = False
-        msg = ""
+        cls._sync_lock_acquire()
         try:
-            # 3. Full reset so the following load behaves as a REPLACE.
-            ok_reset, reset_msg = run_cmd(
-                ["dconf", "reset", "-f", "/"],
-                timeout=10,
-            )
-            if not ok_reset:
-                return False, f"dconf reset failed: {reset_msg}"
+            cls._sync_service("stop")
+            cls._qt_theme_watcher("stop")
 
-            # 4. Load the new state. The data already carries
-            #    disable-user-extensions=false (or omits it) — the Shell will
-            #    re-enable extensions once the state is complete.
+            if before_uuids:
+                cls._disable_extensions_in_order(before_uuids)
+                # Let last extension's disable() body finish before
+                # we change the keys it was bound to.
+                time.sleep(cls._SETTLE_SEC)
+
+            # Clear keys from the previous layout that the new layout
+            # doesn't cover (scoped to extension storage). Done after
+            # disabling extensions so most Notify signals fire into
+            # dead code, before the load so target wins everywhere.
+            cls._reset_orphan_keys(data)
+
+            if persist:
+                ok_persist, info = cls._persist_to_settings_file(data)
+                if not ok_persist:
+                    log.warning("could not persist settings.gnome: %s", info)
+
             ok, msg = run_cmd(
                 ["dconf", "load", "/"],
                 stdin_text=data,
@@ -436,29 +684,56 @@ class LayoutApplier:
                 log.warning("dconf load failed: %s", msg)
                 return False, f"dconf load failed: {msg}"
 
-            # 4b. Rewrite dash-to-panel monitor-keyed keys to use local
-            #     monitor IDs (BEFORE persist, so settings.gnome already has
-            #     the migrated content for the next login).
-            if dtp_local_monitors:
-                cls._migrate_dtp_keys_for_local_monitors(dtp_local_monitors)
+            # Force fresh JS module init for visually-stateful extensions.
+            # Disable→Enable alone reuses the extension's JS module and
+            # leaves stale CSS references (e.g. user-theme keeps the
+            # previous shell-theme CSS partly applied; panel transparency
+            # from Big-Blue.css doesn't take effect until logout).
+            # ReloadExtension does disable + drop module + load fresh +
+            # enable, which is what logout would do — but per-extension,
+            # without restarting gnome-shell.
+            #
+            # Union of before and after: ``before`` catches extensions
+            # that stay enabled across the switch and may carry stale
+            # CSS/actor state (e.g. user-theme, big-shot). ``after``
+            # catches extensions that the new layout enables from scratch
+            # (e.g. minimal→biggnome turns on blur-my-shell and dash-to-dock).
+            # Those fresh enables happen via the Shell's gsettings listener
+            # while ``dconf load`` is still writing keys, so their first
+            # ``enable()`` body races with the load and may read partial
+            # state. Reloading them after the load drops that JS module
+            # and re-runs ``enable()`` against the fully-written dconf.
+            after_uuids = cls._enabled_extensions()
+            reload_targets = set(before_uuids or ()) | set(after_uuids)
+            if reload_targets:
+                cls._reload_visual_extensions(reload_targets)
 
-            # 5. Persist to settings.gnome so the state survives next login.
-            if persist:
-                persist_ok, persist_info = cls._persist_to_settings_file()
-                if not persist_ok:
-                    log.warning("settings.gnome persist failed: %s", persist_info)
-        finally:
-            # 6. Re-enable extensions and the sync monitor regardless of
-            #    load outcome.
-            time.sleep(cls._SETTLE_SEC)
-            cls._pause_extensions(pause=False)
+            # Force Main.panel to re-evaluate its CSS. Without this, the
+            # panel keeps its pre-switch cached style and the theme's
+            # ``#panel { rgba(0,0,0,0.65) }`` rule (Big-Blue.css:2641)
+            # never paints — panel reads as opaque black even though
+            # every class on the actor and every dconf key would render
+            # transparent at next login.
+            cls._pulse_overview()
+
             cls._sync_service("start")
-
-        return ok, msg
+            cls._qt_theme_watcher("start")
+            return True, msg
+        finally:
+            cls._sync_lock_release()
 
     @classmethod
     def apply(cls, config_path: Path) -> Tuple[bool, str]:
-        """Aplica um arquivo de layout ao ambiente."""
+        """
+        Apply a layout file as the complete next-login dconf state, and
+        best-effort apply to the live session.
+
+        ``settings.gnome`` becomes a verbatim copy of the layout file
+        (after DTP monitor-id rewriting). The live session also gets
+        the layout via ``dconf load``; any leftover keys from the
+        previous layout that aren't in this one persist in live dconf
+        until the next login (harmless — see ``load_dconf_safely``).
+        """
         if not config_path or not config_path.exists():
             return False, f"layout file not found: {config_path}"
         try:
@@ -468,22 +743,12 @@ class LayoutApplier:
         if not layout_text.strip():
             return False, "layout file is empty"
 
-        # Capture local dash-to-panel monitor IDs BEFORE the reset wipes them.
         local_dtp_monitors = cls._read_dtp_monitor_keys()
+        layout_text = cls._rewrite_dtp_keys_in_text(layout_text, local_dtp_monitors)
+
         before = cls._enabled_extensions()
-
-        # Merge layout INTO the existing settings.gnome so chaves nao
-        # cobertas pelo layout (gtk-theme, user-theme name, fontes etc.)
-        # sobrevivam ao reset+load.
-        settings_text = cls._load_current_settings_text()
-        merged_text = cls._merge_layout_into_settings(layout_text, settings_text)
-
-        ok, msg = cls.load_dconf_safely(
-            merged_text,
+        return cls.load_dconf_safely(
+            layout_text,
             persist=True,
-            dtp_local_monitors=local_dtp_monitors,
+            before_uuids=before,
         )
-        if ok:
-            after = cls._enabled_extensions()
-            ShellReloader.reload_all(before_uuids=before, after_uuids=after)
-        return ok, msg

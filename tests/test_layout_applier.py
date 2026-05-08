@@ -10,7 +10,6 @@ from layout_applier import LayoutApplier
 class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
     @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("layout_applier.LayoutApplier._load_current_settings_text", return_value="")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
     @patch("layout_applier.LayoutApplier._has_sync_service", return_value=True)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
@@ -19,14 +18,14 @@ class TestLayoutApplier:
         mock_run,
         _has,
         mock_persist,
-        _settings,
         mock_reload,
         _sleep,
         tmp_path,
     ):
-        """Cobre fluxo completo: dtp-probe (5 reads) -> read-before -> stop
-        monitor -> pause ext -> reset -> load -> persist -> unpause ext ->
-        start monitor -> read-after -> reload shell."""
+        """Cobre fluxo completo: mutter gdbus probe -> dtp dconf fallback (5
+        reads) -> read enabled-ext (before, vazio) -> stop monitor ->
+        (sem disables porque before=[]) -> reset -> load -> start monitor
+        -> read enabled-ext (after) -> reload_all."""
         layout = tmp_path / "classic.txt"
         layout.write_text("[/]\nfoo='bar'")
 
@@ -34,11 +33,10 @@ class TestLayoutApplier:
         assert ok is True
 
         # 1 mutter gdbus probe + 5 dconf reads (dtp fallback) +
-        # 1 read enabled-extensions (before) +
-        # stop + pause-on + reset + load +
-        # pause-off + start +
-        # 1 read enabled-extensions (after) = 14.
-        assert mock_run.call_count == 14
+        # 1 read enabled-extensions (before, returns "" → []) +
+        # stop + reset + load + start +
+        # 1 read enabled-extensions (after) = 12.
+        assert mock_run.call_count == 12
         calls = [c.args[0] for c in mock_run.call_args_list]
         # 1: gdbus probe to mutter for monitor IDs
         assert calls[0][0] == "gdbus"
@@ -48,29 +46,22 @@ class TestLayoutApplier:
         assert all("dash-to-panel" in c[2] for c in calls[1:6])
         # 7: enabled-extensions before
         assert calls[6] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
-        # 8-11: load_dconf_safely (stop, pause-on, reset, load)
+        # 8: systemctl stop
         assert calls[7][:3] == ["systemctl", "--user", "stop"]
-        assert calls[8] == [
-            "gsettings",
-            "set",
-            "org.gnome.shell",
-            "disable-user-extensions",
-            "true",
-        ]
-        assert calls[9] == ["dconf", "reset", "-f", "/"]
-        assert calls[10] == ["dconf", "load", "/"]
-        # 12: pause-off
-        assert calls[11][-1] == "false"
-        # 13: systemctl start
-        assert calls[12][:3] == ["systemctl", "--user", "start"]
-        # 14: enabled-extensions after
-        assert calls[13] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
-        mock_persist.assert_called_once()
+        # 9-10: dconf reset + load (no per-UUID disables since before=[])
+        assert calls[8] == ["dconf", "reset", "-f", "/"]
+        assert calls[9] == ["dconf", "load", "/"]
+        # 11: systemctl start
+        assert calls[10][:3] == ["systemctl", "--user", "start"]
+        # 12: enabled-extensions after
+        assert calls[11] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
+        # We no longer write settings.gnome ourselves —
+        # dconf-sync-monitor-gnome dumps the live dconf to that file.
+        mock_persist.assert_not_called()
         mock_reload.assert_called_once()
 
     @patch("layout_applier.time.sleep")
     @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("layout_applier.LayoutApplier._load_current_settings_text", return_value="")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
     @patch("layout_applier.LayoutApplier._has_sync_service", return_value=False)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
@@ -79,7 +70,6 @@ class TestLayoutApplier:
         mock_run,
         _has,
         _persist,
-        _settings,
         mock_reload,
         _sleep,
         tmp_path,
@@ -91,9 +81,10 @@ class TestLayoutApplier:
         ok, _ = LayoutApplier.apply(layout)
         assert ok is True
         # 1 gdbus mutter probe + 5 dtp dconf reads + 1 enabled-ext read
-        # (before) + 4 (pause_on, reset, load, pause_off) + 1 enabled-ext
-        # read (after) = 12.
-        assert mock_run.call_count == 12
+        # (before) + 2 (reset, load) + 1 enabled-ext read (after) = 10.
+        # No systemctl stop/start (sync service ausente),
+        # no per-UUID disables (before=[]).
+        assert mock_run.call_count == 10
         # 1st: gdbus mutter probe
         assert mock_run.call_args_list[0].args[0][0] == "gdbus"
         # 2nd-6th: reads de dash-to-panel
@@ -104,9 +95,16 @@ class TestLayoutApplier:
             "read",
             "/org/gnome/shell/enabled-extensions",
         ]
-        # reset + load no meio
-        assert mock_run.call_args_list[8].args[0] == ["dconf", "reset", "-f", "/"]
-        assert mock_run.call_args_list[9].args[0] == ["dconf", "load", "/"]
+        # 8th-9th: reset + load (sem stop/disables porque sync service ausente
+        # e before=[])
+        assert mock_run.call_args_list[7].args[0] == ["dconf", "reset", "-f", "/"]
+        assert mock_run.call_args_list[8].args[0] == ["dconf", "load", "/"]
+        # 10th: enabled-extensions after
+        assert mock_run.call_args_list[9].args[0] == [
+            "dconf",
+            "read",
+            "/org/gnome/shell/enabled-extensions",
+        ]
         mock_reload.assert_called_once()
 
     def test_apply_nonexistent_file(self):
@@ -127,7 +125,6 @@ class TestLayoutApplier:
 
     @patch("layout_applier.time.sleep")
     @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("layout_applier.LayoutApplier._load_current_settings_text", return_value="")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file")
     @patch("layout_applier.LayoutApplier._has_sync_service", return_value=True)
     @patch("layout_applier.run_cmd")
@@ -136,17 +133,16 @@ class TestLayoutApplier:
         mock_run,
         _has,
         mock_persist,
-        _settings,
         mock_reload,
         _sleep,
         tmp_path,
     ):
-        """Se o dconf load falhar: monitor reinicia, extensoes reativam,
-        shell NAO recarrega, settings.gnome NAO e sobrescrito."""
+        """Se o dconf load falhar: monitor reinicia, shell NAO recarrega,
+        settings.gnome NAO e sobrescrito."""
         # 1 mutter gdbus probe (returns empty so dconf fallback runs),
-        # 5 dtp dconf reads, read-before, stop OK, pause_on OK, reset OK,
-        # load FAIL, pause_off OK, start OK. Sem read-after porque
-        # ok=False bypassa.
+        # 5 dtp dconf reads, read-before (vazio → []), stop OK, reset OK,
+        # load FAIL, start OK (finally). Sem read-after porque ok=False
+        # bypassa. Sem per-UUID disables porque before=[].
         mock_run.side_effect = [
             (True, ""),  # gdbus mutter probe
             (True, ""),  # dtp probe 1
@@ -156,11 +152,9 @@ class TestLayoutApplier:
             (True, ""),  # dtp probe 5
             (True, "[]"),  # read enabled-extensions (before)
             (True, ""),  # systemctl stop
-            (True, ""),  # pause on
             (True, ""),  # dconf reset
             (False, "dconf error"),  # dconf load FAILS
-            (True, ""),  # pause off
-            (True, ""),  # systemctl start
+            (True, ""),  # systemctl start (finally)
         ]
         layout = tmp_path / "bad.txt"
         layout.write_text("[/]\ndata=true")
@@ -177,43 +171,54 @@ class TestLayoutApplier:
         ]
 
 
-class TestMergeLayoutIntoSettings:
-    """Garante que o merge preserva chaves do settings ausentes no layout."""
+class TestRewriteDtpKeysInText:
+    """Garante que o rewrite text-level converte monitor IDs DTP para os locais."""
 
-    def test_preserves_theme_keys_not_in_layout(self):
-        """Tema do shell e GTK existem só em settings — devem sobreviver."""
-        settings = (
+    def test_rewrites_foreign_keys_to_local(self):
+        """Layout vem com 'unknown-unknown'; local é 'CMN-0x00000000'."""
+        text = (
+            "[org/gnome/shell/extensions/dash-to-panel]\n"
+            'panel-positions=\'{"unknown-unknown":"BOTTOM"}\'\n'
+        )
+        out = LayoutApplier._rewrite_dtp_keys_in_text(text, {"CMN-0x00000000"})
+        assert "CMN-0x00000000" in out
+        assert "unknown-unknown" not in out
+        assert "BOTTOM" in out
+
+    def test_noop_when_keys_already_match(self):
+        """Se o layout já tem o ID local, mantém intacto."""
+        text = "[org/gnome/shell/extensions/dash-to-panel]\npanel-sizes='{\"DEL-12345\":48}'\n"
+        out = LayoutApplier._rewrite_dtp_keys_in_text(text, {"DEL-12345"})
+        assert out == text
+
+    def test_empty_local_keys_returns_text_unchanged(self):
+        """Sem IDs locais (mutter/dconf vazios), não mexe no texto."""
+        text = '[org/gnome/shell/extensions/dash-to-panel]\npanel-positions=\'{"foo":"BOTTOM"}\'\n'
+        assert LayoutApplier._rewrite_dtp_keys_in_text(text, set()) == text
+
+    def test_non_dtp_lines_pass_through(self):
+        """Chaves fora da lista DTP monitor-keyed não são tocadas."""
+        text = (
             "[org/gnome/desktop/interface]\n"
             "gtk-theme='adw-gtk3-dark'\n"
             "icon-theme='bigicons-papient'\n"
-            "\n"
-            "[org/gnome/shell/extensions/user-theme]\n"
-            "name='Big-Blue-Dark'\n"
         )
-        layout = "[org/gnome/shell]\nenabled-extensions=['dash-to-dock@x']\n"
-        merged = LayoutApplier._merge_layout_into_settings(layout, settings)
-        assert "gtk-theme='adw-gtk3-dark'" in merged
-        assert "icon-theme='bigicons-papient'" in merged
-        assert "name='Big-Blue-Dark'" in merged
-        assert "enabled-extensions=['dash-to-dock@x']" in merged
+        out = LayoutApplier._rewrite_dtp_keys_in_text(text, {"CMN-0x00000000"})
+        assert out == text
 
-    def test_layout_overrides_settings_per_key(self):
-        """Quando ambos definem a mesma chave, layout vence."""
-        settings = (
-            "[org/gnome/shell]\nenabled-extensions=['old@x']\nfavorite-apps=['old.desktop']\n"
-        )
-        layout = "[org/gnome/shell]\nenabled-extensions=['new@x']\n"
-        merged = LayoutApplier._merge_layout_into_settings(layout, settings)
-        assert "enabled-extensions=['new@x']" in merged
-        # favorite-apps nao esta no layout — deve ser preservada do settings.
-        assert "favorite-apps=['old.desktop']" in merged
+    def test_preserves_trailing_newline(self):
+        """Newline final do dump deve ser preservado."""
+        text = "[/]\nfoo='bar'\n"
+        out = LayoutApplier._rewrite_dtp_keys_in_text(text, {"X"})
+        assert out.endswith("\n")
 
-    def test_empty_settings_returns_layout_only(self):
-        """Sem settings.gnome, merged == layout (formato canonico)."""
-        layout = "[/]\nfoo='bar'\n"
-        merged = LayoutApplier._merge_layout_into_settings(layout, "")
-        assert "foo='bar'" in merged
-        assert merged.startswith("[/]")
+    def test_replicates_value_to_all_local_monitors(self):
+        """Com múltiplos monitores locais, replica o valor original em cada um."""
+        text = '[org/gnome/shell/extensions/dash-to-panel]\npanel-positions=\'{"old":"BOTTOM"}\'\n'
+        out = LayoutApplier._rewrite_dtp_keys_in_text(text, {"A-1", "B-2"})
+        assert "A-1" in out
+        assert "B-2" in out
+        assert "old" not in out
 
 
 class TestShellReloader:

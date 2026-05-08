@@ -47,6 +47,12 @@ SHELL_ALL = "all"
 # extension-manager usa.
 HTTP_TIMEOUT = 15
 
+# Defesa contra respostas absurdamente grandes (servidor comprometido,
+# proxy malicioso). JSON do EGO costuma ter < 200 KiB; thumbs raramente
+# passam de 2 MiB. Caps generosos para não rejeitar payloads legítimos.
+_MAX_JSON_BYTES = 5 * 1024 * 1024  # 5 MiB
+_MAX_THUMB_BYTES = 10 * 1024 * 1024  # 10 MiB
+
 
 # ── Modelos ───────────────────────────────────────────────────────────────────
 
@@ -134,9 +140,19 @@ def _absolute_url(path_or_url: str) -> str:
     return EGO_BASE_URL + path_or_url
 
 
+def _read_capped(resp, limit: int) -> Optional[bytes]:
+    """Lê do response até ``limit`` bytes; devolve None se exceder."""
+    raw = resp.read(limit + 1)
+    if len(raw) > limit:
+        log.debug("ego_client response exceeded %d bytes — discarded", limit)
+        return None
+    return raw
+
+
 def _http_json(url: str) -> Optional[dict]:
     """
-    GET → JSON. Retorna None em qualquer falha (rede, HTTP != 200, JSON inválido).
+    GET → JSON. Retorna None em qualquer falha (rede, HTTP != 200, JSON inválido,
+    payload acima do limite).
     Sem retry — chamadores podem repetir se quiserem.
     """
     req = urllib.request.Request(
@@ -151,7 +167,9 @@ def _http_json(url: str) -> Optional[dict]:
             if resp.status != 200:
                 log.debug("ego_client http %s → %s", url, resp.status)
                 return None
-            raw = resp.read()
+            raw = _read_capped(resp, _MAX_JSON_BYTES)
+        if raw is None:
+            return None
         return json.loads(raw.decode("utf-8", errors="replace"))
     except (urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
         log.debug("ego_client http %s failed: %s", url, exc)
@@ -159,13 +177,13 @@ def _http_json(url: str) -> Optional[dict]:
 
 
 def _http_bytes(url: str) -> Optional[bytes]:
-    """GET → bytes brutos. Retorna None em qualquer falha."""
+    """GET → bytes brutos (cap em ``_MAX_THUMB_BYTES``). Retorna None em falha."""
     req = urllib.request.Request(url, headers={"User-Agent": _user_agent()})
     try:
         with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
             if resp.status != 200:
                 return None
-            return resp.read()
+            return _read_capped(resp, _MAX_THUMB_BYTES)
     except (urllib.error.URLError, OSError) as exc:
         log.debug("ego_client bytes %s failed: %s", url, exc)
         return None

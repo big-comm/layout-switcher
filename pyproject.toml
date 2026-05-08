@@ -1,6 +1,6 @@
 [project]
 name = "layout-switcher"
-version = "2.2.1"
+version = "2.7.0"
 description = "GNOME layout switcher — switch desktop layouts, extensions, and themes"
 requires-python = ">=3.10"
 

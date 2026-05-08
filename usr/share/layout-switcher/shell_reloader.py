@@ -13,7 +13,9 @@ Nenhuma estratégia exige logout ou encerramento de sessão.
 DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
-from typing import Iterable, Optional, Tuple
+import re
+import time
+from typing import Dict, Iterable, Optional, Tuple
 
 from constants import (
     DBUS_EVAL_IFACE,
@@ -23,6 +25,19 @@ from constants import (
     DBUS_SHELL_PATH,
 )
 from utils import is_wayland, run_cmd
+
+# GNOME Shell's ExtensionState enum (from extensionUtils.js):
+#   ENABLED=1, DISABLED=2, ERROR=3, OUT_OF_DATE=4, DOWNLOADING=5,
+#   INITIALIZED=6, DISABLING=7, ENABLING=8
+# A UUID is "live" if EnableExtension would be a no-op or harmful:
+#   ENABLED — already running; re-enabling triggers double-init
+#   ENABLING — Shell is mid-enable; the call would be redundant
+_LIVE_EXT_STATES = {1, 8}
+
+_LIST_EXT_STATE_RE = re.compile(
+    r"'([^']+)':\s*\{[^{}]*?'state':\s*<(\d+(?:\.\d+)?)>",
+    re.DOTALL,
+)
 
 
 class ShellReloader:
@@ -88,6 +103,40 @@ class ShellReloader:
         )
         return ok, out
 
+    # ── Estado das extensões ──────────────────────────────────────────────────
+
+    @staticmethod
+    def list_extensions_state() -> Dict[str, int]:
+        """
+        Consulta ``org.gnome.Shell.Extensions.ListExtensions`` via D-Bus e
+        retorna ``{uuid: state}`` (state é o ExtensionState int do Shell).
+        Em falha retorna ``{}``.
+        """
+        ok, raw = run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.ListExtensions",
+            ],
+            timeout=8,
+        )
+        if not ok or not raw:
+            return {}
+        states: Dict[str, int] = {}
+        for match in _LIST_EXT_STATE_RE.finditer(raw):
+            uuid, state_str = match.group(1), match.group(2)
+            try:
+                states[uuid] = int(float(state_str))
+            except ValueError:
+                continue
+        return states
+
     # ── Recarga geral ─────────────────────────────────────────────────────────
 
     @staticmethod
@@ -101,14 +150,14 @@ class ShellReloader:
         reset`` exige UUID), então fazemos só o mínimo necessário:
 
           - UUIDs em ``before − after`` → ``DisableExtension`` (Shell descarrega).
-          - UUIDs em ``after − before`` → ``EnableExtension`` (Shell inicia).
-          - UUIDs que já estavam ligados e continuam → **não tocados**. O
-            ``dconf load`` já reescreveu o estado deles; gsettings reativo
-            propaga as mudanças para a extensão rodando. Forçar
-            disable/enable por UUID em extensões que já estão OK é arriscado:
-            se o método ``disable()`` interno der erro (panelManager null,
-            etc.), a extensão fica em estado ERROR e zumbi na tela até
-            logout.
+          - UUIDs em ``after − before`` → ``EnableExtension`` **somente se**
+            ainda não estiverem ENABLED/ENABLING. Quando o caller é o
+            ``LayoutApplier``, o Shell já auto-habilitou via gsettings (na
+            phase 2 do load), então a maioria dos UUIDs já está viva — repetir
+            o ``EnableExtension`` causaria double-init (ex: dash-to-dock,
+            drive-menu).
+          - UUIDs já ligados e que continuam → não tocados. ``dconf load``
+            propaga as mudanças via gsettings reativo.
 
         Em sessão X11 mantém ``reexec_self()`` como reforço final.
         Nunca levanta exceção.
@@ -134,23 +183,31 @@ class ShellReloader:
                 timeout=5,
             )
 
-        # Enable newly added extensions.
-        for uuid in sorted(after_set - before_set):
-            run_cmd(
-                [
-                    "gdbus",
-                    "call",
-                    "--session",
-                    "--dest",
-                    DBUS_SHELL_NAME,
-                    "--object-path",
-                    DBUS_EXT_PATH,
-                    "--method",
-                    f"{DBUS_EXT_IFACE}.EnableExtension",
-                    uuid,
-                ],
-                timeout=5,
-            )
+        # Settle a touch so any Shell auto-enable triggered by a recent
+        # gsettings change has time to advance past ENABLING into ENABLED
+        # before we query state. Cheap and avoids spurious EnableExtension.
+        to_enable = sorted(after_set - before_set)
+        if to_enable:
+            time.sleep(0.2)
+            states = ShellReloader.list_extensions_state()
+            for uuid in to_enable:
+                if states.get(uuid) in _LIVE_EXT_STATES:
+                    continue
+                run_cmd(
+                    [
+                        "gdbus",
+                        "call",
+                        "--session",
+                        "--dest",
+                        DBUS_SHELL_NAME,
+                        "--object-path",
+                        DBUS_EXT_PATH,
+                        "--method",
+                        f"{DBUS_EXT_IFACE}.EnableExtension",
+                        uuid,
+                    ],
+                    timeout=5,
+                )
 
         # X11 reinforcement (ignored on Wayland)
         if not is_wayland():

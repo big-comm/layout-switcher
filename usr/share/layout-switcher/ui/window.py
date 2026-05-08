@@ -56,6 +56,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._prefs = Settings()
         self._pool = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="cls")
         self._monitor = GSettingsMonitor()
+        self._timeout_ids: list = []
 
         self.set_title(tr("Layout Switcher"))
         self.set_default_size(1080, 700)
@@ -99,6 +100,12 @@ class MainWindow(Adw.ApplicationWindow):
     # ── Ciclo de vida ─────────────────────────────────────────────────────────
 
     def _on_destroy(self, win) -> None:
+        for tid in self._timeout_ids:
+            try:
+                GLib.source_remove(tid)
+            except Exception:
+                pass
+        self._timeout_ids.clear()
         self._monitor.disconnect_all()
         self._pool.shutdown(wait=False)
 
@@ -261,9 +268,11 @@ class MainWindow(Adw.ApplicationWindow):
         GLib.idle_add(self._nav.select_row, self._nav_rows["layouts"])
 
         # Run a non-blocking update check shortly after the window is built.
-        GLib.timeout_add_seconds(5, self._initial_update_check)
+        self._timeout_ids.append(GLib.timeout_add_seconds(5, self._initial_update_check))
         # And periodically every UPDATE_CHECK_INTERVAL seconds while the app is open.
-        GLib.timeout_add_seconds(UPDATE_CHECK_INTERVAL, self._periodic_update_check)
+        self._timeout_ids.append(
+            GLib.timeout_add_seconds(UPDATE_CHECK_INTERVAL, self._periodic_update_check)
+        )
 
     # ── Sidebar ───────────────────────────────────────────────────────────────
 

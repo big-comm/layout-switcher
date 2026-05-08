@@ -259,21 +259,16 @@ class LayoutsPage(Gtk.Box):
                 if not data:
                     GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
                     return
-                local_dtp_monitors = LayoutApplier._read_dtp_monitor_keys()
+                # Snapshots são dumps locais — DTP monitor IDs já estão corretos.
+                # load_dconf_safely escreve settings.gnome e faz dconf load;
+                # o gsettings listener do Shell reabilita as extensões via
+                # enabled-extensions, então não precisa reload_all manual.
                 before = LayoutApplier._enabled_extensions()
                 ok, err = LayoutApplier.load_dconf_safely(
                     data,
                     persist=True,
-                    dtp_local_monitors=local_dtp_monitors,
+                    before_uuids=before,
                 )
-                if ok:
-                    from shell_reloader import ShellReloader
-
-                    after = LayoutApplier._enabled_extensions()
-                    ShellReloader.reload_all(
-                        before_uuids=before,
-                        after_uuids=after,
-                    )
             else:
                 path = find_file(cfg, ["layouts"])
                 if not path:
@@ -291,22 +286,60 @@ class LayoutsPage(Gtk.Box):
             self._prefs.set("active_layout", name)
             self._set_status(f"{name} {tr('applied')}", "ok-col")
             self.rebuild_grid()
+            root = self.get_root()
+            overlay = getattr(root, "_toast_overlay", None)
             latest = BackupManager.latest()
-            if latest:
-                t = Adw.Toast(title=f"{name} {tr('applied')}", timeout=15)
-                t.set_button_label(tr("Undo"))
-                t.connect(
+
+            # Primary toast: undo (high priority — won't be dismissed by the
+            # restart toast below, and shows first).
+            if latest and overlay:
+                undo_toast = Adw.Toast(title=f"{name} {tr('applied')}", timeout=15)
+                undo_toast.set_priority(Adw.ToastPriority.HIGH)
+                undo_toast.set_button_label(tr("Undo"))
+                undo_toast.connect(
                     "button-clicked",
                     lambda _t: self._undo_layout(prev, latest),
                 )
-                root = self.get_root()
-                overlay = getattr(root, "_toast_overlay", None)
-                if overlay:
-                    overlay.add_toast(t)
-            else:
+                overlay.add_toast(undo_toast)
+            elif overlay:
                 self._toast(f"{name} {tr('applied')}")
+
+            # Secondary toast: offer a session restart for the 100% clean
+            # state. Live apply skips ``dconf reset -f /`` to avoid crashing
+            # extensions with buggy disable() handlers, so a small subset of
+            # visual artefacts (e.g. opaque panel) may need a relogin.
+            # ``settings.gnome`` was already written cleanly, so the next
+            # session is guaranteed perfect.
+            if overlay:
+                restart_toast = Adw.Toast(
+                    title=tr("Restart the session for the 100% clean state"),
+                    timeout=20,
+                )
+                restart_toast.set_button_label(tr("Restart now"))
+                restart_toast.connect(
+                    "button-clicked",
+                    lambda _t: self._restart_session(),
+                )
+                overlay.add_toast(restart_toast)
         else:
             self._set_status(f"{tr('Error')}: {msg}", "err-col")
+
+    def _restart_session(self) -> None:
+        """
+        Log out via gnome-session-quit. comm-gnome-config's
+        startgnome-community then runs reset+load on the clean
+        settings.gnome we wrote during apply, so the new session
+        starts from a guaranteed clean state.
+        """
+        import subprocess
+
+        try:
+            subprocess.Popen(
+                ["gnome-session-quit", "--logout", "--no-prompt"],
+                start_new_session=True,
+            )
+        except OSError as exc:
+            self._toast(f"{tr('Cannot restart session')}: {exc}")
 
     def _undo_layout(self, prev_name, backup_path) -> None:
         """Restaura o layout anterior a partir do backup."""
