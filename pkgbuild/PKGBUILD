@@ -2,7 +2,27 @@
 
 pkgname=layout-switcher
 pkgdesc="Manage GNOME layouts, extensions and themes"
-depends=('python' 'python-gobject' 'gtk4' 'libadwaita' 'gnome-shell')
+depends=(
+    # Runtime
+    'python'
+    'python-gobject'
+    'gtk4'
+    'libadwaita'
+    'gnome-shell'
+    # GNOME Shell extensions used by the bundled layouts
+    'gnome-shell-big-shot'
+    'gnome-shell-extension-appindicator'
+    'gnome-shell-extension-arc-menu'
+    'gnome-shell-extension-blur-my-shell'
+    'gnome-shell-extension-copyous'
+    'gnome-shell-extension-dash-to-dock'
+    'gnome-shell-extension-dash-to-panel'
+    'gnome-shell-extension-gsconnect'
+    'gnome-shell-extension-gtk4-desktop-icons-ng'
+    'gnome-shell-extension-kiwi-kemma'
+    'gnome-shell-extension-legacy-theme-auto-switcher'
+    'gnome-shell-extensions'
+)
 #makedepends=('')
 #optdepends=('')
 #conflicts=('')
