@@ -81,7 +81,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from shell_reloader import ShellReloader
 from utils import run_cmd
@@ -314,17 +314,57 @@ class LayoutApplier:
             return 0
         live_paths = cls._parse_dconf_dump_paths(dump)
         target_paths = cls._parse_dconf_dump_paths(target_text)
-        orphans = sorted(
+        orphans = {
             p
             for p in (live_paths - target_paths)
             if any(p.startswith(pre) for pre in _ORPHAN_RESET_PREFIXES)
-        )
+        }
+        if not orphans:
+            return 0
+
+        # Group by extension subdir (/org/gnome/shell/extensions/<uuid>/).
+        # When every live key under a subdir is orphan (extension fully
+        # leaving the layout), one ``dconf reset -f <subdir>`` clears the
+        # whole branch in a single dconf call — orders of magnitude faster
+        # than per-key for hybrid → biggnome (arcmenu, dash-to-panel, pano,
+        # gtk4-ding can each contribute hundreds of keys). Extensions still
+        # present in the target layout fall back to per-key reset so
+        # surviving keys stay untouched.
+        ext_base = "/org/gnome/shell/extensions/"
+
+        def ext_subdir(path: str) -> Optional[str]:
+            if not path.startswith(ext_base):
+                return None
+            rest = path[len(ext_base):]
+            slash = rest.find("/")
+            if slash < 0:
+                return None
+            return ext_base + rest[:slash] + "/"
+
+        live_by_subdir: Dict[str, Set[str]] = {}
+        for p in live_paths:
+            sd = ext_subdir(p)
+            if sd:
+                live_by_subdir.setdefault(sd, set()).add(p)
+        orphan_by_subdir: Dict[str, Set[str]] = {}
+        for p in orphans:
+            sd = ext_subdir(p)
+            if sd:
+                orphan_by_subdir.setdefault(sd, set()).add(p)
+
         n = 0
-        for path in orphans:
+        handled: Set[str] = set()
+        for sd, orph_keys in orphan_by_subdir.items():
+            if orph_keys == live_by_subdir.get(sd, set()):
+                ok2, _msg = run_cmd(["dconf", "reset", "-f", sd], timeout=10)
+                if ok2:
+                    n += len(orph_keys)
+                    handled.update(orph_keys)
+
+        for path in sorted(orphans - handled):
             ok2, _msg = run_cmd(["dconf", "reset", path], timeout=5)
             if ok2:
                 n += 1
-            time.sleep(0.01)
         if n:
             log.info("reset %d orphan key(s) before load", n)
         return n

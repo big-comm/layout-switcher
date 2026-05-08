@@ -47,6 +47,11 @@ APP_CSS = """
                 0 0 28px alpha(@accent_color, 0.28);
 }
 
+/* Disabled layout (work-in-progress, not yet clickable) */
+.layout-disabled                     { opacity: 0.42; }
+.layout-disabled:hover               { background-color: transparent; }
+.layout-disabled:hover .layout-preview { box-shadow: none; }
+
 /* Nome do layout — cor accent + bold quando ativo */
 .layout-name                         { font-weight: 600; }
 .layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0.2px; }
@@ -108,4 +113,33 @@ APP_CSS = """
 .mono                       { font-family: monospace; }
 .global-btn                 { border-radius: 10px; padding: 7px 14px; font-weight: 600; }
 .spinner-row                { border-radius: 10px; background-color: alpha(@accent_bg_color, 0.07); padding: 14px; }
+
+/* ── Loading overlay (apply layout) ──────────────────────────────────── */
+.loading-backdrop {
+    background-color: alpha(black, 0.45);
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+.loading-backdrop.loading-show {
+    opacity: 1;
+}
+
+.loading-card {
+    background-color: @card_bg_color;
+    color: @card_fg_color;
+    border-radius: 18px;
+    padding: 30px 42px;
+    min-width: 240px;
+    box-shadow: 0 12px 36px alpha(black, 0.35),
+                0 0 0 1px alpha(@accent_color, 0.18);
+    opacity: 0;
+    transition: opacity 240ms ease;
+}
+.loading-card.loading-show {
+    opacity: 1;
+}
+.loading-card label {
+    font-weight: 600;
+    letter-spacing: 0.1px;
+}
 """

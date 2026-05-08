@@ -24,6 +24,7 @@ htmlcov/
 
 # ── Local-only context dump for Claude / dev notes ──────────────────────────
 CONTEXT.md
+ARCHITECTURE.md
 
 # ── Editor / IDE ────────────────────────────────────────────────────────────
 .vscode/

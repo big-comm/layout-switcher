@@ -19,7 +19,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk
 
 from backup_manager import BackupManager
-from constants import ICONS_DIR, LAYOUTS, tr
+from constants import DISABLED_LAYOUTS, ICONS_DIR, LAYOUTS, tr
 from layout_applier import LayoutApplier
 from settings_store import Settings
 from snapshot_manager import SnapshotManager
@@ -93,11 +93,14 @@ class LayoutsPage(Gtk.Box):
 
     def _make_card(self, name, cfg, icon_file, fallback, desc) -> Gtk.Box:
         is_on = name == self._active_layout
+        is_disabled = name in DISABLED_LAYOUTS
         has_snapshot = SnapshotManager.has(self._layout_id(cfg))
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         card.add_css_class("layout-card")
         if is_on:
             card.add_css_class("layout-on")
+        if is_disabled:
+            card.add_css_class("layout-disabled")
 
         # Preview (SVG) com Overlay para sobrepor o badge "Modified" discreto
         overlay = Gtk.Overlay()
@@ -158,33 +161,41 @@ class LayoutsPage(Gtk.Box):
         lbl.set_margin_bottom(4)
         card.append(lbl)
 
-        # Descricao so aparece no hover como popover elegante, nao poluindo o card
-        if desc:
+        # Description appears only on hover as an elegant popover.
+        # Disabled layouts get a "Coming soon" tooltip instead.
+        if is_disabled:
+            Tooltip.attach(card, tr("Coming soon"))
+        elif desc:
             Tooltip.attach(card, desc)
 
-        gest = Gtk.GestureClick()
-        gest.connect(
-            "released",
-            lambda _g, _n, _x, _y, __n=name, __c=cfg: self._on_click(__n, __c),
-        )
-        card.add_controller(gest)
+        # Disabled layouts skip click/key controllers and aren't focusable
+        # so keyboard tab-traversal also bypasses them.
+        if not is_disabled:
+            gest = Gtk.GestureClick()
+            gest.connect(
+                "released",
+                lambda _g, _n, _x, _y, __n=name, __c=cfg: self._on_click(__n, __c),
+            )
+            card.add_controller(gest)
 
-        key_ctl = Gtk.EventControllerKey()
-        key_ctl.connect(
-            "key-pressed",
-            lambda _ctl, kv, _kc, _mod, __n=name, __c=cfg: (
-                (self._on_click(__n, __c) or True)
-                if kv in (Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_space)
-                else False
-            ),
-        )
-        card.add_controller(key_ctl)
+            key_ctl = Gtk.EventControllerKey()
+            key_ctl.connect(
+                "key-pressed",
+                lambda _ctl, kv, _kc, _mod, __n=name, __c=cfg: (
+                    (self._on_click(__n, __c) or True)
+                    if kv in (Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_space)
+                    else False
+                ),
+            )
+            card.add_controller(key_ctl)
 
         accessible_name = name
-        if is_on:
+        if is_disabled:
+            accessible_name = f"{name} ({tr('Coming soon')})"
+        elif is_on:
             accessible_name = f"{name} ({tr('Active')})"
         card.update_property([Gtk.AccessibleProperty.LABEL], [accessible_name])
-        card.set_focusable(True)
+        card.set_focusable(not is_disabled)
         return card
 
     # ── Interacao ─────────────────────────────────────────────────────────────
@@ -251,6 +262,9 @@ class LayoutsPage(Gtk.Box):
     def _apply(self, name: str, cfg: str, use_snapshot: bool = False) -> None:
         """Aplica layout. use_snapshot=True carrega a versao modificada."""
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
+        root = self.get_root()
+        if hasattr(root, "show_loading"):
+            root.show_loading(f"{tr('Applying')} {name}…")
         layout_id = self._layout_id(cfg)
 
         def task():
@@ -280,13 +294,15 @@ class LayoutsPage(Gtk.Box):
         self._pool.submit(task)
 
     def _done(self, name: str, ok: bool, msg: str) -> None:
+        root = self.get_root()
+        if hasattr(root, "hide_loading"):
+            root.hide_loading()
         if ok:
             prev = self._active_layout
             self._active_layout = name
             self._prefs.set("active_layout", name)
             self._set_status(f"{name} {tr('applied')}", "ok-col")
             self.rebuild_grid()
-            root = self.get_root()
             overlay = getattr(root, "_toast_overlay", None)
             latest = BackupManager.latest()
 
@@ -343,21 +359,29 @@ class LayoutsPage(Gtk.Box):
 
     def _undo_layout(self, prev_name, backup_path) -> None:
         """Restaura o layout anterior a partir do backup."""
+        root = self.get_root()
+        if hasattr(root, "show_loading"):
+            root.show_loading(tr("Restoring previous layout…"))
 
         def task():
             ok, info = BackupManager.restore(backup_path)
             if ok:
                 GLib.idle_add(self._done_undo, prev_name)
             else:
-                GLib.idle_add(
-                    self._set_status,
-                    f"{tr('Error')}: {info}",
-                    "err-col",
-                )
+                GLib.idle_add(self._undo_failed, info)
 
         self._pool.submit(task)
 
+    def _undo_failed(self, info: str) -> None:
+        root = self.get_root()
+        if hasattr(root, "hide_loading"):
+            root.hide_loading()
+        self._set_status(f"{tr('Error')}: {info}", "err-col")
+
     def _done_undo(self, prev_name) -> None:
+        root = self.get_root()
+        if hasattr(root, "hide_loading"):
+            root.hide_loading()
         self._active_layout = prev_name
         if prev_name:
             self._prefs.set("active_layout", prev_name)

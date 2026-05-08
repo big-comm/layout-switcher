@@ -239,7 +239,13 @@ class MainWindow(Adw.ApplicationWindow):
         self._split_view.set_content(content_toolbar)
 
         self._toast_overlay.set_child(self._split_view)
-        self.set_content(self._toast_overlay)
+
+        # Loading overlay: dimmed backdrop + centered spinner card.
+        # Always in widget tree; visibility toggled via CSS class for fade.
+        self._loading_overlay = Gtk.Overlay()
+        self._loading_overlay.set_child(self._toast_overlay)
+        self._build_loading()
+        self.set_content(self._loading_overlay)
 
         # Show/hide sidebar toggle button when split view collapses/expands
         self._split_view.connect("notify::collapsed", self._on_split_collapsed)
@@ -423,6 +429,52 @@ class MainWindow(Adw.ApplicationWindow):
             developers=["Big Community", "Ari Novais"],
         )
         about.present(self)
+
+    # ── Loading overlay ───────────────────────────────────────────────────────
+
+    def _build_loading(self) -> None:
+        # Backdrop dims the entire window.
+        self._loading_backdrop = Gtk.Box()
+        self._loading_backdrop.add_css_class("loading-backdrop")
+        self._loading_backdrop.set_can_target(False)
+        self._loading_overlay.add_overlay(self._loading_backdrop)
+
+        # Centered card with spinner + label.
+        self._loading_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        self._loading_card.add_css_class("loading-card")
+        self._loading_card.set_halign(Gtk.Align.CENTER)
+        self._loading_card.set_valign(Gtk.Align.CENTER)
+        self._loading_card.set_can_target(False)
+
+        spinner_cls = getattr(Adw, "Spinner", None)
+        if spinner_cls is not None:
+            spinner = spinner_cls()
+        else:
+            spinner = Gtk.Spinner()
+            spinner.set_spinning(True)
+        spinner.set_size_request(56, 56)
+        spinner.set_halign(Gtk.Align.CENTER)
+        self._loading_card.append(spinner)
+
+        self._loading_label = Gtk.Label(label="")
+        self._loading_label.add_css_class("title-4")
+        self._loading_label.set_halign(Gtk.Align.CENTER)
+        self._loading_card.append(self._loading_label)
+
+        self._loading_overlay.add_overlay(self._loading_card)
+
+    def show_loading(self, text: str = "") -> None:
+        self._loading_label.set_label(text or tr("Applying…"))
+        self._loading_backdrop.add_css_class("loading-show")
+        self._loading_card.add_css_class("loading-show")
+        self._loading_backdrop.set_can_target(True)
+        self._loading_card.set_can_target(True)
+
+    def hide_loading(self) -> None:
+        self._loading_backdrop.remove_css_class("loading-show")
+        self._loading_card.remove_css_class("loading-show")
+        self._loading_backdrop.set_can_target(False)
+        self._loading_card.set_can_target(False)
 
     # ── Toast ─────────────────────────────────────────────────────────────────
 
