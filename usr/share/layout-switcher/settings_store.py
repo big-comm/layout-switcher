@@ -38,7 +38,23 @@ class Settings:
     def get(self, key: str, default=None):
         return self._data.get(key, default)
 
+    def _reload_from_disk(self) -> None:
+        """
+        Re-read the JSON file into ``self._data``. Multiple Settings()
+        instances co-exist (window, page_layouts, etc.) and each one
+        loads from disk only at __init__. Without re-reading before a
+        write, instance A's stale ``_data`` would clobber keys instance
+        B persisted (e.g. ``intro_shown`` set by window vanished when
+        page_layouts later wrote ``active_layout``).
+        """
+        try:
+            if SETTINGS_FILE.exists():
+                self._data = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
     def set(self, key: str, value) -> None:
+        self._reload_from_disk()
         self._data[key] = value
         try:
             atomic_write_text(SETTINGS_FILE, json.dumps(self._data, indent=2))
@@ -46,6 +62,7 @@ class Settings:
             pass
 
     def delete(self, key: str) -> None:
+        self._reload_from_disk()
         self._data.pop(key, None)
         try:
             atomic_write_text(SETTINGS_FILE, json.dumps(self._data, indent=2))

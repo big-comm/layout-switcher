@@ -220,6 +220,40 @@ class LayoutApplier:
             log.debug("could not remove sync lock: %s", exc)
 
     @staticmethod
+    def _parse_target_enabled_extensions(text: str) -> Set[str]:
+        """
+        Extract the ``enabled-extensions`` UUID set from a dconf dump
+        string (the layout text). Returns an empty set if the key isn't
+        present or can't be parsed.
+
+        Used to predict which extensions the new layout wants enabled,
+        so we can decide which extensions are STAYING vs LEAVING and
+        treat them differently during the switch (see
+        ``_disable_extensions_in_order`` callsite).
+        """
+        import ast
+
+        section = ""
+        for raw in text.splitlines():
+            stripped = raw.strip()
+            if not stripped:
+                continue
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = "/" + stripped[1:-1].strip("/")
+                continue
+            if section != "/org/gnome/shell" or "=" not in stripped:
+                continue
+            key, _, value = stripped.partition("=")
+            if key.strip() != "enabled-extensions":
+                continue
+            try:
+                lst = ast.literal_eval(value.strip())
+            except (ValueError, SyntaxError):
+                return set()
+            return {u for u in lst if isinstance(u, str) and u}
+        return set()
+
+    @staticmethod
     def _parse_dconf_dump_paths(text: str) -> Set[str]:
         """
         Parse a dconf dump and return the set of full key paths it contains.
@@ -658,8 +692,45 @@ class LayoutApplier:
             cls._sync_service("stop")
             cls._qt_theme_watcher("stop")
 
-            if before_uuids:
-                cls._disable_extensions_in_order(before_uuids)
+            # Disable extensions in two phases: LEAVING (in before but not
+            # target) first, then STAYING (in both). Why two phases:
+            #
+            # Shell's ``_callExtensionDisable`` performs a "rebase" — it
+            # disables every extension loaded *after* the target in
+            # ``_extensionOrder``, then re-enables them. So when we
+            # disable extension X, every later extension Y goes through
+            # a stateObj.disable()+stateObj.enable() cycle, even if Y is
+            # also about to be disabled. After our DBus call returns,
+            # Shell splices X out of ``_extensionOrder`` — Y's later
+            # disable then has fewer (or no) post-X extensions to rebase.
+            #
+            # Why LEAVING first: extensions like arcmenu hold static
+            # singletons that survive a re-enable, and don't tolerate
+            # being disabled twice. If a STAYING extension's rebase
+            # touches arcmenu mid-switch, arcmenu's enable() rebuilds
+            # its singleton; then the dconf load's listener cascade
+            # disables arcmenu *again*, which throws (and once the
+            # singleton is left set without a successful enable, both
+            # enable and disable throw forever — visible as the loop
+            # of "ArcMenu has been already initialized" /
+            # "_updateNotification is undefined" errors). Disabling
+            # LEAVING first puts arcmenu through one clean cycle while
+            # everything else is still healthy, then splices it out of
+            # ``_extensionOrder`` so no later rebase can touch it.
+            #
+            # Why STAYING is still pre-disabled: their keys are about
+            # to be mutated by the orphan reset and the dconf load, and
+            # live handlers reacting to the Notify storm have caused
+            # ``this._settings is null`` cascades.
+            target_enabled = cls._parse_target_enabled_extensions(data)
+            before_set = {u for u in (before_uuids or ()) if u}
+            leaving = before_set - target_enabled
+            staying = before_set & target_enabled
+            if leaving:
+                cls._disable_extensions_in_order(leaving)
+                time.sleep(cls._DISABLE_STEP_SEC)
+            if staying:
+                cls._disable_extensions_in_order(staying)
                 # Let last extension's disable() body finish before
                 # we change the keys it was bound to.
                 time.sleep(cls._SETTLE_SEC)
@@ -693,20 +764,21 @@ class LayoutApplier:
             # enable, which is what logout would do — but per-extension,
             # without restarting gnome-shell.
             #
-            # Union of before and after: ``before`` catches extensions
-            # that stay enabled across the switch and may carry stale
-            # CSS/actor state (e.g. user-theme, big-shot). ``after``
-            # catches extensions that the new layout enables from scratch
-            # (e.g. minimal→biggnome turns on blur-my-shell and dash-to-dock).
-            # Those fresh enables happen via the Shell's gsettings listener
-            # while ``dconf load`` is still writing keys, so their first
-            # ``enable()`` body races with the load and may read partial
-            # state. Reloading them after the load drops that JS module
-            # and re-runs ``enable()`` against the fully-written dconf.
+            # Only ``after``: extensions present in ``before`` but not
+            # ``after`` are LEAVING the layout — they were disabled by
+            # ``_disable_extensions_in_order`` and the gsettings listener
+            # confirmed it when ``dconf load`` rewrote enabled-extensions.
+            # Calling ``ReloadExtension`` on a leaving extension re-enables
+            # it (Reload = disable+drop+load+enable), which re-creates its
+            # actors. That's how the dash-to-panel bottom bar leaks into
+            # g-unity after a desk-ux→g-unity switch: DTP gets disabled
+            # cleanly, then Reload brings it back as a ghost actor.
+            # Extensions that "stay enabled across the switch" (user-theme,
+            # big-shot) live in ``before ∩ after`` — already covered by
+            # ``after`` alone, no union needed.
             after_uuids = cls._enabled_extensions()
-            reload_targets = set(before_uuids or ()) | set(after_uuids)
-            if reload_targets:
-                cls._reload_visual_extensions(reload_targets)
+            if after_uuids:
+                cls._reload_visual_extensions(after_uuids)
 
             # Force Main.panel to re-evaluate its CSS. Without this, the
             # panel keeps its pre-switch cached style and the theme's

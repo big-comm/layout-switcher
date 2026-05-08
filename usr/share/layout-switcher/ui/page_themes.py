@@ -104,7 +104,7 @@ class ThemesPage(Gtk.Box):
         kb.set_margin_start(26)
         kb.set_margin_bottom(8)
         self._kind_btns: Dict[str, Gtk.Button] = {}
-        for kind, label in [("gtk", "GTK"), ("icons", tr("Icons")), ("shell", "Shell")]:
+        for kind, label in [("gtk", tr("GTK")), ("icons", tr("Icons")), ("shell", tr("Shell"))]:
             btn = Gtk.Button(label=label)
             btn.add_css_class("kind-tab")
             btn.add_css_class("flat")

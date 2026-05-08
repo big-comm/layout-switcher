@@ -37,11 +37,12 @@ def _clean_desc(text: str) -> str:
 
 
 # Mapa exibido → constante do EGO
+# Strings wrapped in tr() at definition so xgettext extracts them.
 SORT_CHOICES = [
-    ("Popularity", ego_client.SORT_POPULARITY),
-    ("Downloads", ego_client.SORT_DOWNLOADS),
-    ("Recent", ego_client.SORT_RECENT),
-    ("Name", ego_client.SORT_NAME),
+    (tr("Popularity"), ego_client.SORT_POPULARITY),
+    (tr("Downloads"), ego_client.SORT_DOWNLOADS),
+    (tr("Recent"), ego_client.SORT_RECENT),
+    (tr("Name"), ego_client.SORT_NAME),
 ]
 
 DEBOUNCE_MS = 400
@@ -96,7 +97,7 @@ class ExtBrowseView(Gtk.Box):
         self._search.connect("activate", lambda e: self._kick_search(immediate=True))
         toolbar.append(self._search)
 
-        labels = [tr(label) for label, _key in SORT_CHOICES]
+        labels = [label for label, _key in SORT_CHOICES]
         self._sort_dd = Gtk.DropDown.new_from_strings(labels)
         self._sort_dd.set_tooltip_text(tr("Sort by"))
         self._sort_dd.connect("notify::selected", self._on_sort_changed)
