@@ -267,13 +267,10 @@ secondary-color='#000000000000'
 show-desktop-icons=true
 
 [org/gnome/desktop/input-sources]
-sources=[('xkb', 'us+intl')]
 xkb-options=['terminate:ctrl_alt_bksp']
 
 [org/gnome/desktop/interface]
-accent-color='blue'
 clock-show-weekday=true
-color-scheme='default'
 cursor-theme='Bibata-Modern-Classic'
 document-font-name='Noto Sans Nerd Font Medium 10'
 enable-animations=true
