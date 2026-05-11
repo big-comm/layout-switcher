@@ -263,9 +263,23 @@ class LayoutsPage(Gtk.Box):
         """Aplica layout. use_snapshot=True carrega a versao modificada."""
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
         root = self.get_root()
+        initial_label = f"{tr('Applying')} {name}…"
         if hasattr(root, "show_loading"):
-            root.show_loading(f"{tr('Applying')} {name}…")
+            root.show_loading(initial_label)
         layout_id = self._layout_id(cfg)
+
+        # Called from the worker thread by LayoutApplier between stages.
+        # Marshal to the GTK main loop with idle_add so we never touch
+        # widgets off-thread.
+        def progress(stage: str) -> None:
+            if not hasattr(root, "show_loading"):
+                return
+            try:
+                translated = tr(stage)
+            except Exception:
+                translated = stage
+            text = f"{name} — {translated}"
+            GLib.idle_add(root.show_loading, text)
 
         def task():
             if use_snapshot:
@@ -282,13 +296,14 @@ class LayoutsPage(Gtk.Box):
                     data,
                     persist=True,
                     before_uuids=before,
+                    progress_cb=progress,
                 )
             else:
                 path = find_file(cfg, ["layouts"])
                 if not path:
                     GLib.idle_add(self._done, name, False, tr("Layout file not found"))
                     return
-                ok, err = LayoutApplier.apply(path)
+                ok, err = LayoutApplier.apply(path, progress_cb=progress)
             GLib.idle_add(self._done, name, ok, err)
 
         self._pool.submit(task)

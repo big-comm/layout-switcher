@@ -81,7 +81,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 from shell_reloader import ShellReloader
 from utils import run_cmd
@@ -168,28 +168,36 @@ class LayoutApplier:
 
     # ── Helpers de infraestrutura ────────────────────────────────────────────
 
-    @staticmethod
-    def _has_user_unit(unit: str) -> bool:
-        """True if a systemd --user unit exists on this machine."""
+    # Cache for ``_has_user_unit`` results within a single apply. Each lookup
+    # spawns a ``systemctl --user cat`` (~50–150 ms); the cache makes the
+    # four lookups per apply (sync service + qt theme watcher, twice each)
+    # collapse to two. Reset at the start of every ``load_dconf_safely``.
+    _unit_cache: Dict[str, bool] = {}
+
+    @classmethod
+    def _has_user_unit(cls, unit: str) -> bool:
+        """True if a systemd --user unit exists on this machine (cached)."""
+        cached = cls._unit_cache.get(unit)
+        if cached is not None:
+            return cached
         ok, _ = run_cmd(
             ["systemctl", "--user", "cat", unit],
             timeout=5,
         )
+        cls._unit_cache[unit] = ok
         return ok
 
     @classmethod
-    def _sync_service(cls, action: str) -> None:
-        """start/stop do dconf-sync-gnome (silencioso se ausente)."""
-        if not cls._has_user_unit(SYNC_SERVICE):
-            return
-        run_cmd(
-            ["systemctl", "--user", action, SYNC_SERVICE],
-            timeout=10,
-        )
-
-    @classmethod
     def _qt_theme_watcher(cls, action: str) -> None:
-        """start/stop do sync-gnome-theme-to-qt.path (silencioso se ausente)."""
+        """start/stop do sync-gnome-theme-to-qt.path (silencioso se ausente).
+
+        The QT theme path watcher fires every time ``~/.config/dconf/user``
+        is modified — and our ``dconf load`` modifies it many times in
+        sequence. Letting it fire repeatedly during the apply means N
+        spawns of ``sync-gnome-theme-to-qt.sh`` racing against Kvantum /
+        kdeglobals writes. Cheaper to stop the path watcher for the apply
+        window and re-run the script once at the end.
+        """
         if not cls._has_user_unit(QT_THEME_WATCHER):
             return
         run_cmd(
@@ -386,60 +394,6 @@ class LayoutApplier:
         "dash-to-panel@jderose9.github.com",
         "big-shot@bigcommunity.org",
     )
-
-    @classmethod
-    def _pulse_overview(cls) -> None:
-        """
-        Briefly toggle ``org.gnome.Shell.OverviewActive`` true→false to
-        force a CSS style recompute on Main.panel.
-
-        Why this exists: after a layout switch, even when every extension
-        has been reloaded against the correct dconf state and every CSS
-        class on the panel actor matches what the post-logout state
-        would have, ``Main.panel`` still renders with its pre-switch
-        cached style. Big-Blue.css's ``#panel { rgba(0, 0, 0, 0.65) }``
-        rule isn't applied — the panel reads as opaque black.
-
-        The trigger that fixes it is the ``:overview`` pseudo-class
-        being added to Main.panel and removed: that pseudo-class change
-        invalidates St's style cache and forces the panel to re-evaluate
-        every CSS rule. Empirically, no other event reliably triggers
-        the same recompute (theme name toggle, gnome-extensions
-        disable+enable user-theme, ReloadExtension, dconf key writes —
-        all tested, none work). Manually clicking Activities then
-        clicking the desktop is what users were doing as a workaround.
-
-        ``OverviewActive`` is a writable D-Bus property on
-        ``org.gnome.Shell``; setting it true→false replicates that
-        click sequence without any user input. The brief overview
-        flash is visible but acceptable as the cost of transparency
-        actually working at runtime.
-        """
-        run_cmd(
-            [
-                "gdbus", "call", "--session",
-                "--dest", "org.gnome.Shell",
-                "--object-path", "/org/gnome/Shell",
-                "--method", "org.freedesktop.DBus.Properties.Set",
-                "org.gnome.Shell", "OverviewActive", "<true>",
-            ],
-            timeout=5,
-        )
-        # Just enough for Shell to add the :overview pseudo-class to
-        # Main.panel and run the show animation past the style-recompute
-        # frame. Shorter sleeps occasionally race past the recompute and
-        # the panel stays opaque.
-        time.sleep(0.4)
-        run_cmd(
-            [
-                "gdbus", "call", "--session",
-                "--dest", "org.gnome.Shell",
-                "--object-path", "/org/gnome/Shell",
-                "--method", "org.freedesktop.DBus.Properties.Set",
-                "org.gnome.Shell", "OverviewActive", "<false>",
-            ],
-            timeout=5,
-        )
 
     @classmethod
     def _reload_visual_extensions(cls, uuids: Iterable[str]) -> None:
@@ -686,6 +640,7 @@ class LayoutApplier:
         data: str,
         persist: bool = True,
         before_uuids: Optional[Iterable[str]] = None,
+        progress_cb: Optional[Callable[[str], None]] = None,
     ) -> Tuple[bool, str]:
         """
         Apply ``data`` (a full dconf dump) to live dconf, and atomically
@@ -693,7 +648,8 @@ class LayoutApplier:
 
         Flow:
           1. acquire lock                       (watcher won't dump)
-          2. stop dconf-sync-gnome.service       (also gated by lock)
+          2. stop sync-gnome-theme-to-qt.path    (avoid re-fires
+             during the dconf load's burst of writes)
           3. disable ``before_uuids`` via DBus   (sorted, see
              ``_disable_extensions_in_order``)
           4. settle so disable() callbacks drain
@@ -704,9 +660,19 @@ class LayoutApplier:
           8. ReloadExtension on visually-stateful UUIDs (see
              ``_reload_visual_extensions``) — fresh JS module init so
              CSS/actor state matches the new dconf values
-          9. start dconf-sync-gnome.service      (still skips dump until
-             we release the lock OR settings.gnome is fresh enough)
+          9. start sync-gnome-theme-to-qt.path
          10. release lock
+
+        Why no ``systemctl stop dconf-sync-gnome.service``: comm-gnome-config's
+        watcher honours the lock file we hold throughout this method
+        (``$XDG_RUNTIME_DIR/dconf-sync-gnome.lock``). With the lock held
+        it skips its dump-on-change, which is the only thing that could
+        clobber our atomic write of ``settings.gnome``. Stopping the
+        service was extra ceremony (≈200 ms of synchronous systemctl
+        round-trips) that the lock already prevents — so we drop it
+        entirely. Live dconf changes still flow through the watcher's
+        ``dconf watch /`` pipe; the watcher just logs them and short-
+        circuits the save under the lock.
 
         Why no global ``dconf reset -f /`` in runtime: with gnome-shell
         alive, the reset fires Notify on every key in dconf. Extensions
@@ -723,13 +689,27 @@ class LayoutApplier:
 
         ``persist=False`` skips the settings.gnome write — used by callers
         that already wrote it themselves (e.g. snapshots).
+
+        ``progress_cb`` (if provided) is called with a short stage label
+        (str) before each visible phase so the caller can update its
+        loading overlay. Best-effort: any exception from the callback is
+        swallowed so it never breaks the apply.
         """
         if not data or not data.strip():
             return False, "empty dconf data"
 
+        cls._unit_cache = {}
+
+        def progress(label: str) -> None:
+            if progress_cb is None:
+                return
+            try:
+                progress_cb(label)
+            except Exception as exc:
+                log.debug("progress_cb raised: %s", exc)
+
         cls._sync_lock_acquire()
         try:
-            cls._sync_service("stop")
             cls._qt_theme_watcher("stop")
 
             # Disable extensions in two phases: LEAVING (in before but not
@@ -766,6 +746,8 @@ class LayoutApplier:
             before_set = {u for u in (before_uuids or ()) if u}
             leaving = before_set - target_enabled
             staying = before_set & target_enabled
+            if leaving or staying:
+                progress("Disabling extensions…")
             if leaving:
                 cls._disable_extensions_in_order(leaving)
                 time.sleep(cls._DISABLE_STEP_SEC)
@@ -775,6 +757,7 @@ class LayoutApplier:
                 # we change the keys it was bound to.
                 time.sleep(cls._SETTLE_SEC)
 
+            progress("Loading layout…")
             # Clear keys from the previous layout that the new layout
             # doesn't cover (scoped to extension storage). Done after
             # disabling extensions so most Notify signals fire into
@@ -818,24 +801,30 @@ class LayoutApplier:
             # ``after`` alone, no union needed.
             after_uuids = cls._enabled_extensions()
             if after_uuids:
+                progress("Reloading components…")
                 cls._reload_visual_extensions(after_uuids)
 
-            # Force Main.panel to re-evaluate its CSS. Without this, the
-            # panel keeps its pre-switch cached style and the theme's
-            # ``#panel { rgba(0,0,0,0.65) }`` rule (Big-Blue.css:2641)
-            # never paints — panel reads as opaque black even though
-            # every class on the actor and every dconf key would render
-            # transparent at next login.
-            cls._pulse_overview()
+            # Note: we previously toggled ``org.gnome.Shell.OverviewActive``
+            # true→false here to force a CSS style recompute on Main.panel
+            # (Big-Blue.css's transparent ``#panel`` rule wasn't repainting).
+            # That trick worked but flashed the Activities Overview for ~0.4 s,
+            # which read to users as a "freeze" — especially layered on top
+            # of the extension reloads that had just finished. The "Restart
+            # the session for the 100% clean state" toast in page_layouts.py
+            # already covers the residual case: settings.gnome is written
+            # cleanly, so the next login renders transparency correctly.
 
-            cls._sync_service("start")
             cls._qt_theme_watcher("start")
             return True, msg
         finally:
             cls._sync_lock_release()
 
     @classmethod
-    def apply(cls, config_path: Path) -> Tuple[bool, str]:
+    def apply(
+        cls,
+        config_path: Path,
+        progress_cb: Optional[Callable[[str], None]] = None,
+    ) -> Tuple[bool, str]:
         """
         Apply a layout file as the complete next-login dconf state, and
         best-effort apply to the live session.
@@ -845,6 +834,9 @@ class LayoutApplier:
         the layout via ``dconf load``; any leftover keys from the
         previous layout that aren't in this one persist in live dconf
         until the next login (harmless — see ``load_dconf_safely``).
+
+        ``progress_cb`` is forwarded to ``load_dconf_safely`` so the
+        caller can update its loading overlay between stages.
         """
         if not config_path or not config_path.exists():
             return False, f"layout file not found: {config_path}"
@@ -863,4 +855,5 @@ class LayoutApplier:
             layout_text,
             persist=True,
             before_uuids=before,
+            progress_cb=progress_cb,
         )
