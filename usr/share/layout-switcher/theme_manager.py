@@ -14,6 +14,7 @@ from typing import List, Tuple
 
 from constants import DBUS_EXT_IFACE, DBUS_EXT_PATH, DBUS_SHELL_NAME
 from extension_manager import ExtMgr
+from theme_preview import is_icon_theme
 from utils import gsettings_get, gsettings_set, run_cmd
 
 
@@ -33,7 +34,10 @@ class ThemeMgr:
         if kind == "gtk":
             return any((d / sub).exists() for sub in ("gtk-4.0", "gtk-3.0", "gtk-2.0"))
         if kind == "icons":
-            return (d / "index.theme").exists()
+            # ``index.theme`` sozinho aceita tambem temas de cursor (ex.: Bibata),
+            # que so trazem ``cursors/``. Exige que o tema tenha pelo menos
+            # uma categoria de icone para nao poluir a aba Icones.
+            return (d / "index.theme").exists() and is_icon_theme(d.name)
         if kind == "shell":
             sd = d / "gnome-shell"
             return sd.is_dir() and any(

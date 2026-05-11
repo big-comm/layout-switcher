@@ -98,6 +98,16 @@ APP_CSS = """
 .boxed-list > row.activatable:hover { background-color: alpha(@accent_bg_color, 0.06); }
 .theme-name-active          { color: @accent_color; font-weight: 600; }
 
+/* ── Grid de temas (GTK / Shell) ─────────────────────────────────────── */
+.theme-tile {
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    border-radius: 10px;
+    transition: outline-color 120ms ease, background-color 120ms ease;
+}
+.theme-tile:hover           { background-color: alpha(@accent_bg_color, 0.05); }
+.theme-tile.theme-tile-active { outline-color: @accent_color; }
+
 /* ── Sub-abas de tipo de tema ────────────────────────────────────────── */
 .kind-tab                   { border-radius: 8px; padding: 5px 14px; font-weight: 500; }
 .kind-tab.kind-on           { background-color: alpha(@accent_bg_color, 0.18); color: @accent_color; font-weight: 700; }

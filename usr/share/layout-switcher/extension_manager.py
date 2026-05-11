@@ -126,6 +126,7 @@ class ExtMgr:
                         "url": meta.get("url", ""),
                         "user": is_user,
                         "enabled": uuid in enabled,
+                        "has_prefs": (entry / "prefs.js").is_file(),
                     }
                 )
         return results

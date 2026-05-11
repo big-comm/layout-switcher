@@ -19,8 +19,13 @@ from gi.repository import Adw, GLib, Gtk, Pango
 
 from constants import tr
 from theme_manager import ThemeMgr
-from theme_preview import extract_theme_color, find_folder_icon
-from ui.widgets import ColorDot
+from theme_preview import (
+    extract_shell_panel_bg,
+    extract_theme_color,
+    find_theme_icons,
+    is_dark_theme_name,
+)
+from ui.widgets import IconStrip, MiniPanelPreview, MiniWindowPreview
 from utils import color_from_name, run_cmd
 
 # Largura máxima confortável para a lista de temas
@@ -29,6 +34,23 @@ _LIST_MAX_WIDTH = 620
 
 class ThemeRow(Gtk.ListBoxRow):
     """Theme list row with typed theme_name and theme_kind properties."""
+
+    def __init__(self, theme_name: str, theme_kind: str) -> None:
+        super().__init__()
+        self._theme_name = theme_name
+        self._theme_kind = theme_kind
+
+    @property
+    def theme_name(self) -> str:
+        return self._theme_name
+
+    @property
+    def theme_kind(self) -> str:
+        return self._theme_kind
+
+
+class ThemeTile(Gtk.FlowBoxChild):
+    """Theme grid tile with typed theme_name and theme_kind properties."""
 
     def __init__(self, theme_name: str, theme_kind: str) -> None:
         super().__init__()
@@ -199,8 +221,13 @@ class ThemesPage(Gtk.Box):
         count_lbl.set_margin_bottom(8)
         self._list_container.append(count_lbl)
 
-        # ListBox com estilo "boxed-list" — aparência nativa GNOME,
-        # altura fixa por linha, sem esticar horizontalmente
+        if kind in ("gtk", "shell"):
+            self._list_container.append(self._build_theme_grid(kind, active, names))
+        else:
+            self._list_container.append(self._build_theme_list(kind, active, names))
+
+    def _build_theme_list(self, kind: str, active: str, names: List[str]) -> Gtk.Widget:
+        """Lista boxed-list — usado para a aba Ícones (preview horizontal compacto)."""
         lb = Gtk.ListBox()
         lb.add_css_class("boxed-list")
         lb.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -208,12 +235,26 @@ class ThemesPage(Gtk.Box):
             "row-activated",
             lambda _box, row: self._apply_theme(row.theme_name, row.theme_kind),
         )
-
         for name in names:
-            row = self._make_theme_row(name, kind, active)
-            lb.append(row)
+            lb.append(self._make_theme_row(name, kind, active))
+        return lb
 
-        self._list_container.append(lb)
+    def _build_theme_grid(self, kind: str, active: str, names: List[str]) -> Gtk.Widget:
+        """FlowBox em grid — preview grande no topo, nome embaixo. Usado em GTK/Shell."""
+        fb = Gtk.FlowBox()
+        fb.set_selection_mode(Gtk.SelectionMode.NONE)
+        fb.set_max_children_per_line(4)
+        fb.set_min_children_per_line(1)
+        fb.set_row_spacing(12)
+        fb.set_column_spacing(12)
+        fb.set_homogeneous(True)
+        fb.connect(
+            "child-activated",
+            lambda _fb, tile: self._apply_theme(tile.theme_name, tile.theme_kind),
+        )
+        for name in names:
+            fb.append(self._make_theme_tile(name, kind, active))
+        return fb
 
     def _make_theme_row(self, name: str, kind: str, active: str) -> ThemeRow:
         """
@@ -265,32 +306,95 @@ class ThemesPage(Gtk.Box):
         row.update_property([Gtk.AccessibleProperty.LABEL], [a11y_label])
         return row
 
+    def _make_theme_tile(self, name: str, kind: str, active: str) -> ThemeTile:
+        """
+        Tile de grid: preview grande no topo + nome embaixo (com check
+        quando ativo). Usado para a visualizacao em grade dos temas GTK
+        e Shell — preview pequeno de uma bolinha nao dava ideia do tema,
+        agora cada tile mostra um mockup maior.
+        """
+        is_on = name == active
+
+        tile = ThemeTile(theme_name=name, theme_kind=kind)
+        tile.add_css_class("theme-tile")
+        if is_on:
+            tile.add_css_class("theme-tile-active")
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box.set_margin_start(6)
+        box.set_margin_end(6)
+        box.set_margin_top(8)
+        box.set_margin_bottom(8)
+
+        preview = self._build_preview_large(name, kind)
+        preview.set_halign(Gtk.Align.CENTER)
+        box.append(preview)
+
+        name_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        name_row.set_margin_start(2)
+        name_row.set_margin_end(2)
+        name_row.set_margin_top(2)
+
+        lbl = Gtk.Label(label=name)
+        lbl.add_css_class("body")
+        if is_on:
+            lbl.add_css_class("theme-name-active")
+        lbl.set_hexpand(True)
+        lbl.set_halign(Gtk.Align.START)
+        lbl.set_xalign(0)
+        lbl.set_ellipsize(Pango.EllipsizeMode.END)
+        name_row.append(lbl)
+
+        if is_on:
+            chk = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            chk.set_pixel_size(14)
+            chk.add_css_class("accent")
+            name_row.append(chk)
+
+        box.append(name_row)
+        tile.set_child(box)
+
+        a11y_label = tr("{name} theme").format(name=name)
+        if is_on:
+            a11y_label += " (" + tr("Active") + ")"
+        tile.update_property([Gtk.AccessibleProperty.LABEL], [a11y_label])
+        return tile
+
+    def _build_preview_large(self, name: str, kind: str) -> Gtk.Widget:
+        """Versao grande do mockup — usada nos tiles de grid (GTK/Shell)."""
+        accent = extract_theme_color(name, kind) or color_from_name(name)
+        if kind == "gtk":
+            return MiniWindowPreview(
+                accent, dark=is_dark_theme_name(name), width=170, height=104
+            )
+        panel_bg = extract_shell_panel_bg(name)
+        return MiniPanelPreview(panel_bg, accent, width=170, height=104)
+
     def _build_preview(self, name: str, kind: str) -> Gtk.Widget:
         """
         Constroi o widget de preview da linha de tema.
 
-        * ``kind=icons`` → ``Gtk.Picture`` com o icone ``folder`` real do tema.
-          Fallback para symbolic se o tema nao tiver folder.
-        * ``kind=gtk|shell`` → ``ColorDot`` com a cor real extraida do CSS.
-          Fallback para cor derivada do nome quando nao e possivel extrair.
+        * ``kind=icons`` → ``IconStrip`` com 5 icones reais do tema
+          (folder, home, mime de texto, navegador, settings). Slots
+          ausentes caem para symbolic do sistema com opacidade reduzida.
+        * ``kind=gtk`` → ``MiniWindowPreview`` (mini janela com header
+          bar + corpo + botao accent). Light/dark vem de heuristica do
+          nome do tema; accent vem do CSS quando possivel.
+        * ``kind=shell`` → ``MiniPanelPreview`` (mockup do panel +
+          janela ativa). Panel bg extraido de ``#panel`` no
+          gnome-shell.css; accent extraido do CSS.
         """
         if kind == "icons":
-            folder_path = find_folder_icon(name)
-            if folder_path:
-                pic = Gtk.Picture.new_for_filename(str(folder_path))
-                pic.set_content_fit(Gtk.ContentFit.CONTAIN)
-                pic.set_size_request(26, 22)
-                pic.set_can_shrink(True)
-                return pic
-            img = Gtk.Image.new_from_icon_name("folder-symbolic")
-            img.set_pixel_size(22)
-            return img
+            icon_paths = find_theme_icons(name)
+            return IconStrip(icon_paths, slot_size=18)
 
-        # gtk ou shell: ColorDot com cor real do CSS quando possivel
-        color = extract_theme_color(name, kind)
-        if not color:
-            color = color_from_name(name)
-        return ColorDot(color, size=22)
+        accent = extract_theme_color(name, kind) or color_from_name(name)
+        if kind == "gtk":
+            return MiniWindowPreview(accent, dark=is_dark_theme_name(name))
+
+        # kind == "shell"
+        panel_bg = extract_shell_panel_bg(name)
+        return MiniPanelPreview(panel_bg, accent)
 
     def _apply_theme(self, name: str, kind: str) -> None:
         def task():

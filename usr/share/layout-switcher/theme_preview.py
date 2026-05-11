@@ -22,7 +22,7 @@ DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 import logging
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Set, Tuple
 
 log = logging.getLogger("layout-switcher")
 
@@ -86,6 +86,226 @@ def find_folder_icon(theme_name: str) -> Optional[Path]:
             log.debug("folder glob failed for %s: %s", theme_name, exc)
 
     return None
+
+
+# ── Multi-icon strip preview ────────────────────────────────────────────────
+#
+# Five representative slots so the user sees what the icon theme actually
+# looks like instead of just a folder. Each slot lists fixed rel paths first,
+# then loose glob patterns for fallback. Inherited themes (via Index.theme
+# ``Inherits=``) are walked so themes that build on Adwaita/Papirus still
+# resolve icons they technically own through inheritance.
+
+_ICON_SLOTS: List[Tuple[str, List[str], List[str]]] = [
+    (
+        "folder",
+        [
+            "scalable/places/folder.svg",
+            "scalable/places/default-folder.svg",
+            "places/scalable/folder.svg",
+            "48x48/places/folder.png",
+            "64x64/places/folder.png",
+            "32x32/places/folder.png",
+        ],
+        ["folder.svg", "folder.png"],
+    ),
+    (
+        "home",
+        [
+            "scalable/places/user-home.svg",
+            "scalable/places/folder-home.svg",
+            "places/scalable/user-home.svg",
+            "48x48/places/user-home.png",
+            "48x48/places/folder-home.png",
+        ],
+        ["user-home.svg", "user-home.png", "folder-home.svg"],
+    ),
+    (
+        "text",
+        [
+            "scalable/mimetypes/text-x-generic.svg",
+            "scalable/mimes/text-x-generic.svg",
+            "scalable/mimetypes/text.svg",
+            "48x48/mimetypes/text-x-generic.png",
+        ],
+        ["text-x-generic.svg", "text-x-generic.png"],
+    ),
+    (
+        "browser",
+        [
+            "scalable/apps/firefox.svg",
+            "scalable/apps/web-browser.svg",
+            "scalable/apps/internet-web-browser.svg",
+            "scalable/apps/org.mozilla.firefox.svg",
+            "scalable/apps/google-chrome.svg",
+            "48x48/apps/firefox.png",
+            "48x48/apps/web-browser.png",
+        ],
+        ["firefox.svg", "web-browser.svg", "firefox.png", "web-browser.png"],
+    ),
+    (
+        "settings",
+        [
+            "scalable/apps/preferences-system.svg",
+            "scalable/apps/org.gnome.Settings.svg",
+            "scalable/apps/gnome-control-center.svg",
+            "scalable/apps/gnome-settings.svg",
+            "scalable/categories/preferences-system.svg",
+            "48x48/apps/preferences-system.png",
+        ],
+        [
+            "preferences-system.svg",
+            "org.gnome.Settings.svg",
+            "preferences-system.png",
+        ],
+    ),
+]
+
+
+# Sufixos de diretorio que identificam um tema de **icones** (vs cursor).
+# Cursor themes so trazem ``cursors/``; icon themes tem ao menos uma destas
+# categorias num dos roots (``scalable/``, ``48x48/``, ``places/``, etc.).
+_ICON_CATEGORY_DIRS = (
+    "scalable",
+    "symbolic",
+    "places",
+    "apps",
+    "mimetypes",
+    "mimes",
+    "status",
+    "devices",
+    "categories",
+    "actions",
+    "16x16",
+    "22x22",
+    "24x24",
+    "32x32",
+    "48x48",
+    "64x64",
+    "96x96",
+    "128x128",
+    "256x256",
+)
+
+
+def is_icon_theme(theme_name: str) -> bool:
+    """
+    Retorna True se o tema (em algum root) tem ao menos um diretorio de
+    categoria de icone — distingue icon themes de cursor-only themes,
+    que so trazem ``cursors/`` mas tambem possuem ``index.theme``.
+    """
+    if not theme_name:
+        return False
+    for root in _ICON_ROOTS:
+        theme_dir = root / theme_name
+        if not theme_dir.is_dir():
+            continue
+        for sub in _ICON_CATEGORY_DIRS:
+            if (theme_dir / sub).is_dir():
+                return True
+    return False
+
+
+def _theme_inherits(theme_dir: Path) -> List[str]:
+    """Parse Index.theme ``Inherits=`` chain. Returns empty list on failure."""
+    for fname in ("index.theme", "Index.theme"):
+        idx = theme_dir / fname
+        if not idx.is_file():
+            continue
+        try:
+            for line in idx.read_text(encoding="utf-8", errors="ignore").splitlines():
+                line = line.strip()
+                if line.startswith("Inherits="):
+                    raw = line[len("Inherits=") :]
+                    return [t.strip() for t in raw.split(",") if t.strip()]
+        except Exception as exc:
+            log.debug("inherits parse failed: %s -> %s", idx, exc)
+    return []
+
+
+def _find_icon_with_inheritance(
+    theme_name: str,
+    rel_paths: List[str],
+    glob_patterns: List[str],
+    _visited: Optional[Set[str]] = None,
+    _depth: int = 0,
+) -> Optional[Path]:
+    """
+    Resolve um icone seguindo a cadeia de heranca declarada em
+    ``Index.theme`` (``Inherits=``). E o que o usuario ve em uso real:
+    se o tema nao traz ``folder.svg``, o GNOME pega do tema herdado.
+    Limita profundidade para evitar loops em temas malformados.
+    """
+    if _visited is None:
+        _visited = set()
+    if theme_name in _visited or _depth > 5:
+        return None
+    _visited.add(theme_name)
+
+    inherits: List[str] = []
+
+    for root in _ICON_ROOTS:
+        theme_dir = root / theme_name
+        if not theme_dir.is_dir():
+            continue
+        for parent in _theme_inherits(theme_dir):
+            if parent not in inherits and parent not in _visited:
+                inherits.append(parent)
+        for rel in rel_paths:
+            candidate = theme_dir / rel
+            if candidate.is_file():
+                return candidate
+
+    for parent in inherits:
+        found = _find_icon_with_inheritance(
+            parent, rel_paths, glob_patterns, _visited, _depth + 1
+        )
+        if found is not None:
+            return found
+
+    # Glob recursivo so na raiz da arvore — fallback antes de desistir.
+    if _depth == 0:
+        for root in _ICON_ROOTS:
+            theme_dir = root / theme_name
+            if not theme_dir.is_dir():
+                continue
+            try:
+                for pattern in glob_patterns:
+                    hits = list(theme_dir.rglob(pattern))
+                    if not hits:
+                        continue
+                    scalable = [h for h in hits if "scalable" in h.parts]
+                    return scalable[0] if scalable else hits[0]
+            except Exception as exc:
+                log.debug("icon glob failed for %s/%s: %s", theme_name, pattern, exc)
+
+    return None
+
+
+def find_theme_icons(theme_name: str) -> List[Optional[Path]]:
+    """
+    Retorna 5 caminhos representativos do tema de icones (folder, home,
+    text, browser, settings), **seguindo a cadeia de heranca**
+    declarada em ``Index.theme``. Mostra o que o usuario veria de fato
+    com o tema aplicado — temas que sobrescrevem poucos icones vao
+    parecer semelhantes a seus pais (Adwaita/hicolor), o que e a
+    realidade do uso.
+
+    Cursor-only themes (sem diretorios de categoria de icone) devem ser
+    filtrados antes via ``is_icon_theme()``.
+    """
+    if not theme_name:
+        return [None] * len(_ICON_SLOTS)
+    return [
+        _find_icon_with_inheritance(theme_name, rel_paths, glob_patterns)
+        for _slot, rel_paths, glob_patterns in _ICON_SLOTS
+    ]
+
+
+def is_dark_theme_name(theme_name: str) -> bool:
+    """Heuristica rapida: o nome do tema GTK indica variante escura?"""
+    n = (theme_name or "").lower()
+    return any(token in n for token in ("-dark", "_dark", " dark", "noir", "night", "black"))
 
 
 # ── GTK / Shell theme: color extraction ──────────────────────────────────────
@@ -181,4 +401,61 @@ def extract_theme_color(theme_name: str, kind: str) -> Optional[str]:
         if color:
             return color
 
+    return None
+
+
+# ── Shell panel background extraction ───────────────────────────────────────
+
+# Capture ``#panel { ... background-color: <value> }`` from gnome-shell.css.
+# We accept the first ``background-color`` declaration inside the first
+# ``#panel`` rule. Themes that override via ``.panel`` class or nest selectors
+# are not handled — fallback is acceptable.
+_PANEL_BG_RE = re.compile(
+    r"#panel\s*\{[^}]*?background-color\s*:\s*([^;}]+)[;}]",
+    re.DOTALL | re.IGNORECASE,
+)
+
+_RGBA_RE = re.compile(r"rgba?\s*\(\s*([^)]+)\)", re.IGNORECASE)
+
+
+def _rgba_to_hex(raw: str) -> Optional[str]:
+    """Converte ``rgb(...)``/``rgba(...)`` para ``#rrggbb`` (descarta alpha)."""
+    match = _RGBA_RE.match(raw.strip())
+    if not match:
+        return None
+    parts = [p.strip() for p in match.group(1).split(",")]
+    if len(parts) < 3:
+        return None
+    try:
+        r = max(0, min(255, int(round(float(parts[0])))))
+        g = max(0, min(255, int(round(float(parts[1])))))
+        b = max(0, min(255, int(round(float(parts[2])))))
+    except ValueError:
+        return None
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def extract_shell_panel_bg(theme_name: str) -> Optional[str]:
+    """
+    Extrai a cor de fundo do ``#panel`` do gnome-shell.css do tema.
+    Retorna ``#rrggbb`` ou None quando o tema nao define ``#panel`` com
+    cor literal (hex/rgb/rgba). Alpha e descartado — visualizamos o
+    panel como solido no preview.
+    """
+    for css_path in _css_files(theme_name, "shell"):
+        try:
+            text = css_path.read_text(encoding="utf-8", errors="ignore")
+        except Exception as exc:
+            log.debug("shell css read failed: %s -> %s", css_path, exc)
+            continue
+        match = _PANEL_BG_RE.search(text)
+        if not match:
+            continue
+        raw = match.group(1).strip()
+        normalized = _normalize_hex(raw)
+        if normalized:
+            return normalized
+        rgba = _rgba_to_hex(raw)
+        if rgba:
+            return rgba
     return None

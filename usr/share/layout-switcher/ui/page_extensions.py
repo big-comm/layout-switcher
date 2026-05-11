@@ -692,6 +692,19 @@ class ExtensionsPage(Gtk.Box):
         sw.connect("notify::active", on_sw)
         ctrl.append(sw)
 
+        if ext.get("has_prefs") and enabled:
+            pref_btn = Gtk.Button(icon_name="applications-system-symbolic")
+            pref_btn.add_css_class("flat")
+            pref_btn.set_tooltip_text(tr("Settings"))
+            pref_btn.set_valign(Gtk.Align.CENTER)
+            pref_btn.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [f"{tr('Settings')} {ext['name']}"],
+            )
+            uuid_pref = ext["uuid"]
+            pref_btn.connect("clicked", lambda b, _u=uuid_pref: ExtMgr.open_prefs(_u))
+            ctrl.append(pref_btn)
+
         if is_user:
             rm = Gtk.Button(icon_name="user-trash-symbolic")
             rm.add_css_class("flat")
