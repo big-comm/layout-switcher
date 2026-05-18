@@ -21,7 +21,6 @@ from gi.repository import Adw, GLib, Gtk, Pango
 import ego_client
 from constants import EGO_BASE_URL, tr
 from extension_manager import ExtMgr
-from shell_reloader import ShellReloader
 from utils import gnome_shell_version, run_cmd
 
 
@@ -417,7 +416,7 @@ class ExtDetailView(Adw.NavigationPage):
                 else:
                     ok, msg = ExtMgr.install(uuid, pk, "")
                     if ok:
-                        ShellReloader.apply_extension_state(uuid, True)
+                        ExtMgr.enable_after_install(uuid)
                 GLib.idle_add(self._on_action_done, ok, msg, mode)
 
             self._pool.submit(task)
@@ -428,7 +427,11 @@ class ExtDetailView(Adw.NavigationPage):
             if mode == "update":
                 self._toast(tr("{name} updated").format(name=name))
             else:
-                self._toast(tr("{name} installed").format(name=name))
+                self._toast(
+                    tr("{name} installed and enabled. Restart the session to use it.").format(
+                        name=name
+                    )
+                )
             self._on_after_install()
         else:
             self._toast(tr("Operation failed") + f": {msg}")

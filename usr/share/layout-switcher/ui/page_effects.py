@@ -289,9 +289,14 @@ class EffectsPage(Gtk.Box):
                     ext.get("pkg", ""),
                 )
                 if ok:
-                    ShellReloader.apply_extension_state(ext["uuid"], True)
+                    ExtMgr.enable_after_install(ext["uuid"])
                     GLib.idle_add(self.rebuild)
-                    GLib.idle_add(self._toast, f"{ext['name']} {tr('installed')}")
+                    GLib.idle_add(
+                        self._toast,
+                        tr("{name} installed and enabled. Restart the session to use it.").format(
+                            name=ext["name"]
+                        ),
+                    )
                 else:
                     GLib.idle_add(self.rebuild)
                     GLib.idle_add(self._toast, tr("Install failed") + f": {method}")

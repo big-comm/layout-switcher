@@ -192,6 +192,26 @@ class ExtMgr:
         )
 
     @staticmethod
+    def enable_after_install(uuid: str) -> Tuple[bool, str]:
+        """
+        Mark a newly installed extension as enabled and try live activation.
+
+        GNOME Shell often only discovers new extension code after a session
+        restart, especially when it was installed as a system package. Keeping
+        the UUID in enabled-extensions makes it start automatically next login.
+        """
+        ok, msg = ExtMgr._set_enabled_gsettings(uuid, True)
+        if not ok:
+            return False, msg
+
+        from shell_reloader import ShellReloader
+
+        live_ok, live_msg = ShellReloader.apply_extension_state(uuid, True)
+        if live_ok:
+            return True, live_msg
+        return True, msg or live_msg
+
+    @staticmethod
     def disable_all_globally(disable: bool) -> Tuple[bool, str]:
         """
         Desabilita ou habilita globalmente todas as extensões.
@@ -229,6 +249,9 @@ class ExtMgr:
                 timeout=90,
             )
             if ok:
+                schema_ok, schema_msg = ExtMgr._compile_user_schemas(uuid)
+                if not schema_ok:
+                    return False, f"schema compile failed: {schema_msg}"
                 return True, "gnome-extensions"
 
         # 2. Download direto do EGO com shell_version correto
@@ -249,6 +272,9 @@ class ExtMgr:
             if shutil.which(cmd[0]):
                 ok, out = run_cmd(cmd, timeout=180)
                 if ok:
+                    schema_ok, schema_msg = ExtMgr._compile_user_schemas(uuid)
+                    if not schema_ok:
+                        return False, f"schema compile failed: {schema_msg}"
                     return True, cmd[0]
 
         return False, "no installation method succeeded"
@@ -330,10 +356,37 @@ class ExtMgr:
                     zf.extract(member, str(dest))
 
             tmp_path.unlink(missing_ok=True)
+            schema_ok, schema_msg = ExtMgr._compile_schemas(dest)
+            if not schema_ok:
+                return False, f"schema compile failed: {schema_msg}"
             return True, url
 
         except Exception as exc:
             return False, str(exc)
+
+    @staticmethod
+    def _compile_user_schemas(uuid: str) -> Tuple[bool, str]:
+        """Compile schemas for a user-installed extension, if present."""
+        ext_dir = EXT_USER_DIR / uuid
+        if not ext_dir.is_dir():
+            return True, ""
+        return ExtMgr._compile_schemas(ext_dir)
+
+    @staticmethod
+    def _compile_schemas(ext_dir: Path) -> Tuple[bool, str]:
+        """Run glib-compile-schemas for extension-local schemas."""
+        schema_dir = ext_dir / "schemas"
+        if not schema_dir.is_dir():
+            return True, ""
+        try:
+            has_schema = any(schema_dir.glob("*.gschema.xml"))
+        except OSError as exc:
+            return False, str(exc)
+        if not has_schema:
+            return True, ""
+        if not shutil.which("glib-compile-schemas"):
+            return False, "glib-compile-schemas not found"
+        return run_cmd(["glib-compile-schemas", str(schema_dir)], timeout=20)
 
     @staticmethod
     def update(uuid: str, ego_id: int = 0) -> Tuple[bool, str]:
@@ -396,6 +449,8 @@ class ExtMgr:
         Suporta X11 e Wayland via D-Bus OpenExtensionPrefs (GS 40+).
         """
         from constants import DBUS_EXT_IFACE, DBUS_EXT_PATH, DBUS_SHELL_NAME
+
+        ExtMgr._compile_user_schemas(uuid)
 
         # Método 1: gnome-extensions prefs (Wayland-safe, GS 3.36+)
         if shutil.which("gnome-extensions"):

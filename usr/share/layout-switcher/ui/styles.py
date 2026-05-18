@@ -93,6 +93,15 @@ APP_CSS = """
 /* ── Lista de extensões instaladas (boxed-list nativo) ───────────────── */
 /* As linhas usam Gtk.ListBoxRow dentro de .boxed-list — sem esticar.    */
 .boxed-list > row:hover     { background-color: alpha(@accent_bg_color, 0.05); }
+.extension-action-button {
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border-radius: 8px;
+}
+.extension-action-button-disabled {
+    opacity: 0.38;
+}
 
 /* ── Lista de temas (boxed-list nativo) ──────────────────────────────── */
 .boxed-list > row.activatable:hover { background-color: alpha(@accent_bg_color, 0.06); }

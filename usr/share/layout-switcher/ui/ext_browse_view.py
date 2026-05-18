@@ -20,7 +20,6 @@ from gi.repository import Adw, GLib, Gtk
 import ego_client
 from constants import tr
 from extension_manager import ExtMgr
-from shell_reloader import ShellReloader
 from utils import gnome_shell_version
 
 _DESC_MAX_CHARS = 140
@@ -407,8 +406,13 @@ class ExtBrowseView(Gtk.Box):
         def task():
             ok, method = ExtMgr.install(summary.uuid, summary.pk, "")
             if ok:
-                ShellReloader.apply_extension_state(summary.uuid, True)
-                GLib.idle_add(self._toast, f"{summary.name} {tr('installed')}")
+                ExtMgr.enable_after_install(summary.uuid)
+                GLib.idle_add(
+                    self._toast,
+                    tr("{name} installed and enabled. Restart the session to use it.").format(
+                        name=summary.name
+                    ),
+                )
                 GLib.idle_add(self._on_after_install)
                 # Re-render só este card via refresh do flow inteiro (mais simples e barato)
                 GLib.idle_add(self._run_search)

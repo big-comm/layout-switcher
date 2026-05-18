@@ -185,7 +185,59 @@ class TestInstalledVersion:
             assert ExtMgr.installed_version("ext-d@foo.com") == 0
 
 
+class TestSchemaCompile:
+    def test_compile_user_schemas_runs_glib_compile_schemas(self, tmp_path):
+        schema_dir = tmp_path / "uuid@x.com" / "schemas"
+        schema_dir.mkdir(parents=True)
+        (schema_dir / "org.example.gschema.xml").write_text("<schemalist/>")
+
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.shutil.which", return_value="/usr/bin/glib-compile-schemas"),
+            patch("extension_manager.run_cmd", return_value=(True, "")) as mock_run,
+        ):
+            ok, msg = ExtMgr._compile_user_schemas("uuid@x.com")
+
+        assert ok is True
+        assert msg == ""
+        mock_run.assert_called_once_with(
+            ["glib-compile-schemas", str(schema_dir)],
+            timeout=20,
+        )
+
+    def test_compile_user_schemas_skips_extension_without_schema_dir(self, tmp_path):
+        (tmp_path / "uuid@x.com").mkdir()
+
+        with (
+            patch("extension_manager.EXT_USER_DIR", tmp_path),
+            patch("extension_manager.run_cmd") as mock_run,
+        ):
+            ok, msg = ExtMgr._compile_user_schemas("uuid@x.com")
+
+        assert ok is True
+        assert msg == ""
+        mock_run.assert_not_called()
+
+
 class TestUpdate:
+    def test_enable_after_install_marks_enabled_and_tries_live_activation(self):
+        with (
+            patch(
+                "extension_manager.ExtMgr._set_enabled_gsettings",
+                return_value=(True, "enabled-list"),
+            ) as mock_set,
+            patch(
+                "shell_reloader.ShellReloader.apply_extension_state",
+                return_value=(False, "needs restart"),
+            ) as mock_apply,
+        ):
+            ok, msg = ExtMgr.enable_after_install("uuid@x.com")
+
+        assert ok is True
+        assert msg == "enabled-list"
+        mock_set.assert_called_once_with("uuid@x.com", True)
+        mock_apply.assert_called_once_with("uuid@x.com", True)
+
     def test_calls_install_and_reenables(self):
         with (
             patch("extension_manager.ExtMgr.is_enabled", return_value=True),

@@ -397,10 +397,15 @@ class ExtensionsPage(Gtk.Box):
                     ext.get("pkg", ""),
                 )
                 if ok:
-                    ShellReloader.apply_extension_state(ext["uuid"], True)
+                    ExtMgr.enable_after_install(ext["uuid"])
                     GLib.idle_add(self.rebuild_featured)
                     GLib.idle_add(self.refresh_installed)
-                    GLib.idle_add(self._toast, f"{ext['name']} {tr('installed')}")
+                    GLib.idle_add(
+                        self._toast,
+                        tr("{name} installed and enabled. Restart the session to use it.").format(
+                            name=ext["name"]
+                        ),
+                    )
                 else:
                     GLib.idle_add(self.rebuild_featured)
                     GLib.idle_add(self._toast, tr("Install failed") + f": {method}")
@@ -640,9 +645,10 @@ class ExtensionsPage(Gtk.Box):
         tc.append(ul)
         inner.append(tc)
 
-        # Controles à direita
+        # Right-side controls use fixed slots so every row lines up.
         ctrl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         ctrl.set_valign(Gtk.Align.CENTER)
+        ctrl.set_halign(Gtk.Align.END)
 
         update_info = self._updates.get(ext["uuid"])
         if update_info is not None:
@@ -663,11 +669,24 @@ class ExtensionsPage(Gtk.Box):
             up_btn.connect("clicked", lambda b, _u=uuid_capture: self._do_update_one(_u))
             ctrl.append(up_btn)
 
-        if not is_user:
-            sys_l = Gtk.Label(label=tr("system"))
-            sys_l.add_css_class("caption")
-            sys_l.add_css_class("dim-label")
-            ctrl.append(sys_l)
+        prefs_slot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        prefs_slot.set_size_request(34, 1)
+        prefs_slot.set_halign(Gtk.Align.CENTER)
+        prefs_slot.set_valign(Gtk.Align.CENTER)
+        if ext.get("has_prefs") and enabled:
+            pref_btn = Gtk.Button(icon_name="applications-system-symbolic")
+            pref_btn.add_css_class("flat")
+            pref_btn.add_css_class("extension-action-button")
+            pref_btn.set_tooltip_text(tr("Settings"))
+            pref_btn.set_valign(Gtk.Align.CENTER)
+            pref_btn.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [f"{tr('Settings')} {ext['name']}"],
+            )
+            uuid_pref = ext["uuid"]
+            pref_btn.connect("clicked", lambda b, _u=uuid_pref: ExtMgr.open_prefs(_u))
+            prefs_slot.append(pref_btn)
+        ctrl.append(prefs_slot)
 
         sw = Gtk.Switch()
         sw.set_active(enabled)
@@ -690,24 +709,24 @@ class ExtensionsPage(Gtk.Box):
             self._pool.submit(task)
 
         sw.connect("notify::active", on_sw)
-        ctrl.append(sw)
+        switch_slot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        switch_slot.set_size_request(58, 1)
+        switch_slot.set_halign(Gtk.Align.CENTER)
+        switch_slot.set_valign(Gtk.Align.CENTER)
+        switch_slot.append(sw)
+        ctrl.append(switch_slot)
 
-        if ext.get("has_prefs") and enabled:
-            pref_btn = Gtk.Button(icon_name="applications-system-symbolic")
-            pref_btn.add_css_class("flat")
-            pref_btn.set_tooltip_text(tr("Settings"))
-            pref_btn.set_valign(Gtk.Align.CENTER)
-            pref_btn.update_property(
-                [Gtk.AccessibleProperty.LABEL],
-                [f"{tr('Settings')} {ext['name']}"],
-            )
-            uuid_pref = ext["uuid"]
-            pref_btn.connect("clicked", lambda b, _u=uuid_pref: ExtMgr.open_prefs(_u))
-            ctrl.append(pref_btn)
-
+        remove_slot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        remove_slot.set_size_request(34, 1)
+        remove_slot.set_halign(Gtk.Align.CENTER)
+        remove_slot.set_valign(Gtk.Align.CENTER)
+        system_remove_msg = tr(
+            "This extension cannot be removed here because it was installed by the system."
+        )
         if is_user:
             rm = Gtk.Button(icon_name="user-trash-symbolic")
             rm.add_css_class("flat")
+            rm.add_css_class("extension-action-button")
             rm.set_tooltip_text(tr("Remove"))
             rm.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Remove')} {ext['name']}"])
             rm.set_valign(Gtk.Align.CENTER)
@@ -715,7 +734,21 @@ class ExtensionsPage(Gtk.Box):
                 "clicked",
                 lambda b, _uuid=ext["uuid"], _name=ext["name"]: self._confirm_remove(_uuid, _name),
             )
-            ctrl.append(rm)
+            remove_slot.append(rm)
+        else:
+            rm = Gtk.Button(icon_name="user-trash-symbolic")
+            rm.add_css_class("flat")
+            rm.add_css_class("extension-action-button")
+            rm.add_css_class("extension-action-button-disabled")
+            rm.set_tooltip_text(system_remove_msg)
+            rm.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [system_remove_msg],
+            )
+            rm.set_valign(Gtk.Align.CENTER)
+            rm.connect("clicked", lambda b, msg=system_remove_msg: self._toast(msg))
+            remove_slot.append(rm)
+        ctrl.append(remove_slot)
 
         inner.append(ctrl)
         row.set_child(inner)
