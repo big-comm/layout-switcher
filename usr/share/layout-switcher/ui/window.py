@@ -9,7 +9,7 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
 
 import concurrent.futures
-from typing import Dict
+from typing import Callable, Dict
 
 import gi
 
@@ -57,6 +57,9 @@ class MainWindow(Adw.ApplicationWindow):
         self._pool = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="cls")
         self._monitor = GSettingsMonitor()
         self._timeout_ids: list = []
+        self._pages: Dict[str, Gtk.Widget] = {}
+        self._page_factories: Dict[str, Callable[[], Gtk.Widget]] = {}
+        self._pending_updates: Dict = {}
 
         self.set_title(tr("Layout Switcher"))
         self.set_default_size(1080, 700)
@@ -135,18 +138,28 @@ class MainWindow(Adw.ApplicationWindow):
         self._monitor.watch(
             "org.gnome.desktop.interface",
             "gtk-theme",
-            lambda: GLib.idle_add(self._themes_page.refresh_themes),
+            lambda: GLib.idle_add(self._on_theme_changed),
         )
         self._monitor.watch(
             "org.gnome.desktop.interface",
             "icon-theme",
-            lambda: GLib.idle_add(self._themes_page.refresh_themes),
+            lambda: GLib.idle_add(self._on_theme_changed),
         )
 
     def _on_ext_changed(self) -> None:
         """Atualiza páginas de extensões/efeitos quando estado muda externamente."""
-        self._ext_page.refresh_installed()
-        self._effects_page.rebuild()
+        ext_page = self._pages.get("extensions")
+        if ext_page is not None:
+            ext_page.refresh_installed()
+        effects_page = self._pages.get("effects")
+        if effects_page is not None:
+            effects_page.rebuild()
+
+    def _on_theme_changed(self) -> None:
+        """Refresh theme UI only if the page has already been created."""
+        themes_page = self._pages.get("themes")
+        if themes_page is not None:
+            themes_page.refresh_themes()
 
     # ── Estrutura da janela ───────────────────────────────────────────────────
 
@@ -222,17 +235,14 @@ class MainWindow(Adw.ApplicationWindow):
         self._stack.set_hexpand(True)
         self._stack.set_vexpand(True)
 
-        self._layouts_page = LayoutsPage(self._pool, self._toast)
-        self._fonts_page = FontsPage(self._pool, self._toast)
-        self._themes_page = ThemesPage(self._pool, self._toast)
-        self._effects_page = EffectsPage(self._pool, self._toast)
-        self._ext_page = ExtensionsPage(self._pool, self._toast)
-
-        self._stack.add_named(self._layouts_page, "layouts")
-        self._stack.add_named(self._fonts_page, "fonts")
-        self._stack.add_named(self._themes_page, "themes")
-        self._stack.add_named(self._effects_page, "effects")
-        self._stack.add_named(self._ext_page, "extensions")
+        self._page_factories = {
+            "layouts": lambda: LayoutsPage(self._pool, self._toast),
+            "fonts": lambda: FontsPage(self._pool, self._toast),
+            "themes": lambda: ThemesPage(self._pool, self._toast),
+            "effects": lambda: EffectsPage(self._pool, self._toast),
+            "extensions": lambda: ExtensionsPage(self._pool, self._toast),
+        }
+        self._ensure_page("layouts")
 
         content_toolbar.set_content(self._stack)
 
@@ -279,6 +289,24 @@ class MainWindow(Adw.ApplicationWindow):
         self._timeout_ids.append(
             GLib.timeout_add_seconds(UPDATE_CHECK_INTERVAL, self._periodic_update_check)
         )
+
+    def _ensure_page(self, key: str) -> Gtk.Widget:
+        """Create stack pages on first use to keep startup fast."""
+        page = self._pages.get(key)
+        if page is not None:
+            return page
+
+        factory = self._page_factories.get(key)
+        if factory is None:
+            raise KeyError(key)
+
+        page = factory()
+        self._pages[key] = page
+        self._stack.add_named(page, key)
+
+        if key == "extensions" and self._pending_updates:
+            page.set_updates(self._pending_updates)
+        return page
 
     # ── Sidebar ───────────────────────────────────────────────────────────────
 
@@ -378,9 +406,13 @@ class MainWindow(Adw.ApplicationWindow):
             else:
                 r.remove_css_class("nav-sel")
         if key == "extensions":
-            GLib.idle_add(self._ext_page.refresh_installed)
+            page = self._ensure_page("extensions")
+            GLib.idle_add(page.refresh_installed)
         elif key == "effects":
-            GLib.idle_add(self._effects_page.rebuild)
+            page = self._ensure_page("effects")
+            GLib.idle_add(page.rebuild)
+        else:
+            self._ensure_page(key)
         self._stack.set_visible_child_name(key)
 
         # Update header title
@@ -409,9 +441,15 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_backup_restored(self) -> None:
         """Após um restore, reconstrói páginas para refletir estado."""
-        self._layouts_page.rebuild_grid()
-        self._ext_page.refresh_installed()
-        self._effects_page.rebuild()
+        layouts_page = self._pages.get("layouts")
+        if layouts_page is not None:
+            layouts_page.rebuild_grid()
+        ext_page = self._pages.get("extensions")
+        if ext_page is not None:
+            ext_page.refresh_installed()
+        effects_page = self._pages.get("effects")
+        if effects_page is not None:
+            effects_page.rebuild()
 
     # ── About ─────────────────────────────────────────────────────────────────
 
@@ -458,7 +496,11 @@ class MainWindow(Adw.ApplicationWindow):
 
         self._loading_label = Gtk.Label(label="")
         self._loading_label.add_css_class("title-4")
+        self._loading_label.add_css_class("loading-label")
         self._loading_label.set_halign(Gtk.Align.CENTER)
+        self._loading_label.set_justify(Gtk.Justification.CENTER)
+        self._loading_label.set_wrap(True)
+        self._loading_label.set_max_width_chars(42)
         self._loading_card.append(self._loading_label)
 
         self._loading_overlay.add_overlay(self._loading_card)
@@ -487,7 +529,8 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _initial_update_check(self) -> bool:
         """One-shot disparado 5s após a janela abrir."""
-        self._run_update_check(manual=False)
+        if update_checker.time_since_last_check(self._prefs) >= UPDATE_CHECK_INTERVAL:
+            self._run_update_check(manual=False)
         return False  # GLib.SOURCE_REMOVE
 
     def _periodic_update_check(self) -> bool:
@@ -512,7 +555,10 @@ class MainWindow(Adw.ApplicationWindow):
         self._pool.submit(task)
 
     def _on_update_check_done(self, updates: Dict, manual: bool) -> bool:
-        self._ext_page.set_updates(updates)
+        self._pending_updates = dict(updates or {})
+        ext_page = self._pages.get("extensions")
+        if ext_page is not None:
+            ext_page.set_updates(self._pending_updates)
         if not updates:
             if manual:
                 self._toast(tr("All extensions up to date"))
@@ -524,7 +570,10 @@ class MainWindow(Adw.ApplicationWindow):
                 values = list(updates.values())
                 results = update_checker.apply_all(values)
                 ok_count = sum(1 for _, ok, _ in results if ok)
-                GLib.idle_add(self._ext_page.set_updates, {})
+                self._pending_updates = {}
+                ext_page = self._pages.get("extensions")
+                if ext_page is not None:
+                    GLib.idle_add(ext_page.set_updates, {})
                 GLib.idle_add(
                     self._toast,
                     tr("Auto-updated {n} extensions").format(n=ok_count),

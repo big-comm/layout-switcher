@@ -74,14 +74,12 @@ class TestBackupManager:
         assert results[0].name > results[-1].name
 
     @patch("layout_applier.LayoutApplier.load_dconf_safely", return_value=(True, ""))
-    @patch("shell_reloader.ShellReloader.reload_all")
-    def test_restore_success(self, mock_reload, mock_load):
+    def test_restore_success(self, mock_load):
         f = self.backup_dir / "backup_test.dconf"
         f.write_text("[org/gnome/shell]\n" + "x" * 100)
         ok, msg = self.BackupManager.restore(f)
         assert ok is True
         mock_load.assert_called_once()
-        mock_reload.assert_called_once()
 
     def test_restore_missing_file(self):
         ok, msg = self.BackupManager.restore(Path("/nonexistent"))

@@ -308,6 +308,12 @@ def is_dark_theme_name(theme_name: str) -> bool:
     return any(token in n for token in ("-dark", "_dark", " dark", "noir", "night", "black"))
 
 
+def is_light_theme_name(theme_name: str) -> bool:
+    """Fast name heuristic for explicit light variants."""
+    n = (theme_name or "").lower()
+    return any(token in n for token in ("-light", "_light", " light", "white", "claro"))
+
+
 # ── GTK / Shell theme: color extraction ──────────────────────────────────────
 
 

@@ -54,7 +54,7 @@ APP_CSS = """
 
 /* Nome do layout — cor accent + bold quando ativo */
 .layout-name                         { font-weight: 600; }
-.layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0.2px; }
+.layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0; }
 
 /* Badge "Modified" theme-aware (libadwaita adapta @warning_bg/fg_color) */
 .layout-modified-badge {
@@ -65,7 +65,7 @@ APP_CSS = """
     padding: 1px 7px;
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.2px;
+    letter-spacing: 0;
     box-shadow: 0 1px 2px alpha(#000000, 0.15);
 }
 .layout-modified-badge image,
@@ -117,16 +117,22 @@ APP_CSS = """
 .sub-tab.sub-on             { background-color: alpha(@accent_bg_color, 0.18); color: @accent_color; font-weight: 700; }
 
 /* ── Utilitários ─────────────────────────────────────────────────────── */
-.page-title                 { font-weight: 800; letter-spacing: -0.3px; }
+.page-title                 { font-weight: 800; letter-spacing: 0; }
 .ok-col                     { color: @success_color; font-weight: 600; }
 .err-col                    { color: @error_color; font-weight: 600; }
 .mono                       { font-family: monospace; }
 .global-btn                 { border-radius: 10px; padding: 7px 14px; font-weight: 600; }
 .spinner-row                { border-radius: 10px; background-color: alpha(@accent_bg_color, 0.07); padding: 14px; }
 
+/* ── Google Fonts ───────────────────────────────────────────────────── */
+.google-font-search {
+    min-height: 38px;
+    border-radius: 9px;
+}
+
 /* ── Loading overlay (apply layout) ──────────────────────────────────── */
 .loading-backdrop {
-    background-color: alpha(black, 0.45);
+    background-color: alpha(black, 0.52);
     opacity: 0;
     transition: opacity 220ms ease;
 }
@@ -135,13 +141,14 @@ APP_CSS = """
 }
 
 .loading-card {
-    background-color: @card_bg_color;
-    color: @card_fg_color;
-    border-radius: 18px;
-    padding: 30px 42px;
-    min-width: 240px;
-    box-shadow: 0 12px 36px alpha(black, 0.35),
-                0 0 0 1px alpha(@accent_color, 0.18);
+    background-color: alpha(#111318, 0.88);
+    color: white;
+    border-radius: 14px;
+    padding: 34px 52px;
+    min-width: 360px;
+    min-height: 150px;
+    box-shadow: 0 18px 46px alpha(black, 0.42),
+                0 0 0 1px alpha(white, 0.10);
     opacity: 0;
     transition: opacity 240ms ease;
 }
@@ -150,6 +157,11 @@ APP_CSS = """
 }
 .loading-card label {
     font-weight: 600;
-    letter-spacing: 0.1px;
+}
+.loading-card spinner {
+    color: white;
+}
+.loading-label {
+    color: white;
 }
 """

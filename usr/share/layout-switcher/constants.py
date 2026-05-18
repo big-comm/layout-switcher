@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.9.0"
+APP_VERSION = "2.10.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -141,6 +141,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "icon": "desktop-cube-symbolic",
         "author": "Simon Schneegans",
         "has_settings": False,
+        "preview": "cube",
     },
     {
         "name": tr("Magic Lamp"),
@@ -151,6 +152,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "icon": "view-paged-symbolic",
         "author": "hermes83",
         "has_settings": False,
+        "preview": "lamp",
     },
     {
         "name": tr("Compiz Windows"),
@@ -161,6 +163,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "icon": "window-symbolic",
         "author": "hermes83",
         "has_settings": False,
+        "preview": "wobbly",
     },
     {
         "name": tr("Desktop Icons NG"),
@@ -172,6 +175,10 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "author": "Rastersoft",
         "has_settings": True,
     },
+]
+
+EFFECT_EXTENSIONS: List[Dict] = [
+    ext for ext in FEATURED_EXTENSIONS if ext.get("preview") in ("cube", "lamp", "wobbly")
 ]
 
 # Layouts shown in the grid but greyed out and not clickable.

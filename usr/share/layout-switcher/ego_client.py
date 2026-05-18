@@ -142,7 +142,13 @@ def _absolute_url(path_or_url: str) -> str:
 
 def _read_capped(resp, limit: int) -> Optional[bytes]:
     """Lê do response até ``limit`` bytes; devolve None se exceder."""
-    raw = resp.read(limit + 1)
+    try:
+        raw = resp.read(limit + 1)
+    except TypeError:
+        # Some test doubles and file-like objects only implement read().
+        raw = resp.read()
+    if isinstance(raw, str):
+        raw = raw.encode("utf-8")
     if len(raw) > limit:
         log.debug("ego_client response exceeded %d bytes — discarded", limit)
         return None

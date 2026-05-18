@@ -9,33 +9,32 @@ from layout_applier import LayoutApplier
 
 class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
-    @patch("shell_reloader.ShellReloader.reload_all")
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
-    @patch("layout_applier.LayoutApplier._has_sync_service", return_value=True)
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=True)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
     def test_apply_full_flow(
         self,
         mock_run,
         _has,
         mock_persist,
-        mock_reload,
+        mock_reload_visual,
         _sleep,
         tmp_path,
     ):
         """Cobre fluxo completo: mutter gdbus probe -> dtp dconf fallback (5
-        reads) -> read enabled-ext (before, vazio) -> stop monitor ->
-        (sem disables porque before=[]) -> reset -> load -> start monitor
-        -> read enabled-ext (after) -> reload_all."""
+        reads) -> read enabled-ext (before, vazio) -> stop watcher Qt ->
+        orphan scan -> persist -> load -> read enabled-ext (after) ->
+        start watcher Qt."""
         layout = tmp_path / "classic.txt"
         layout.write_text("[/]\nfoo='bar'")
 
         ok, msg = LayoutApplier.apply(layout)
         assert ok is True
 
-        # 1 mutter gdbus probe + 5 dconf reads (dtp fallback) +
-        # 1 read enabled-extensions (before, returns "" → []) +
-        # stop + reset + load + start +
-        # 1 read enabled-extensions (after) = 12.
+        # 1 mutter gdbus probe + 5 dconf reads (dtp fallback) + 1 read
+        # enabled-extensions (before) + stop watcher + dconf dump scan +
+        # load + 1 read enabled-extensions (after) + start watcher = 12.
         assert mock_run.call_count == 12
         calls = [c.args[0] for c in mock_run.call_args_list]
         # 1: gdbus probe to mutter for monitor IDs
@@ -46,44 +45,41 @@ class TestLayoutApplier:
         assert all("dash-to-panel" in c[2] for c in calls[1:6])
         # 7: enabled-extensions before
         assert calls[6] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
-        # 8: systemctl stop
+        # 8: stop Qt theme watcher
         assert calls[7][:3] == ["systemctl", "--user", "stop"]
-        # 9-10: dconf reset + load (no per-UUID disables since before=[])
-        assert calls[8] == ["dconf", "reset", "-f", "/"]
+        # 9-10: orphan scan + load (no per-UUID disables since before=[])
+        assert calls[8] == ["dconf", "dump", "/"]
         assert calls[9] == ["dconf", "load", "/"]
-        # 11: systemctl start
-        assert calls[10][:3] == ["systemctl", "--user", "start"]
-        # 12: enabled-extensions after
-        assert calls[11] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
-        # We no longer write settings.gnome ourselves —
-        # dconf-sync-monitor-gnome dumps the live dconf to that file.
-        mock_persist.assert_not_called()
-        mock_reload.assert_called_once()
+        # 11: enabled-extensions after
+        assert calls[10] == ["dconf", "read", "/org/gnome/shell/enabled-extensions"]
+        # 12: start Qt theme watcher
+        assert calls[11][:3] == ["systemctl", "--user", "start"]
+        mock_persist.assert_called_once()
+        mock_reload_visual.assert_not_called()
 
     @patch("layout_applier.time.sleep")
-    @patch("shell_reloader.ShellReloader.reload_all")
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
-    @patch("layout_applier.LayoutApplier._has_sync_service", return_value=False)
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
     def test_apply_without_sync_service(
         self,
         mock_run,
         _has,
-        _persist,
-        mock_reload,
+        mock_persist,
+        mock_reload_visual,
         _sleep,
         tmp_path,
     ):
-        """Quando dconf-sync-gnome nao esta instalado, systemctl e pulado."""
+        """Quando o watcher Qt nao existe, systemctl e pulado."""
         layout = tmp_path / "x.txt"
         layout.write_text("[/]\nx=1")
 
         ok, _ = LayoutApplier.apply(layout)
         assert ok is True
         # 1 gdbus mutter probe + 5 dtp dconf reads + 1 enabled-ext read
-        # (before) + 2 (reset, load) + 1 enabled-ext read (after) = 10.
-        # No systemctl stop/start (sync service ausente),
-        # no per-UUID disables (before=[]).
+        # (before) + dconf dump scan + load + 1 enabled-ext read (after) = 10.
+        # No systemctl stop/start (watcher ausente), no per-UUID disables.
         assert mock_run.call_count == 10
         # 1st: gdbus mutter probe
         assert mock_run.call_args_list[0].args[0][0] == "gdbus"
@@ -95,9 +91,8 @@ class TestLayoutApplier:
             "read",
             "/org/gnome/shell/enabled-extensions",
         ]
-        # 8th-9th: reset + load (sem stop/disables porque sync service ausente
-        # e before=[])
-        assert mock_run.call_args_list[7].args[0] == ["dconf", "reset", "-f", "/"]
+        # 8th-9th: orphan scan + load
+        assert mock_run.call_args_list[7].args[0] == ["dconf", "dump", "/"]
         assert mock_run.call_args_list[8].args[0] == ["dconf", "load", "/"]
         # 10th: enabled-extensions after
         assert mock_run.call_args_list[9].args[0] == [
@@ -105,7 +100,8 @@ class TestLayoutApplier:
             "read",
             "/org/gnome/shell/enabled-extensions",
         ]
-        mock_reload.assert_called_once()
+        mock_persist.assert_called_once()
+        mock_reload_visual.assert_not_called()
 
     def test_apply_nonexistent_file(self):
         ok, msg = LayoutApplier.apply(Path("/nonexistent/layout.txt"))
@@ -124,25 +120,23 @@ class TestLayoutApplier:
         assert "empty" in msg.lower()
 
     @patch("layout_applier.time.sleep")
-    @patch("shell_reloader.ShellReloader.reload_all")
-    @patch("layout_applier.LayoutApplier._persist_to_settings_file")
-    @patch("layout_applier.LayoutApplier._has_sync_service", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=True)
     @patch("layout_applier.run_cmd")
     def test_apply_load_failure_still_cleans_up(
         self,
         mock_run,
         _has,
         mock_persist,
-        mock_reload,
+        mock_reload_visual,
         _sleep,
         tmp_path,
     ):
-        """Se o dconf load falhar: monitor reinicia, shell NAO recarrega,
-        settings.gnome NAO e sobrescrito."""
+        """Se o dconf load falhar: watcher Qt reinicia e shell nao recarrega."""
         # 1 mutter gdbus probe (returns empty so dconf fallback runs),
-        # 5 dtp dconf reads, read-before (vazio → []), stop OK, reset OK,
-        # load FAIL, start OK (finally). Sem read-after porque ok=False
-        # bypassa. Sem per-UUID disables porque before=[].
+        # 5 dtp dconf reads, read-before (vazio -> []), stop OK,
+        # orphan scan OK, load FAIL, start OK (finally). Sem read-after.
         mock_run.side_effect = [
             (True, ""),  # gdbus mutter probe
             (True, ""),  # dtp probe 1
@@ -151,19 +145,19 @@ class TestLayoutApplier:
             (True, ""),  # dtp probe 4
             (True, ""),  # dtp probe 5
             (True, "[]"),  # read enabled-extensions (before)
-            (True, ""),  # systemctl stop
-            (True, ""),  # dconf reset
+            (True, ""),  # systemctl stop watcher
+            (True, ""),  # dconf dump orphan scan
             (False, "dconf error"),  # dconf load FAILS
-            (True, ""),  # systemctl start (finally)
+            (True, ""),  # systemctl start watcher (finally)
         ]
         layout = tmp_path / "bad.txt"
         layout.write_text("[/]\ndata=true")
 
         ok, msg = LayoutApplier.apply(layout)
         assert ok is False
-        mock_persist.assert_not_called()
-        mock_reload.assert_not_called()
-        # Garantir que a ultima chamada foi start do service (finally rodou)
+        mock_persist.assert_called_once()
+        mock_reload_visual.assert_not_called()
+        # Garantir que a ultima chamada foi start do watcher (finally rodou)
         assert mock_run.call_args_list[-1].args[0][:3] == [
             "systemctl",
             "--user",
@@ -235,8 +229,9 @@ class TestShellReloader:
             after_uuids=["a@x", "b@y"],
         )
         calls = [c.args[0] for c in mock_run.call_args_list]
-        assert mock_run.call_count == 2
+        assert mock_run.call_count == 3
         assert any("DisableExtension" in args[-2] and "c@z" in args[-1] for args in calls)
+        assert any("ListExtensions" in args[-1] for args in calls)
         assert any("EnableExtension" in args[-2] and "b@y" in args[-1] for args in calls)
         # a@x não deve ser tocada
         for args in calls:

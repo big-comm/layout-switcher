@@ -2,8 +2,8 @@
 """
 ui/page_effects.py — Pagina de Efeitos Visuais.
 
-Mostra os cards em FEATURED_EXTENSIONS (Desktop Cube, Magic Lamp,
-Compiz Windows, Desktop Icons NG) com install/toggle/remove.
+Mostra os cards em EFFECT_EXTENSIONS (Desktop Cube, Magic Lamp,
+Compiz Windows) com install/toggle/remove.
 
 A instalacao usa ``ExtMgr.install()`` que prefere ``pacman -S <pkg>``
 (mais estavel e seguro em distros controladas) e cai para o EGO se o
@@ -20,10 +20,11 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk
 
-from constants import FEATURED_EXTENSIONS, tr
+from constants import EFFECT_EXTENSIONS, tr
 from extension_manager import ExtMgr
 from shell_reloader import ShellReloader
-from utils import run_cmd
+from ui.widgets import EffectPreview
+from utils import color_from_name, run_cmd
 
 
 class EffectsPage(Gtk.Box):
@@ -77,7 +78,7 @@ class EffectsPage(Gtk.Box):
             self._flow.remove(child)
             child = nxt
         self._cards.clear()
-        for ext in FEATURED_EXTENSIONS:
+        for ext in EFFECT_EXTENSIONS:
             card = self._make_card(ext)
             self._flow.append(card)
             self._cards[ext["uuid"]] = card
@@ -91,7 +92,7 @@ class EffectsPage(Gtk.Box):
         card.add_css_class("card")
         if enabled:
             card.add_css_class("ext-on")
-        card.set_size_request(200, -1)
+        card.set_size_request(220, -1)
 
         inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         inner.set_margin_start(14)
@@ -99,6 +100,7 @@ class EffectsPage(Gtk.Box):
         inner.set_margin_top(14)
         inner.set_margin_bottom(14)
 
+        inner.append(self._make_preview(ext))
         inner.append(self._make_header(ext))
 
         if installed and not ExtMgr.is_user_dir(ext["uuid"]):
@@ -126,6 +128,18 @@ class EffectsPage(Gtk.Box):
             card_label = tr("{name} (not installed)").format(name=ext["name"])
         card.update_property([Gtk.AccessibleProperty.LABEL], [card_label])
         return card
+
+    def _make_preview(self, ext: Dict) -> EffectPreview:
+        preview = EffectPreview(
+            ext.get("preview", "wobbly"),
+            color_from_name(ext["uuid"]),
+            width=190,
+            height=106,
+            label=ext["name"],
+        )
+        preview.set_halign(Gtk.Align.CENTER)
+        preview.set_margin_bottom(6)
+        return preview
 
     def _make_header(self, ext: Dict) -> Gtk.Box:
         hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)

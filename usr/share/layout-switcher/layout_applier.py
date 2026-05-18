@@ -814,9 +814,9 @@ class LayoutApplier:
             # already covers the residual case: settings.gnome is written
             # cleanly, so the next login renders transparency correctly.
 
-            cls._qt_theme_watcher("start")
             return True, msg
         finally:
+            cls._qt_theme_watcher("start")
             cls._sync_lock_release()
 
     @classmethod

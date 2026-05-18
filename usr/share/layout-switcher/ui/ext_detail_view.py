@@ -418,15 +418,17 @@ class ExtDetailView(Adw.NavigationPage):
                     ok, msg = ExtMgr.install(uuid, pk, "")
                     if ok:
                         ShellReloader.apply_extension_state(uuid, True)
-                GLib.idle_add(self._on_action_done, ok, msg)
+                GLib.idle_add(self._on_action_done, ok, msg, mode)
 
             self._pool.submit(task)
 
-    def _on_action_done(self, ok: bool, msg: str) -> bool:
+    def _on_action_done(self, ok: bool, msg: str, mode: str) -> bool:
         if ok:
-            self._toast(
-                tr("{name} installed").format(name=self._info.name if self._info else self._uuid)
-            )
+            name = self._info.name if self._info else self._uuid
+            if mode == "update":
+                self._toast(tr("{name} updated").format(name=name))
+            else:
+                self._toast(tr("{name} installed").format(name=name))
             self._on_after_install()
         else:
             self._toast(tr("Operation failed") + f": {msg}")

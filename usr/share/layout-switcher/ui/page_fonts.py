@@ -1,20 +1,11 @@
 # SPDX-License-Identifier: MIT
 """
-ui/page_fonts.py — Pagina de Fontes.
-
-Secoes:
-  * Fontes do sistema    : 4 seletores (Interface, Document, Monospace,
-                           Window titles legacy).
-  * Aparencia            : Hinting e Antialiasing.
-  * Fontes instaladas    : lista rolavel com preview e busca.
-  * Instalar mais        : abre fonts.google.com no navegador.
-  * Reset                : volta aos defaults do sistema.
+ui/page_fonts.py - Font preferences and Google Fonts installer.
 
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
-import subprocess
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import gi
 
@@ -23,52 +14,34 @@ gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 from gi.repository import Adw, GLib, Gtk, Pango
 
+import google_fonts
 from constants import tr
 from utils import gsettings_get, gsettings_set, run_cmd
 
-# Defaults GNOME se nao conseguirmos ler o schema padrao
-_FALLBACK_DEFAULTS = {
-    "font-name": "Cantarell 11",
-    "document-font-name": "Cantarell 11",
-    "monospace-font-name": "Source Code Pro 10",
-    "titlebar-font": "Cantarell Bold 11",
-}
-
-
-def _list_installed_families() -> List[str]:
-    """Lista familias de fontes via fc-list (sem duplicatas, ordenada)."""
-    try:
-        result = subprocess.run(
-            ["fc-list", ":", "family"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        if result.returncode != 0:
-            return []
-        families = set()
-        for line in result.stdout.splitlines():
-            # fc-list returns "Family1,Family2,..." when a font has aliases
-            for part in line.split(","):
-                name = part.strip()
-                if name:
-                    families.add(name)
-        return sorted(families, key=str.lower)
-    except Exception:
-        return []
+_SCALE_MIN = 0.75
+_SCALE_MAX = 1.50
+_SCALE_STEP = 0.05
+_GOOGLE_PAGE_SIZE = 10
+_GOOGLE_DEFAULT_LIMIT = 100
 
 
 class FontsPage(Gtk.Box):
-    """Pagina de gerenciamento de fontes."""
+    """GNOME font preferences plus user Google Fonts installation."""
 
     def __init__(self, pool, toast_cb) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._pool = pool
         self._toast = toast_cb
-        self._all_families: List[str] = []
+        self._font_value_labels: Dict[str, Gtk.Label] = {}
+        self._google_buttons: Dict[str, Gtk.Button] = {}
+        self._google_catalog: List[google_fonts.FontFamily] = google_fonts.fallback_catalog()
+        self._google_catalog_loaded = False
+        self._google_catalog_error = ""
+        self._google_query = ""
+        self._google_page = 1
         self._build()
 
-    # ── UI raiz ──────────────────────────────────────────────────────────────
+    # -- UI root -------------------------------------------------------------
 
     def _build(self) -> None:
         sc = Gtk.ScrolledWindow()
@@ -79,52 +52,46 @@ class FontsPage(Gtk.Box):
         clamp.set_maximum_size(820)
         clamp.set_tightening_threshold(600)
 
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=22)
         outer.set_margin_start(22)
         outer.set_margin_end(22)
         outer.set_margin_top(8)
         outer.set_margin_bottom(24)
 
-        outer.append(self._build_system_fonts_group())
-        outer.append(self._build_appearance_group())
-        outer.append(self._build_installed_group())
-        outer.append(self._build_more_fonts_group())
+        outer.append(self._build_preferred_fonts_group())
+        outer.append(self._build_hinting_group())
+        outer.append(self._build_smoothing_group())
+        outer.append(self._build_size_group())
+        outer.append(self._build_google_fonts_group())
         outer.append(self._build_reset_row())
 
         clamp.set_child(outer)
         sc.set_child(clamp)
         self.append(sc)
 
-    # ── Grupo: Fontes do sistema ─────────────────────────────────────────────
+    # -- Preferred fonts -----------------------------------------------------
 
-    def _build_system_fonts_group(self) -> Adw.PreferencesGroup:
+    def _build_preferred_fonts_group(self) -> Adw.PreferencesGroup:
         grp = Adw.PreferencesGroup()
-        grp.set_title(tr("System fonts"))
-        grp.set_description(tr("Fonts used by the GNOME interface"))
+        grp.set_title(tr("Preferred fonts"))
 
-        self._interface_btn = self._make_font_row(
+        self._make_font_row(
             grp,
-            title=tr("Interface"),
+            title=tr("Interface text"),
             schema="org.gnome.desktop.interface",
             key="font-name",
         )
-        self._document_btn = self._make_font_row(
+        self._make_font_row(
             grp,
-            title=tr("Document"),
+            title=tr("Document text"),
             schema="org.gnome.desktop.interface",
             key="document-font-name",
         )
-        self._monospace_btn = self._make_font_row(
+        self._make_font_row(
             grp,
-            title=tr("Monospace"),
+            title=tr("Monospace text"),
             schema="org.gnome.desktop.interface",
             key="monospace-font-name",
-        )
-        self._titlebar_btn = self._make_font_row(
-            grp,
-            title=tr("Window titles (legacy)"),
-            schema="org.gnome.desktop.wm.preferences",
-            key="titlebar-font",
         )
         return grp
 
@@ -137,23 +104,27 @@ class FontsPage(Gtk.Box):
     ) -> Adw.ActionRow:
         row = Adw.ActionRow()
         row.set_title(title)
+        row.set_activatable(True)
 
-        current = gsettings_get(schema, key) or ""
-        row.set_subtitle(current or tr("(not set)"))
+        current = gsettings_get(schema, key) or tr("(not set)")
+        value = Gtk.Label(label=current)
+        value.add_css_class("dim-label")
+        value.set_ellipsize(Pango.EllipsizeMode.END)
+        value.set_max_width_chars(34)
+        value.set_xalign(1)
+        row.add_suffix(value)
+        self._font_value_labels[key] = value
 
-        btn = Gtk.Button(label=tr("Choose…"))
-        btn.add_css_class("flat")
-        btn.set_valign(Gtk.Align.CENTER)
-        btn.connect(
-            "clicked",
-            lambda b, _s=schema, _k=key, _r=row: self._pick_font(_s, _k, _r),
-        )
-        row.add_suffix(btn)
+        icon = Gtk.Image.new_from_icon_name("go-next-symbolic")
+        icon.add_css_class("dim-label")
+        row.add_suffix(icon)
+
+        row.connect("activated", lambda _row: self._pick_font(schema, key, value))
         group.add(row)
         return row
 
-    def _pick_font(self, schema: str, key: str, row: Adw.ActionRow) -> None:
-        """Abre FontDialog e grava a selecao em gsettings."""
+    def _pick_font(self, schema: str, key: str, value_label: Gtk.Label) -> None:
+        """Open FontDialog and write selection to gsettings."""
         dialog = Gtk.FontDialog()
         dialog.set_title(tr("Choose font"))
 
@@ -170,265 +141,412 @@ class FontsPage(Gtk.Box):
             new_font = font_desc.to_string()
             ok, err = gsettings_set(schema, key, new_font)
             if ok:
-                row.set_subtitle(new_font)
+                value_label.set_label(new_font)
                 self._toast(tr("Font updated"))
             else:
                 self._toast(tr("Update failed") + f": {err}")
 
-        parent = self.get_root()
-        dialog.choose_font(parent, initial_desc, None, on_chosen)
+        dialog.choose_font(self.get_root(), initial_desc, None, on_chosen)
 
-    # ── Grupo: Aparencia (hinting/antialiasing) ──────────────────────────────
+    # -- Rendering -----------------------------------------------------------
 
-    def _build_appearance_group(self) -> Adw.PreferencesGroup:
+    def _build_hinting_group(self) -> Adw.PreferencesGroup:
         grp = Adw.PreferencesGroup()
-        grp.set_title(tr("Appearance"))
-        grp.set_description(tr("How fonts are rendered on screen"))
-
-        self._hinting_row = self._make_combo_row(
+        grp.set_title(tr("Hinting"))
+        current = (gsettings_get("org.gnome.desktop.interface", "font-hinting") or "").strip("'\"")
+        self._add_radio_rows(
             grp,
-            title=tr("Hinting"),
             schema="org.gnome.desktop.interface",
             key="font-hinting",
+            current=current or "slight",
             options=[
-                ("none", tr("None")),
-                ("slight", tr("Slight")),
-                ("medium", tr("Medium")),
                 ("full", tr("Full")),
+                ("medium", tr("Medium")),
+                ("slight", tr("Slight")),
+                ("none", tr("None")),
             ],
         )
+        return grp
 
-        self._aa_row = self._make_combo_row(
+    def _build_smoothing_group(self) -> Adw.PreferencesGroup:
+        grp = Adw.PreferencesGroup()
+        grp.set_title(tr("Smoothing"))
+        current = (
+            gsettings_get("org.gnome.desktop.interface", "font-antialiasing") or ""
+        ).strip("'\"")
+        self._add_radio_rows(
             grp,
-            title=tr("Antialiasing"),
             schema="org.gnome.desktop.interface",
             key="font-antialiasing",
+            current=current or "grayscale",
             options=[
+                ("rgba", tr("Subpixel (for LCD screens)")),
+                ("grayscale", tr("Standard (grayscale)")),
                 ("none", tr("None")),
-                ("grayscale", tr("Grayscale")),
-                ("rgba", tr("Subpixel (RGBA)")),
             ],
         )
         return grp
 
-    def _make_combo_row(
+    def _add_radio_rows(
         self,
         group: Adw.PreferencesGroup,
-        title: str,
         schema: str,
         key: str,
+        current: str,
         options: List[Tuple[str, str]],
-    ) -> Adw.ComboRow:
-        row = Adw.ComboRow()
-        row.set_title(title)
+    ) -> None:
+        first_button: Optional[Gtk.CheckButton] = None
+        for value, label in options:
+            row = Adw.ActionRow()
+            row.set_title(label)
+            row.set_activatable(True)
 
-        model = Gtk.StringList.new([label for _val, label in options])
-        row.set_model(model)
+            btn = Gtk.CheckButton()
+            btn.set_valign(Gtk.Align.CENTER)
+            if first_button is None:
+                first_button = btn
+            else:
+                btn.set_group(first_button)
+            btn.set_active(value == current)
 
-        current_val = (gsettings_get(schema, key) or "").strip("'\"")
-        values = [v for v, _l in options]
-        try:
-            idx = values.index(current_val)
-        except ValueError:
-            idx = 0
-        row.set_selected(idx)
+            def on_toggled(button, val=value) -> None:
+                if button.get_active():
+                    ok, err = gsettings_set(schema, key, val)
+                    if not ok:
+                        self._toast(tr("Update failed") + f": {err}")
 
-        def on_changed(r, _pspec, _values=values, _schema=schema, _key=key):
-            i = r.get_selected()
-            if 0 <= i < len(_values):
-                ok, err = gsettings_set(_schema, _key, _values[i])
-                if not ok:
-                    self._toast(tr("Update failed") + f": {err}")
+            btn.connect("toggled", on_toggled)
+            row.connect("activated", lambda _row, b=btn: b.set_active(True))
+            row.add_prefix(btn)
+            row.set_activatable_widget(btn)
+            group.add(row)
 
-        row.connect("notify::selected", on_changed)
-        group.add(row)
-        return row
+    # -- Size ----------------------------------------------------------------
 
-    # ── Grupo: Fontes instaladas ─────────────────────────────────────────────
-
-    def _build_installed_group(self) -> Adw.PreferencesGroup:
+    def _build_size_group(self) -> Adw.PreferencesGroup:
         grp = Adw.PreferencesGroup()
-        grp.set_title(tr("Installed fonts"))
-        grp.set_description(tr("Browse font families installed on your system"))
+        grp.set_title(tr("Size"))
 
-        # Barra: busca + botao refresh
-        bar_row = Adw.ActionRow()
-        bar_row.set_activatable(False)
+        row = Adw.ActionRow()
+        row.set_title(tr("Scale factor"))
 
-        self._search = Gtk.SearchEntry()
-        self._search.set_placeholder_text(tr("Search fonts…"))
-        self._search.set_hexpand(True)
-        self._search.connect("search-changed", self._on_search_changed)
-        bar_row.add_prefix(self._search)
+        self._scale_value = Gtk.Label(label=self._format_scale(self._current_scale()))
+        self._scale_value.add_css_class("dim-label")
+        row.add_suffix(self._scale_value)
 
-        refresh_btn = Gtk.Button.new_from_icon_name("view-refresh-symbolic")
-        refresh_btn.add_css_class("flat")
-        refresh_btn.set_tooltip_text(tr("Refresh font list"))
-        refresh_btn.set_valign(Gtk.Align.CENTER)
-        refresh_btn.connect("clicked", lambda _b: self._load_installed_async())
-        bar_row.add_suffix(refresh_btn)
-        grp.add(bar_row)
+        minus = Gtk.Button(icon_name="list-remove-symbolic")
+        minus.add_css_class("flat")
+        minus.set_tooltip_text(tr("Decrease"))
+        minus.set_valign(Gtk.Align.CENTER)
+        minus.connect("clicked", lambda _btn: self._change_scale(-_SCALE_STEP))
+        row.add_suffix(minus)
 
-        # Container da lista — limitamos altura via ScrolledWindow
-        list_holder = Adw.ActionRow()
-        list_holder.set_activatable(False)
+        plus = Gtk.Button(icon_name="list-add-symbolic")
+        plus.add_css_class("flat")
+        plus.set_tooltip_text(tr("Increase"))
+        plus.set_valign(Gtk.Align.CENTER)
+        plus.connect("clicked", lambda _btn: self._change_scale(_SCALE_STEP))
+        row.add_suffix(plus)
 
-        sw = Gtk.ScrolledWindow()
-        sw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        sw.set_min_content_height(260)
-        sw.set_max_content_height(420)
-        sw.set_hexpand(True)
-
-        self._fonts_list = Gtk.ListBox()
-        self._fonts_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        self._fonts_list.add_css_class("boxed-list")
-        sw.set_child(self._fonts_list)
-
-        inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        inner.set_hexpand(True)
-        inner.append(sw)
-        list_holder.set_child(inner)
-        grp.add(list_holder)
-
-        self._count_lbl = Gtk.Label(label="")
-        self._count_lbl.add_css_class("caption")
-        self._count_lbl.add_css_class("dim-label")
-        self._count_lbl.set_halign(Gtk.Align.END)
-        self._count_lbl.set_margin_top(4)
-        count_row = Adw.ActionRow()
-        count_row.set_activatable(False)
-        count_row.add_suffix(self._count_lbl)
-        grp.add(count_row)
-
-        self._load_installed_async()
+        group_label = tr("Scale factor")
+        row.update_property([Gtk.AccessibleProperty.LABEL], [group_label])
+        grp.add(row)
         return grp
 
-    def _load_installed_async(self) -> None:
-        """Carrega fontes em background e popula a lista."""
-        # Placeholder enquanto carrega
-        self._clear_list()
-        loading = Gtk.Label(label=tr("Loading fonts…"))
-        loading.add_css_class("dim-label")
-        loading.set_margin_top(20)
-        loading.set_margin_bottom(20)
-        ph_row = Gtk.ListBoxRow()
-        ph_row.set_activatable(False)
-        ph_row.set_child(loading)
-        self._fonts_list.append(ph_row)
+    @staticmethod
+    def _format_scale(value: float) -> str:
+        return f"{value:.2f}".replace(".", ",")
 
-        def task():
-            families = _list_installed_families()
-            GLib.idle_add(self._populate_list, families)
+    @staticmethod
+    def _current_scale() -> float:
+        raw = (gsettings_get("org.gnome.desktop.interface", "text-scaling-factor") or "1.0").strip(
+            "'\""
+        )
+        try:
+            return float(raw)
+        except ValueError:
+            return 1.0
+
+    def _change_scale(self, delta: float) -> None:
+        current = self._current_scale()
+        new_value = max(_SCALE_MIN, min(_SCALE_MAX, round(current + delta, 2)))
+        ok, err = gsettings_set(
+            "org.gnome.desktop.interface",
+            "text-scaling-factor",
+            f"{new_value:.2f}",
+        )
+        if ok:
+            self._scale_value.set_label(self._format_scale(new_value))
+        else:
+            self._toast(tr("Update failed") + f": {err}")
+
+    # -- Google Fonts --------------------------------------------------------
+
+    def _build_google_fonts_group(self) -> Adw.PreferencesGroup:
+        grp = Adw.PreferencesGroup()
+        grp.set_title(tr("Google Fonts"))
+
+        search_row = Adw.ActionRow()
+        search_row.set_activatable(False)
+        search_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        search_box.set_margin_start(14)
+        search_box.set_margin_end(14)
+        search_box.set_margin_top(7)
+        search_box.set_margin_bottom(7)
+        self._google_search = Gtk.SearchEntry()
+        self._google_search.set_placeholder_text(tr("Search Google Fonts…"))
+        self._google_search.set_hexpand(True)
+        self._google_search.set_size_request(-1, 38)
+        self._google_search.add_css_class("google-font-search")
+        self._google_search.connect("search-changed", self._on_google_search_changed)
+        search_box.append(self._google_search)
+        search_row.set_child(search_box)
+        grp.add(search_row)
+
+        self._google_status_row = Adw.ActionRow()
+        self._google_status_row.set_activatable(False)
+        self._google_status_row.set_title(tr("Loading Google Fonts…"))
+        refresh = Gtk.Button(icon_name="view-refresh-symbolic")
+        refresh.add_css_class("flat")
+        refresh.set_valign(Gtk.Align.CENTER)
+        refresh.set_tooltip_text(tr("Refresh Google Fonts list"))
+        refresh.connect("clicked", lambda _btn: self._load_google_catalog_async(force=True))
+        self._google_status_row.add_suffix(refresh)
+        grp.add(self._google_status_row)
+
+        holder = Adw.ActionRow()
+        holder.set_activatable(False)
+        self._google_list = Gtk.ListBox()
+        self._google_list.add_css_class("boxed-list")
+        self._google_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        holder.set_child(self._google_list)
+        grp.add(holder)
+
+        pager = Adw.ActionRow()
+        pager.set_activatable(False)
+        pager_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        pager_box.set_halign(Gtk.Align.CENTER)
+        pager_box.set_margin_top(2)
+        pager_box.set_margin_bottom(2)
+
+        self._google_prev = Gtk.Button(icon_name="go-previous-symbolic")
+        self._google_prev.add_css_class("flat")
+        self._google_prev.set_tooltip_text(tr("Previous page"))
+        self._google_prev.connect("clicked", lambda _btn: self._change_google_page(-1))
+        pager_box.append(self._google_prev)
+
+        self._google_page_label = Gtk.Label()
+        self._google_page_label.add_css_class("caption")
+        self._google_page_label.set_width_chars(16)
+        self._google_page_label.set_xalign(0.5)
+        pager_box.append(self._google_page_label)
+
+        self._google_next = Gtk.Button(icon_name="go-next-symbolic")
+        self._google_next.add_css_class("flat")
+        self._google_next.set_tooltip_text(tr("Next page"))
+        self._google_next.connect("clicked", lambda _btn: self._change_google_page(1))
+        pager_box.append(self._google_next)
+
+        pager.set_child(pager_box)
+        grp.add(pager)
+
+        self._render_google_fonts()
+        self._load_google_catalog_async()
+        return grp
+
+    def _on_google_search_changed(self, entry: Gtk.SearchEntry) -> None:
+        self._google_query = entry.get_text().strip()
+        self._google_page = 1
+        self._render_google_fonts()
+
+    def _load_google_catalog_async(self, force: bool = False) -> None:
+        self._google_status_row.set_title(tr("Loading Google Fonts…"))
+
+        def task() -> None:
+            ok, entries, err = google_fonts.load_catalog(force_refresh=force)
+            GLib.idle_add(self._on_google_catalog_loaded, ok, entries, err)
 
         self._pool.submit(task)
 
-    def _populate_list(self, families: List[str]) -> None:
-        self._all_families = families
-        self._render_filtered(families)
+    def _on_google_catalog_loaded(
+        self,
+        ok: bool,
+        entries: List[google_fonts.FontFamily],
+        err: str,
+    ) -> bool:
+        self._google_catalog = entries or google_fonts.fallback_catalog()
+        self._google_catalog_loaded = ok
+        self._google_catalog_error = err
+        self._google_page = 1
+        self._render_google_fonts()
+        return False
 
-    def _on_search_changed(self, entry) -> None:
-        q = entry.get_text().strip().lower()
-        if not q:
-            self._render_filtered(self._all_families)
-            return
-        filtered = [f for f in self._all_families if q in f.lower()]
-        self._render_filtered(filtered)
+    def _change_google_page(self, delta: int) -> None:
+        rows = self._filtered_google_fonts()
+        pages = max(1, (len(rows) + _GOOGLE_PAGE_SIZE - 1) // _GOOGLE_PAGE_SIZE)
+        self._google_page = max(1, min(pages, self._google_page + delta))
+        self._render_google_fonts()
 
-    def _render_filtered(self, families: List[str]) -> None:
-        self._clear_list()
-        if not families:
-            empty = Gtk.Label(label=tr("No fonts match your search"))
-            empty.add_css_class("dim-label")
-            empty.set_margin_top(20)
-            empty.set_margin_bottom(20)
-            r = Gtk.ListBoxRow()
-            r.set_activatable(False)
-            r.set_child(empty)
-            self._fonts_list.append(r)
-            self._count_lbl.set_label("")
-            return
+    def _filtered_google_fonts(self) -> List[google_fonts.FontFamily]:
+        q = self._google_query.lower()
+        if q:
+            rows = [entry for entry in self._google_catalog if q in entry.family.lower()]
+            known = {entry.family.lower() for entry in rows}
+            if q not in known:
+                rows.insert(0, google_fonts.FontFamily(self._google_query, "custom"))
+            return rows
+        return self._google_catalog[:_GOOGLE_DEFAULT_LIMIT]
 
-        # Limita renderizacao a 200 itens para nao travar UI em sistemas com
-        # milhares de fontes; search filtra a lista real toda.
-        RENDER_CAP = 200
-        for family in families[:RENDER_CAP]:
-            self._fonts_list.append(self._make_font_row_preview(family))
+    def _render_google_fonts(self) -> None:
+        child = self._google_list.get_first_child()
+        while child:
+            nxt = child.get_next_sibling()
+            self._google_list.remove(child)
+            child = nxt
 
-        total = len(families)
-        shown = min(total, RENDER_CAP)
-        if total > RENDER_CAP:
-            self._count_lbl.set_label(f"{shown}/{total} " + tr("(refine search to see more)"))
+        self._google_buttons.clear()
+        rows = self._filtered_google_fonts()
+        total = len(rows)
+        pages = max(1, (total + _GOOGLE_PAGE_SIZE - 1) // _GOOGLE_PAGE_SIZE)
+        self._google_page = max(1, min(pages, self._google_page))
+        start = (self._google_page - 1) * _GOOGLE_PAGE_SIZE
+        shown = rows[start : start + _GOOGLE_PAGE_SIZE]
+
+        if shown:
+            for entry in shown:
+                self._google_list.append(self._make_google_row(entry.family, entry.category))
         else:
-            self._count_lbl.set_label(f"{total} " + tr("fonts"))
+            self._google_list.append(self._make_google_empty_row())
 
-    def _make_font_row_preview(self, family: str) -> Gtk.ListBoxRow:
+        self._google_prev.set_sensitive(self._google_page > 1)
+        self._google_next.set_sensitive(self._google_page < pages)
+        self._google_page_label.set_label(
+            tr("Page {page} of {pages}").format(page=self._google_page, pages=pages)
+        )
+        self._update_google_status(total)
+
+    def _update_google_status(self, total: int) -> None:
+        if not self._google_catalog_loaded and self._google_catalog_error == "network":
+            self._google_status_row.set_title(
+                tr("Internet connection is required to load the Google Fonts list.")
+            )
+            return
+        if self._google_query:
+            self._google_status_row.set_title(
+                tr("{n} fonts found").format(n=total)
+            )
+            return
+        loaded = len(self._google_catalog)
+        shown = min(loaded, _GOOGLE_DEFAULT_LIMIT)
+        self._google_status_row.set_title(
+            tr("Showing top {shown} of {total} Google Fonts").format(
+                shown=shown,
+                total=loaded,
+            )
+        )
+
+    def _make_google_empty_row(self) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow()
+        row.set_activatable(False)
+        label = Gtk.Label(label=tr("No fonts found"))
+        label.add_css_class("dim-label")
+        label.set_halign(Gtk.Align.CENTER)
+        label.set_margin_top(14)
+        label.set_margin_bottom(14)
+        row.set_child(label)
+        return row
+
+    def _make_google_row(self, family: str, category: str) -> Gtk.ListBoxRow:
         row = Gtk.ListBoxRow()
         row.set_activatable(False)
 
-        inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         inner.set_margin_start(12)
-        inner.set_margin_end(12)
+        inner.set_margin_end(10)
         inner.set_margin_top(8)
         inner.set_margin_bottom(8)
 
-        name_lbl = Gtk.Label(label=family)
-        name_lbl.add_css_class("caption")
-        name_lbl.add_css_class("dim-label")
-        name_lbl.set_halign(Gtk.Align.START)
-        inner.append(name_lbl)
+        text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        text_box.set_hexpand(True)
+        name = Gtk.Label(label=family)
+        name.add_css_class("body")
+        name.set_halign(Gtk.Align.START)
+        name.set_ellipsize(Pango.EllipsizeMode.END)
+        text_box.append(name)
 
-        preview = Gtk.Label(label=tr("The quick brown fox jumps over the lazy dog 0123"))
-        preview.set_halign(Gtk.Align.START)
-        preview.set_ellipsize(Pango.EllipsizeMode.END)
-        # Aplica a familia via Pango markup/attribute
-        attrs = Pango.AttrList()
-        desc = Pango.FontDescription.from_string(f"{family} 14")
-        attrs.insert(Pango.attr_font_desc_new(desc))
-        preview.set_attributes(attrs)
-        inner.append(preview)
+        category_label = Gtk.Label(label=self._category_label(category))
+        category_label.add_css_class("caption")
+        category_label.add_css_class("dim-label")
+        category_label.set_halign(Gtk.Align.START)
+        text_box.append(category_label)
+        inner.append(text_box)
+
+        btn = Gtk.Button()
+        btn.set_valign(Gtk.Align.CENTER)
+        btn.add_css_class("pill")
+        installed = google_fonts.is_installed(family)
+        if installed:
+            btn.set_label(tr("Installed"))
+            btn.set_sensitive(False)
+        else:
+            btn.set_label(tr("Install"))
+            btn.add_css_class("suggested-action")
+            btn.connect("clicked", lambda _btn, f=family, b=btn: self._install_google_font(f, b))
+        btn.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Install')} {family}"])
+        self._google_buttons[family] = btn
+        inner.append(btn)
 
         row.set_child(inner)
         return row
 
-    def _clear_list(self) -> None:
-        child = self._fonts_list.get_first_child()
-        while child:
-            nxt = child.get_next_sibling()
-            self._fonts_list.remove(child)
-            child = nxt
+    def _category_label(self, category: str) -> str:
+        labels = {
+            "sans-serif": tr("Sans serif"),
+            "serif": tr("Serif"),
+            "monospace": tr("Monospace"),
+            "display": tr("Display"),
+            "handwriting": tr("Handwriting"),
+            "custom": tr("Exact Google Fonts family name"),
+        }
+        return labels.get(category, category)
 
-    # ── Grupo: Instalar mais fontes ──────────────────────────────────────────
+    def _install_google_font(self, family: str, button: Gtk.Button) -> None:
+        button.set_sensitive(False)
+        button.set_label(tr("Installing…"))
 
-    def _build_more_fonts_group(self) -> Adw.PreferencesGroup:
-        grp = Adw.PreferencesGroup()
-        grp.set_title(tr("Install more fonts"))
+        def task() -> None:
+            ok, info = google_fonts.install_for_user(family)
+            GLib.idle_add(self._on_google_font_installed, family, button, ok, info)
 
-        row = Adw.ActionRow()
-        row.set_title(tr("Browse Google Fonts"))
-        row.set_subtitle(tr("Opens fonts.google.com in your browser"))
-        btn = Gtk.Button.new_from_icon_name("web-browser-symbolic")
-        btn.add_css_class("flat")
-        btn.set_valign(Gtk.Align.CENTER)
-        btn.connect(
-            "clicked",
-            lambda _b: run_cmd(["xdg-open", "https://fonts.google.com"], timeout=5),
-        )
-        row.add_suffix(btn)
-        row.set_activatable_widget(btn)
-        grp.add(row)
+        self._pool.submit(task)
 
-        tip = Adw.ActionRow()
-        tip.set_title(tr("How to install"))
-        tip.set_subtitle(
-            tr(
-                "Place .ttf/.otf files in ~/.local/share/fonts/ then run "
-                "'fc-cache -f -v' and refresh this list."
-            )
-        )
-        grp.add(tip)
-        return grp
+    def _on_google_font_installed(
+        self,
+        family: str,
+        button: Gtk.Button,
+        ok: bool,
+        info: str,
+    ) -> bool:
+        if ok:
+            button.set_label(tr("Installed"))
+            button.set_sensitive(False)
+            self._toast(tr("{family} installed").format(family=family))
+            return False
 
-    # ── Reset ────────────────────────────────────────────────────────────────
+        button.set_label(tr("Install"))
+        button.set_sensitive(True)
+        errors = {
+            "network": tr("Internet connection is required to install Google Fonts."),
+            "not-found": tr("Font not found on Google Fonts."),
+            "download-failed": tr("Font download failed."),
+            "too-large": tr("The font download is too large."),
+            "write-failed": tr("Could not install the font."),
+            "empty": tr("Enter a font family name."),
+        }
+        self._toast(errors.get(info, tr("Font installation failed.")))
+        return False
+
+    # -- Reset ---------------------------------------------------------------
 
     def _build_reset_row(self) -> Gtk.Widget:
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -444,8 +562,8 @@ class FontsPage(Gtk.Box):
         d = Adw.AlertDialog(
             heading=tr("Reset all font settings?"),
             body=tr(
-                "Interface, document, monospace and window-title fonts will "
-                "return to system defaults. Hinting and antialiasing reset too."
+                "Interface, document and monospace fonts will return to system defaults. "
+                "Rendering and scale settings will reset too."
             ),
         )
         d.add_response("cancel", tr("Cancel"))
@@ -453,8 +571,8 @@ class FontsPage(Gtk.Box):
         d.set_response_appearance("reset", Adw.ResponseAppearance.DESTRUCTIVE)
         d.set_close_response("cancel")
 
-        def on_r(_dlg, r):
-            if r != "reset":
+        def on_r(_dlg, response):
+            if response != "reset":
                 return
             keys = [
                 ("org.gnome.desktop.interface", "font-name"),
@@ -462,12 +580,11 @@ class FontsPage(Gtk.Box):
                 ("org.gnome.desktop.interface", "monospace-font-name"),
                 ("org.gnome.desktop.interface", "font-hinting"),
                 ("org.gnome.desktop.interface", "font-antialiasing"),
+                ("org.gnome.desktop.interface", "text-scaling-factor"),
                 ("org.gnome.desktop.wm.preferences", "titlebar-font"),
             ]
             for schema, key in keys:
                 run_cmd(["gsettings", "reset", schema, key], timeout=5)
-
-            # Refresh subtitles
             self._refresh_current_values()
             self._toast(tr("Fonts reset to defaults"))
 
@@ -476,11 +593,12 @@ class FontsPage(Gtk.Box):
 
     def _refresh_current_values(self) -> None:
         mapping = [
-            (self._interface_btn, "org.gnome.desktop.interface", "font-name"),
-            (self._document_btn, "org.gnome.desktop.interface", "document-font-name"),
-            (self._monospace_btn, "org.gnome.desktop.interface", "monospace-font-name"),
-            (self._titlebar_btn, "org.gnome.desktop.wm.preferences", "titlebar-font"),
+            ("font-name", "org.gnome.desktop.interface"),
+            ("document-font-name", "org.gnome.desktop.interface"),
+            ("monospace-font-name", "org.gnome.desktop.interface"),
         ]
-        for row, schema, key in mapping:
-            val = gsettings_get(schema, key) or ""
-            row.set_subtitle(val or tr("(not set)"))
+        for key, schema in mapping:
+            label = self._font_value_labels.get(key)
+            if label is not None:
+                label.set_label(gsettings_get(schema, key) or tr("(not set)"))
+        self._scale_value.set_label(self._format_scale(self._current_scale()))

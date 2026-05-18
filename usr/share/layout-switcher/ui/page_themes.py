@@ -24,6 +24,7 @@ from theme_preview import (
     extract_theme_color,
     find_theme_icons,
     is_dark_theme_name,
+    is_light_theme_name,
 )
 from ui.widgets import IconStrip, MiniPanelPreview, MiniWindowPreview
 from utils import color_from_name, run_cmd
@@ -368,7 +369,13 @@ class ThemesPage(Gtk.Box):
                 accent, dark=is_dark_theme_name(name), width=170, height=104
             )
         panel_bg = extract_shell_panel_bg(name)
-        return MiniPanelPreview(panel_bg, accent, width=170, height=104)
+        return MiniPanelPreview(
+            panel_bg,
+            accent,
+            width=170,
+            height=104,
+            light=is_light_theme_name(name),
+        )
 
     def _build_preview(self, name: str, kind: str) -> Gtk.Widget:
         """
@@ -394,7 +401,7 @@ class ThemesPage(Gtk.Box):
 
         # kind == "shell"
         panel_bg = extract_shell_panel_bg(name)
-        return MiniPanelPreview(panel_bg, accent)
+        return MiniPanelPreview(panel_bg, accent, light=is_light_theme_name(name))
 
     def _apply_theme(self, name: str, kind: str) -> None:
         def task():
