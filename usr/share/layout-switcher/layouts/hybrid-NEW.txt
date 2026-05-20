@@ -47,8 +47,11 @@ mpv-config-file='file:///etc/skel/.config/mpv/mpv.conf'
 present-window-on-file-open=true
 
 [io/github/celluloid-player/celluloid/window-state]
+height=600
 loop-playlist=false
 maximized=false
+volume=1.0
+width=960
 
 [io/github/realmazharhussain/GdmSettings]
 never-applied=false
@@ -123,6 +126,11 @@ height=uint32 701
 last-visited-page='misc'
 width=uint32 1272
 
+[net/nokyan/Resources]
+is-maximized=false
+window-height=900
+window-width=1024
+
 [org/blueberry]
 obex-enabled=false
 
@@ -193,7 +201,7 @@ size=(870, 690)
 
 [org/gnome/control-center]
 last-panel='background'
-window-state=(1257, 882, false)
+window-state=(1257, 758, true)
 
 [org/gnome/desktop/app-folders]
 folder-children=['Utilities', 'YaST', 'Pardus']
@@ -267,17 +275,20 @@ secondary-color='#000000000000'
 show-desktop-icons=true
 
 [org/gnome/desktop/input-sources]
+sources=[('xkb', 'br')]
 xkb-options=['terminate:ctrl_alt_bksp']
 
 [org/gnome/desktop/interface]
+accent-color='blue'
 clock-show-weekday=true
+color-scheme='prefer-dark'
 cursor-theme='Bibata-Modern-Classic'
 document-font-name='Noto Sans Nerd Font Medium 10'
 enable-animations=true
 font-antialiasing='grayscale'
 font-hinting='slight'
 font-name='Noto Sans Nerd Font Medium 10'
-gtk-theme='adw-gtk3'
+gtk-theme='adw-gtk3-dark'
 icon-theme='bigicons-papient'
 monospace-font-name='Noto Mono Nerd Font Medium 11'
 show-battery-percentage=true
@@ -293,8 +304,14 @@ show-banners=true
 [org/gnome/desktop/notifications/application/brave-browser]
 application-id='brave-browser.desktop'
 
+[org/gnome/desktop/notifications/application/gnome-about-panel]
+application-id='gnome-about-panel.desktop'
+
 [org/gnome/desktop/notifications/application/gnome-network-panel]
 application-id='gnome-network-panel.desktop'
+
+[org/gnome/desktop/notifications/application/io-github-celluloid-player-celluloid]
+application-id='io.github.celluloid_player.Celluloid.desktop'
 
 [org/gnome/desktop/notifications/application/org-gnome-console]
 application-id='org.gnome.Console.desktop'
@@ -438,8 +455,9 @@ name='Ashy Terminal'
 sleep-inactive-ac-type='nothing'
 
 [org/gnome/shell]
-app-picker-layout=[{'org.gnome.Contacts.desktop': <{'position': <0>}>, 'com.biglinux.calamares-config.desktop': <{'position': <1>}>, 'org.gnome.Weather.desktop': <{'position': <2>}>, 'org.gnome.clocks.desktop': <{'position': <3>}>, 'qefientrymanager.desktop': <{'position': <4>}>, 'org.gnome.Calculator.desktop': <{'position': <5>}>, 'org.gnome.Settings.desktop': <{'position': <6>}>, 'Utilities': <{'position': <7>}>, 'org.gnome.Calendar.desktop': <{'position': <8>}>, 'ca.desrt.dconf-editor.desktop': <{'position': <9>}>}, {'cups.desktop': <{'position': <0>}>, 'rustdesk.desktop': <{'position': <1>}>, 'br.com.biglinux.webapps.desktop': <{'position': <2>}>, 'org.manjaro.pamac.manager.desktop': <{'position': <3>}>, 'br.com.biglinux-settings.desktop': <{'position': <4>}>, 'org.gnome.gitlab.somas.Apostrophe.desktop': <{'position': <5>}>, 'libreoffice-impress.desktop': <{'position': <6>}>, 'pamac-updates.desktop': <{'position': <7>}>, 'libreoffice-base.desktop': <{'position': <8>}>, 'org.qt-project.qml.desktop': <{'position': <9>}>, 'brave-forum.biglinux.com.br__-Default.desktop': <{'position': <10>}>, 'brave-calendar.google.com__-Default.desktop': <{'position': <11>}>, 'org.gnome.Characters.desktop': <{'position': <12>}>, 'big-parental-controls.desktop': <{'position': <13>}>, 'br.com.biglinux.audio.converter.desktop': <{'position': <14>}>, 'br.com.biglinux.converter.desktop': <{'position': <15>}>, 'brave-www.deezer.com__-Default.desktop': <{'position': <16>}>, 'libreoffice-draw.desktop': <{'position': <17>}>, 'org.gnome.SimpleScan.desktop': <{'position': <18>}>, 'brave-discord.com__-Default.desktop': <{'position': <19>}>, 'brave-drive.google.com__-Default.desktop': <{'position': <20>}>, 'libreoffice-writer.desktop': <{'position': <21>}>, 'br.com.biglinux.bigocrimage.desktop': <{'position': <22>}>, 'org.ffado.FfadoMixer.desktop': <{'position': <23>}>}, {'br.com.biglinux.microphone.desktop': <{'position': <0>}>, 'org.gnome.Extensions.desktop': <{'position': <1>}>, 'org.gnome.TextEditor.desktop': <{'position': <2>}>, 'gparted.desktop': <{'position': <3>}>, 'de.haeckerfelix.Fragments.desktop': <{'position': <4>}>, 'com.github.neithern.g4music.desktop': <{'position': <5>}>, 'br.com.biglinux.drivermanager.desktop': <{'position': <6>}>, 'org.gnome.NetworkDisplays.desktop': <{'position': <7>}>, 'hp-uiscan.desktop': <{'position': <8>}>, 'br.com.biglinux.bighardwareinfo.desktop': <{'position': <9>}>, 'br.com.biglinux.networkinfo.desktop': <{'position': <10>}>, 'me.timschneeberger.jdsp4linux.desktop': <{'position': <11>}>, 'brave-meet.jit.si__-Default.desktop': <{'position': <12>}>, 'kvantummanager.desktop': <{'position': <13>}>, 'com.sidevesh.Luminance.desktop': <{'position': <14>}>, 'org.gnome.Mahjongg.desktop': <{'position': <15>}>, 'org.gnome.Mines.desktop': <{'position': <16>}>, 'net.nokyan.Resources.desktop': <{'position': <17>}>, 'mpv.desktop': <{'position': <18>}>, 'bigtts.desktop': <{'position': <19>}>, 'sol.desktop': <{'position': <20>}>, 'libreoffice-calc.desktop': <{'position': <21>}>, 'br.com.biglinux.bigocrpdf.desktop': <{'position': <22>}>, 'hplip.desktop': <{'position': <23>}>}, {'io.github.celluloid_player.Celluloid.desktop': <{'position': <0>}>, 'br.com.biglinux.grub-restore.desktop': <{'position': <1>}>, 'org.communitybig.layout-switcher.desktop': <{'position': <2>}>, 'brave-snapdrop.net__-Default.desktop': <{'position': <3>}>, 'brave-open.spotify.com__browse_featured-Default.desktop': <{'position': <4>}>, 'steam.desktop': <{'position': <5>}>, 'brave-webz.telegram.org__-Default.desktop': <{'position': <6>}>, 'timeshift-gtk.desktop': <{'position': <7>}>, 'org.gnome.Papers.desktop': <{'position': <8>}>, 'brave-web.whatsapp.com__-Default.desktop': <{'position': <9>}>, 'com.desktop.ding.desktop': <{'position': <10>}>, 'org.communitybig.ashyterm.desktop': <{'position': <11>}>}]
+app-picker-layout=[{'org.gnome.Contacts.desktop': <{'position': <0>}>, 'org.gnome.Weather.desktop': <{'position': <1>}>, 'org.gnome.clocks.desktop': <{'position': <2>}>, 'org.gnome.Calculator.desktop': <{'position': <3>}>, 'org.gnome.Settings.desktop': <{'position': <4>}>, 'Utilities': <{'position': <5>}>, 'org.gnome.Calendar.desktop': <{'position': <6>}>, 'ca.desrt.dconf-editor.desktop': <{'position': <7>}>}, {'cups.desktop': <{'position': <0>}>, 'rustdesk.desktop': <{'position': <1>}>, 'br.com.biglinux.webapps.desktop': <{'position': <2>}>, 'org.manjaro.pamac.manager.desktop': <{'position': <3>}>, 'br.com.biglinux-settings.desktop': <{'position': <4>}>, 'org.gnome.gitlab.somas.Apostrophe.desktop': <{'position': <5>}>, 'libreoffice-impress.desktop': <{'position': <6>}>, 'pamac-updates.desktop': <{'position': <7>}>, 'libreoffice-base.desktop': <{'position': <8>}>, 'org.qt-project.qml.desktop': <{'position': <9>}>, 'brave-forum.biglinux.com.br__-Default.desktop': <{'position': <10>}>, 'brave-calendar.google.com__-Default.desktop': <{'position': <11>}>, 'org.gnome.Characters.desktop': <{'position': <12>}>, 'big-parental-controls.desktop': <{'position': <13>}>, 'br.com.biglinux.audio.converter.desktop': <{'position': <14>}>, 'br.com.biglinux.converter.desktop': <{'position': <15>}>, 'brave-www.deezer.com__-Default.desktop': <{'position': <16>}>, 'libreoffice-draw.desktop': <{'position': <17>}>, 'org.gnome.SimpleScan.desktop': <{'position': <18>}>, 'brave-discord.com__-Default.desktop': <{'position': <19>}>, 'brave-drive.google.com__-Default.desktop': <{'position': <20>}>, 'libreoffice-writer.desktop': <{'position': <21>}>, 'br.com.biglinux.bigocrimage.desktop': <{'position': <22>}>, 'org.ffado.FfadoMixer.desktop': <{'position': <23>}>}, {'br.com.biglinux.microphone.desktop': <{'position': <0>}>, 'org.gnome.Extensions.desktop': <{'position': <1>}>, 'org.gnome.TextEditor.desktop': <{'position': <2>}>, 'de.haeckerfelix.Fragments.desktop': <{'position': <3>}>, 'com.github.neithern.g4music.desktop': <{'position': <4>}>, 'br.com.biglinux.drivermanager.desktop': <{'position': <5>}>, 'org.gnome.NetworkDisplays.desktop': <{'position': <6>}>, 'hp-uiscan.desktop': <{'position': <7>}>, 'br.com.biglinux.bighardwareinfo.desktop': <{'position': <8>}>, 'br.com.biglinux.networkinfo.desktop': <{'position': <9>}>, 'me.timschneeberger.jdsp4linux.desktop': <{'position': <10>}>, 'brave-meet.jit.si__-Default.desktop': <{'position': <11>}>, 'kvantummanager.desktop': <{'position': <12>}>, 'com.sidevesh.Luminance.desktop': <{'position': <13>}>, 'org.gnome.Mahjongg.desktop': <{'position': <14>}>, 'org.gnome.Mines.desktop': <{'position': <15>}>, 'net.nokyan.Resources.desktop': <{'position': <16>}>, 'mpv.desktop': <{'position': <17>}>, 'bigtts.desktop': <{'position': <18>}>, 'sol.desktop': <{'position': <19>}>, 'libreoffice-calc.desktop': <{'position': <20>}>, 'br.com.biglinux.bigocrpdf.desktop': <{'position': <21>}>, 'hplip.desktop': <{'position': <22>}>}, {'io.github.celluloid_player.Celluloid.desktop': <{'position': <0>}>, 'org.communitybig.layout-switcher.desktop': <{'position': <1>}>, 'brave-snapdrop.net__-Default.desktop': <{'position': <2>}>, 'brave-open.spotify.com__browse_featured-Default.desktop': <{'position': <3>}>, 'steam.desktop': <{'position': <4>}>, 'brave-webz.telegram.org__-Default.desktop': <{'position': <5>}>, 'timeshift-gtk.desktop': <{'position': <6>}>, 'org.gnome.Papers.desktop': <{'position': <7>}>, 'brave-web.whatsapp.com__-Default.desktop': <{'position': <8>}>, 'com.desktop.ding.desktop': <{'position': <9>}>, 'org.communitybig.ashyterm.desktop': <{'position': <10>}>}]
 command-history=['ajustes', 'r']
+disable-user-extensions=false
 disabled-extensions=['apps-menu@gnome-shell-extensions.gcampax.github.com', 'window-list@gnome-shell-extensions.gcampax.github.com', 'vertical-workspaces@G-dH.github.com', 'launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'native-window-placement@gnome-shell-extensions.gcampax.github.com', 'dash-to-dock@micxgx.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'just-perfection-desktop@just-perfection', 'windowsNavigator@gnome-shell-extensions.gcampax.github.com', 'screenshot-window-sizer@gnome-shell-extensions.gcampax.github.com', 'places-menu@gnome-shell-extensions.gcampax.github.com', 'status-icons@gnome-shell-extensions.gcampax.github.com', 'workspace-indicator@gnome-shell-extensions.gcampax.github.com', 'tilingshell@ferrarodomenico.com', 'auto-move-windows@gnome-shell-extensions.gcampax.github.com', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'system-monitor@gnome-shell-extensions.gcampax.github.com']
 enabled-extensions=['pano@elhan.io', 'gtk4-ding@smedius.gitlab.com', 'trayIconsReloaded@selfmade.pl', 'appindicatorsupport@rgcjonas.gmail.com', 'big-shot@bigcommunity.org', 'copyous@boerdereinar.dev', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'gsconnect@andyholmes.github.io', 'light-style@gnome-shell-extensions.gcampax.github.com', 'arcmenu@arcmenu.com', 'dash-to-panel@jderose9.github.com']
 favorite-apps=['org.gnome.Nautilus.desktop', 'brave-browser.desktop']
@@ -580,13 +598,13 @@ isolate-monitors=true
 leftbox-padding=-1
 leftbox-size=0
 overview-click-to-exit=true
-panel-anchors='{"unknown-unknown":"MIDDLE"}'
-panel-element-positions='{"unknown-unknown":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"activitiesButton","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}'
+panel-anchors='{"RHT-0x00000000":"MIDDLE"}'
+panel-element-positions='{"RHT-0x00000000":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"activitiesButton","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}'
 panel-element-positions-monitors-sync=true
-panel-lengths='{"unknown-unknown":100}'
+panel-lengths='{"RHT-0x00000000":100}'
 panel-positions='{}'
 panel-side-margins=0
-panel-sizes='{"unknown-unknown":42}'
+panel-sizes='{"RHT-0x00000000":42}'
 panel-top-bottom-padding=0
 peek-mode=false
 prefs-opened=false
@@ -637,6 +655,7 @@ window-preview-use-custom-icon-size=false
 [org/gnome/shell/extensions/gsconnect]
 devices=@as []
 id='cf580885-93b6-47a8-a033-73dee0e7d8a0'
+missing-openssl=false
 name='BigGnome'
 
 [org/gnome/shell/extensions/gtk4-ding]

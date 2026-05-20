@@ -165,6 +165,8 @@ class LayoutApplier:
     _DISABLE_STEP_SEC = 0.1
     _SETTLE_SEC = 0.5  # final settle after last disable, before dconf load
     _MIN_DUMP_BYTES = 100
+    _SHELL_DBUS_TIMEOUT_SEC = 2
+    _MAX_DISABLE_DBUS_TIMEOUTS = 3
 
     # ── Helpers de infraestrutura ────────────────────────────────────────────
 
@@ -410,11 +412,17 @@ class LayoutApplier:
         for uuid in cls._RELOAD_AFTER_LOAD:
             if uuid not in present:
                 continue
-            ShellReloader.reload_extension(uuid)
+            ok = ShellReloader.reload_extension(
+                uuid,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if not ok:
+                log.warning("ReloadExtension failed or timed out for %s", uuid)
+                continue
             time.sleep(cls._DISABLE_STEP_SEC)
 
     @classmethod
-    def _disable_extensions_in_order(cls, uuids: Iterable[str]) -> None:
+    def _disable_extensions_in_order(cls, uuids: Iterable[str]) -> bool:
         """
         Disable each extension via DBus, in sorted UUID order, with a
         small delay between calls.
@@ -435,10 +443,34 @@ class LayoutApplier:
         (``c`` < ``d``), so cross-extension callbacks during ``copyous``'s
         teardown still see a live DTP. The 0.1s gap lets each extension's
         ``disable()`` body run to completion before the next one starts.
+
+        Returns False if the Shell DBus path timed out repeatedly and
+        the caller should skip further extension DBus work in this apply.
         """
+        timeout_count = 0
         for uuid in sorted({u for u in uuids if u and u not in _NO_DISABLE}):
-            ShellReloader.enable_extension_dbus(uuid, enable=False)
-            time.sleep(cls._DISABLE_STEP_SEC)
+            ok, msg = ShellReloader.enable_extension_dbus(
+                uuid,
+                enable=False,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if ok:
+                timeout_count = 0
+                time.sleep(cls._DISABLE_STEP_SEC)
+                continue
+
+            log.warning("DisableExtension failed for %s: %s", uuid, msg)
+            if "timed out" not in (msg or "").lower():
+                continue
+
+            timeout_count += 1
+            if timeout_count >= cls._MAX_DISABLE_DBUS_TIMEOUTS:
+                log.warning(
+                    "aborting extension disable phase after %d DBus timeouts",
+                    timeout_count,
+                )
+                return False
+        return True
 
     @classmethod
     def _persist_to_settings_file(cls, data: str) -> Tuple[bool, str]:
@@ -546,8 +578,8 @@ class LayoutApplier:
             keys.update(d.keys())
         return keys
 
-    @staticmethod
-    def _read_dtp_monitor_ids_from_mutter() -> Set[str]:
+    @classmethod
+    def _read_dtp_monitor_ids_from_mutter(cls) -> Set[str]:
         """
         Ask org.gnome.Mutter.DisplayConfig.GetCurrentState for the connected
         monitors and reconstruct the dash-to-panel monitor id format.
@@ -568,7 +600,7 @@ class LayoutApplier:
                 "--method",
                 "org.gnome.Mutter.DisplayConfig.GetCurrentState",
             ],
-            timeout=5,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
         )
         if not ok or not raw:
             return set()
@@ -748,14 +780,17 @@ class LayoutApplier:
             staying = before_set & target_enabled
             if leaving or staying:
                 progress("Disabling extensions…")
+            shell_dbus_available = True
             if leaving:
-                cls._disable_extensions_in_order(leaving)
+                shell_dbus_available = cls._disable_extensions_in_order(leaving)
                 time.sleep(cls._DISABLE_STEP_SEC)
-            if staying:
-                cls._disable_extensions_in_order(staying)
+            if staying and shell_dbus_available:
+                shell_dbus_available = cls._disable_extensions_in_order(staying)
                 # Let last extension's disable() body finish before
                 # we change the keys it was bound to.
                 time.sleep(cls._SETTLE_SEC)
+            elif staying:
+                log.warning("skipping remaining extension disables after DBus timeouts")
 
             progress("Loading layout…")
             # Clear keys from the previous layout that the new layout
@@ -800,9 +835,11 @@ class LayoutApplier:
             # big-shot) live in ``before ∩ after`` — already covered by
             # ``after`` alone, no union needed.
             after_uuids = cls._enabled_extensions()
-            if after_uuids:
+            if after_uuids and shell_dbus_available:
                 progress("Reloading components…")
                 cls._reload_visual_extensions(after_uuids)
+            elif after_uuids:
+                log.warning("skipping visual extension reloads after DBus timeouts")
 
             # Note: we previously toggled ``org.gnome.Shell.OverviewActive``
             # true→false here to force a CSS style recompute on Main.panel

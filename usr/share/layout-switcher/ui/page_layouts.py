@@ -9,6 +9,7 @@ o usuario escolhe entre retomar sua versao modificada ou aplicar o padrao.
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -25,6 +26,8 @@ from settings_store import Settings
 from snapshot_manager import SnapshotManager
 from ui.tooltip import Tooltip
 from utils import find_file
+
+log = logging.getLogger("layout-switcher")
 
 
 class LayoutsPage(Gtk.Box):
@@ -282,29 +285,34 @@ class LayoutsPage(Gtk.Box):
             GLib.idle_add(root.show_loading, text)
 
         def task():
-            if use_snapshot:
-                data = SnapshotManager.read(layout_id)
-                if not data:
-                    GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
-                    return
-                # Snapshots são dumps locais — DTP monitor IDs já estão corretos.
-                # load_dconf_safely escreve settings.gnome e faz dconf load;
-                # o gsettings listener do Shell reabilita as extensões via
-                # enabled-extensions, então não precisa reload_all manual.
-                before = LayoutApplier._enabled_extensions()
-                ok, err = LayoutApplier.load_dconf_safely(
-                    data,
-                    persist=True,
-                    before_uuids=before,
-                    progress_cb=progress,
-                )
-            else:
-                path = find_file(cfg, ["layouts"])
-                if not path:
-                    GLib.idle_add(self._done, name, False, tr("Layout file not found"))
-                    return
-                ok, err = LayoutApplier.apply(path, progress_cb=progress)
-            GLib.idle_add(self._done, name, ok, err)
+            try:
+                if use_snapshot:
+                    data = SnapshotManager.read(layout_id)
+                    if not data:
+                        GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
+                        return
+                    # Snapshots são dumps locais — DTP monitor IDs já estão corretos.
+                    # load_dconf_safely escreve settings.gnome e faz dconf load;
+                    # o gsettings listener do Shell reabilita as extensões via
+                    # enabled-extensions, então não precisa reload_all manual.
+                    before = LayoutApplier._enabled_extensions()
+                    ok, err = LayoutApplier.load_dconf_safely(
+                        data,
+                        persist=True,
+                        before_uuids=before,
+                        progress_cb=progress,
+                    )
+                else:
+                    path = find_file(cfg, ["layouts"])
+                    if not path:
+                        GLib.idle_add(self._done, name, False, tr("Layout file not found"))
+                        return
+                    ok, err = LayoutApplier.apply(path, progress_cb=progress)
+                GLib.idle_add(self._done, name, ok, err)
+            except Exception as exc:
+                log.exception("layout apply failed for %s", name)
+                msg = str(exc).strip() or exc.__class__.__name__
+                GLib.idle_add(self._done, name, False, msg)
 
         self._pool.submit(task)
 

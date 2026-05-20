@@ -164,6 +164,80 @@ class TestLayoutApplier:
             "start",
         ]
 
+    @patch("layout_applier.time.sleep")
+    @patch(
+        "layout_applier.ShellReloader.enable_extension_dbus",
+        return_value=(False, "timed out after 2s"),
+    )
+    def test_disable_extensions_stops_after_repeated_dbus_timeouts(
+        self,
+        mock_disable,
+        mock_sleep,
+    ):
+        """Repeated Shell DBus timeouts must not stall the apply for minutes."""
+        ok = LayoutApplier._disable_extensions_in_order(
+            ["z@ext", "a@ext", "m@ext", "b@ext", "c@ext"]
+        )
+
+        assert ok is False
+        assert mock_disable.call_count == LayoutApplier._MAX_DISABLE_DBUS_TIMEOUTS
+        assert mock_sleep.call_count == 0
+        assert all(
+            call.kwargs["timeout"] == LayoutApplier._SHELL_DBUS_TIMEOUT_SEC
+            for call in mock_disable.call_args_list
+        )
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.reload_extension", side_effect=[False, True])
+    def test_reload_visual_extensions_uses_short_timeout(
+        self,
+        mock_reload,
+        mock_sleep,
+    ):
+        """Visual reloads are best-effort and bounded by a short DBus timeout."""
+        LayoutApplier._reload_visual_extensions(
+            ["dash-to-dock@micxgx.gmail.com", "blur-my-shell@aunetx"]
+        )
+
+        assert mock_reload.call_count == 2
+        assert mock_sleep.call_count == 1
+        assert all(
+            call.kwargs["timeout"] == LayoutApplier._SHELL_DBUS_TIMEOUT_SEC
+            for call in mock_reload.call_args_list
+        )
+
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._enabled_extensions", return_value={"after@ext"})
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=False)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_skips_remaining_shell_dbus_after_breaker(
+        self,
+        mock_run,
+        _has,
+        mock_persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        mock_reload,
+    ):
+        """Once Shell DBus times out repeatedly, finish via dconf without more DBus."""
+        data = "[org/gnome/shell]\nenabled-extensions=['stay@ext']\n"
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=["leave@ext", "stay@ext"],
+        )
+
+        assert ok is True
+        assert mock_disable.call_count == 1
+        mock_persist.assert_called_once()
+        mock_reload.assert_not_called()
+        assert mock_run.call_count == 1
+        assert mock_run.call_args_list[0].args[0] == ["dconf", "load", "/"]
+
 
 class TestRewriteDtpKeysInText:
     """Garante que o rewrite text-level converte monitor IDs DTP para os locais."""

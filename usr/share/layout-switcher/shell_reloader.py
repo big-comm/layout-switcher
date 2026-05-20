@@ -52,7 +52,7 @@ class ShellReloader:
     # ── Recarga de extensão individual ────────────────────────────────────────
 
     @staticmethod
-    def reload_extension(uuid: str) -> bool:
+    def reload_extension(uuid: str, timeout: int = 8) -> bool:
         """
         Recarrega uma extensão específica via D-Bus (recarga cirúrgica).
         Funciona em Wayland e X11. Retorna True se o D-Bus aceitou o comando.
@@ -70,14 +70,18 @@ class ShellReloader:
                 f"{DBUS_EXT_IFACE}.ReloadExtension",
                 uuid,
             ],
-            timeout=8,
+            timeout=timeout,
         )
         return ok
 
     # ── Ativar / desativar via D-Bus ──────────────────────────────────────────
 
     @staticmethod
-    def enable_extension_dbus(uuid: str, enable: bool) -> Tuple[bool, str]:
+    def enable_extension_dbus(
+        uuid: str,
+        enable: bool,
+        timeout: int = 8,
+    ) -> Tuple[bool, str]:
         """
         Ativa ou desativa uma extensão diretamente via D-Bus.
         Funciona em Wayland sem precisar de logout (GS 3.36+).
@@ -99,7 +103,7 @@ class ShellReloader:
                 method,
                 uuid,
             ],
-            timeout=8,
+            timeout=timeout,
         )
         return ok, out
 
