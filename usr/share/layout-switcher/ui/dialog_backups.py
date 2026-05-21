@@ -49,8 +49,14 @@ def _humanize_size(nbytes: int) -> str:
 class BackupsDialog(Adw.Dialog):
     """Dialogo modal listando backups com Restore/Delete em cada linha."""
 
-    def __init__(self, toast_cb: Callable[[str], None], on_restored: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        pool,
+        toast_cb: Callable[[str], None],
+        on_restored: Callable[[], None],
+    ) -> None:
         super().__init__()
+        self._pool = pool
         self._toast = toast_cb
         self._on_restored = on_restored
 
@@ -69,11 +75,11 @@ class BackupsDialog(Adw.Dialog):
         hdr = Adw.HeaderBar()
         hdr.set_show_end_title_buttons(True)
 
-        create_btn = Gtk.Button(label=tr("Create backup now"))
-        create_btn.add_css_class("suggested-action")
-        create_btn.set_tooltip_text(tr("Snapshot current dconf settings"))
-        create_btn.connect("clicked", self._on_create)
-        hdr.pack_start(create_btn)
+        self._create_btn = Gtk.Button(label=tr("Create backup now"))
+        self._create_btn.add_css_class("suggested-action")
+        self._create_btn.set_tooltip_text(tr("Snapshot current dconf settings"))
+        self._create_btn.connect("clicked", self._on_create)
+        hdr.pack_start(self._create_btn)
 
         toolbar.add_top_bar(hdr)
 
@@ -164,12 +170,22 @@ class BackupsDialog(Adw.Dialog):
     # ── Acoes ─────────────────────────────────────────────────────────────────
 
     def _on_create(self, _btn) -> None:
-        ok, info = BackupManager.create()
+        self._create_btn.set_sensitive(False)
+
+        def task():
+            ok, info = BackupManager.create()
+            GLib.idle_add(self._on_create_done, ok, info)
+
+        self._pool.submit(task)
+
+    def _on_create_done(self, ok: bool, info: str) -> bool:
+        self._create_btn.set_sensitive(True)
         if ok:
             self._toast(tr("Backup created"))
             self._populate()
         else:
             self._toast(tr("Backup failed") + f": {info}")
+        return False
 
     def _on_restore_clicked(self, path: Path) -> None:
         confirm = Adw.AlertDialog(
@@ -187,16 +203,24 @@ class BackupsDialog(Adw.Dialog):
         def on_r(_dlg, r):
             if r != "restore":
                 return
-            ok, info = BackupManager.restore(path)
-            if ok:
-                self._toast(tr("Backup restored"))
-                self._on_restored()
-                GLib.idle_add(self.close)
-            else:
-                self._toast(tr("Restore failed") + f": {info}")
+
+            def task():
+                ok, info = BackupManager.restore(path)
+                GLib.idle_add(self._on_restore_done, ok, info)
+
+            self._pool.submit(task)
 
         confirm.connect("response", on_r)
         confirm.present(self)
+
+    def _on_restore_done(self, ok: bool, info: str) -> bool:
+        if ok:
+            self._toast(tr("Backup restored"))
+            self._on_restored()
+            self.close()
+        else:
+            self._toast(tr("Restore failed") + f": {info}")
+        return False
 
     def _on_delete_clicked(self, path: Path) -> None:
         confirm = Adw.AlertDialog(

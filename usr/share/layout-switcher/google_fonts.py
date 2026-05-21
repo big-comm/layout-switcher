@@ -8,8 +8,8 @@ installs those files for the current user under ~/.local/share/fonts.
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
-import logging
 import json
+import logging
 import re
 import time
 import urllib.error

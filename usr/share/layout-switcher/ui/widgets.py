@@ -20,7 +20,6 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk
 
-
 # ── Helpers de cor ───────────────────────────────────────────────────────────
 
 
@@ -561,8 +560,12 @@ class EffectPreview(Gtk.DrawingArea):
         fill_face(front, (0.24, 0.38, 0.58, 0.98))
         fill_face(top_face, (*self._accent, 0.72))
 
-        self._draw_window(ctx, left + size * 0.13, top + size * 0.22, size * 0.28, size * 0.22, 0.90)
-        self._draw_window(ctx, right + depth_x * 0.30, top + size * 0.28, size * 0.24, size * 0.20, 0.70)
+        self._draw_window(
+            ctx, left + size * 0.13, top + size * 0.22, size * 0.28, size * 0.22, 0.90
+        )
+        self._draw_window(
+            ctx, right + depth_x * 0.30, top + size * 0.28, size * 0.24, size * 0.20, 0.70
+        )
 
         # Rotation hint around the cube.
         ctx.set_source_rgba(1, 1, 1, 0.45)

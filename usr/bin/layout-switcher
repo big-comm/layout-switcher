@@ -27,4 +27,10 @@ if [[ ! -f "${APP_DIR}/main.py" ]]; then
     exit 1
 fi
 
+if [[ -z "${GSK_RENDERER:-}" ]]; then
+    if compgen -G /var/lib/pacman/local/mesa-amber-* >/dev/null || systemd-detect-virt -q; then
+        export GSK_RENDERER="cairo"
+    fi
+fi
+
 exec python3 "${APP_DIR}/main.py" "$@"

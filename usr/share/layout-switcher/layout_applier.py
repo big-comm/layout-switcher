@@ -32,21 +32,18 @@ Strategy:
     atomically with the layout text, with the lock held so the watcher
     won't clobber it. Next login is guaranteed clean regardless of
     runtime quirks.
-  * Live apply: surgical reset of orphan keys in
-    ``/org/gnome/shell/extensions/`` (keys present in live dconf but
-    absent from the target layout), then ``dconf load`` of the target.
-    The surgical reset fixes layout cross-contamination — e.g. minimal
-    sets ``blur-my-shell/panel/blur=false`` and biggnome doesn't mention
-    that key (expecting default ``true``); without the reset, biggnome
-    inherits minimal's ``false`` because ``dconf load`` is purely
-    additive (it sets but never clears).
+  * Live apply: disable extensions that leave the target layout, reset
+    orphan keys in ``/org/gnome/shell/extensions/`` (whole branches for
+    leaving extensions, individual keys for extensions that stay), then
+    ``dconf load`` of the target. This makes the layout text behave like
+    a complete state instead of a merge patch.
   * No global ``dconf reset -f /`` — that fires Notify on every key in
     dconf and any extension whose ``disable()`` left orphan handlers
     behind crashes with ``this._settings is null``. Scoping the reset
     to extension storage and restricting it to keys actually leaving
     keeps the signal storm small enough to not trip the orphan handlers.
-  * Per-extension disable is still ordered (sorted UUID DBus calls) to
-    avoid the cross-extension teardown SIGSEGV documented in
+  * Per-extension disable is still ordered for leaving extensions to avoid
+    the cross-extension teardown problems documented in
     ``_disable_extensions_in_order``.
   * No ``reload_all`` after the load — the Shell's gsettings listener
     on ``enabled-extensions`` already enables UUIDs as they appear.
@@ -65,9 +62,8 @@ Flow::
   2. read before = enabled-extensions
   3. acquire lock file
   4. stop dconf-sync-gnome.service
-  5. DisableExtension via DBus per UUID, in sorted order
-  6. dconf reset <key> for each orphan in /org/gnome/shell/extensions/
-     (key in live dump but not in layout text)
+  5. DisableExtension via DBus for UUIDs leaving the layout
+  6. dconf reset for orphan extension keys
   7. atomic write settings.gnome = layout text  (clean, no garbage)
   8. dconf load / < layout
   9. start dconf-sync-gnome.service              (watcher honours lock)
@@ -76,6 +72,7 @@ Flow::
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -89,6 +86,9 @@ from utils import run_cmd
 log = logging.getLogger("layout-switcher")
 
 SETTINGS_GNOME = Path.home() / ".config" / "dconf" / "settings.gnome"
+_LAYOUT_SWITCHER_HASH_FILE = SETTINGS_GNOME.parent / (
+    SETTINGS_GNOME.name + ".layout-switcher.sha256"
+)
 SYNC_SERVICE = "dconf-sync-gnome.service"
 
 # comm-gnome-config's QT-theme path watcher fires whenever
@@ -102,9 +102,10 @@ QT_THEME_WATCHER = "sync-gnome-theme-to-qt.path"
 # Lock honoured by comm-gnome-config's dconf-sync-monitor-gnome (≥ 26.05.07):
 # while present, the watcher skips its dconf→file dump, so we can
 # atomically write settings.gnome without it being clobbered.
-_SYNC_LOCK_PATH = Path(
-    os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
-) / "dconf-sync-gnome.lock"
+_SYNC_LOCK_PATH = (
+    Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
+    / "dconf-sync-gnome.lock"
+)
 
 # dash-to-panel stores some settings as JSON dicts keyed by monitor ID
 # (e.g. ``"unknown-unknown"`` in VMs, ``"DEL-S2719DGF-..."`` on real
@@ -120,6 +121,19 @@ _DTP_MONITOR_KEYED = (
     "panel-anchors",
     "panel-lengths",
 )
+_DASH_TO_PANEL_UUID = "dash-to-panel@jderose9.github.com"
+_LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
+_USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
+_LIVE_EXTENSION_STATES = {1, 8}
+_SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
+_INTERFACE_SECTION = "/org/gnome/desktop/interface"
+_USER_THEME_SECTION = "/org/gnome/shell/extensions/user-theme"
+_PRESERVED_THEME_KEYS = (
+    (_INTERFACE_SECTION, "color-scheme"),
+    (_INTERFACE_SECTION, "gtk-theme"),
+    (_INTERFACE_SECTION, "icon-theme"),
+    (_USER_THEME_SECTION, "name"),
+)
 
 # Paths where we're allowed to reset orphan keys (keys present in live
 # dconf but absent from the target layout). Restricted to extension
@@ -129,9 +143,7 @@ _DTP_MONITOR_KEYED = (
 # reset, blur stays off after switching). Other paths (settings-daemon,
 # notification app history, third-party apps) are off-limits — resetting
 # them would lose unrelated user state.
-_ORPHAN_RESET_PREFIXES = (
-    "/org/gnome/shell/extensions/",
-)
+_ORPHAN_RESET_PREFIXES = ("/org/gnome/shell/extensions/",)
 
 # Extensions that should NOT be disabled at the start of a layout switch.
 #
@@ -148,9 +160,11 @@ _ORPHAN_RESET_PREFIXES = (
 #
 # user-theme has no setting watchers that the dconf load's Notify
 # storm would crash, so it's safe to leave enabled throughout.
-_NO_DISABLE = frozenset({
-    "user-theme@gnome-shell-extensions.gcampax.github.com",
-})
+_NO_DISABLE = frozenset(
+    {
+        _USER_THEME_UUID,
+    }
+)
 
 
 class LayoutApplier:
@@ -166,7 +180,9 @@ class LayoutApplier:
     _SETTLE_SEC = 0.5  # final settle after last disable, before dconf load
     _MIN_DUMP_BYTES = 100
     _SHELL_DBUS_TIMEOUT_SEC = 2
+    _SHELL_RELOAD_TIMEOUT_SEC = 8
     _MAX_DISABLE_DBUS_TIMEOUTS = 3
+    _DTP_REENABLE_SETTLE_SEC = 0.7
 
     # ── Helpers de infraestrutura ────────────────────────────────────────────
 
@@ -264,6 +280,261 @@ class LayoutApplier:
         return set()
 
     @staticmethod
+    def _split_shell_extension_switch_keys(text: str) -> Tuple[str, str]:
+        """
+        Return ``(settings_text, switch_text)``.
+
+        ``settings_text`` is the dconf dump without
+        ``/org/gnome/shell/{enabled,disabled}-extensions``. ``switch_text``
+        contains only those keys, ordered disabled first then enabled.
+
+        GNOME Shell enables extensions as soon as ``enabled-extensions`` is
+        written. Loading that key before the extension's own branch is fully
+        loaded lets dash-to-panel start from stale/mixed settings. Loading
+        all settings first and the switch keys last makes extension startup
+        deterministic.
+        """
+        section = ""
+        out: List[str] = []
+        values: Dict[str, str] = {}
+
+        for raw in text.splitlines(keepends=True):
+            line = raw.rstrip("\r\n")
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = "/" + stripped[1:-1].strip("/")
+                out.append(raw)
+                continue
+
+            if section == "/org/gnome/shell" and "=" in line:
+                key, _, value = line.partition("=")
+                clean_key = key.strip()
+                if clean_key in _SHELL_EXTENSION_SWITCH_KEYS:
+                    values[clean_key] = value.strip()
+                    continue
+
+            out.append(raw)
+
+        if not values:
+            return text, ""
+
+        switch_lines = ["[org/gnome/shell]"]
+        for key in _SHELL_EXTENSION_SWITCH_KEYS:
+            value = values.get(key)
+            if value is not None:
+                switch_lines.append(f"{key}={value}")
+        return "".join(out), "\n".join(switch_lines) + "\n"
+
+    @staticmethod
+    def _read_dconf_value(path: str) -> Optional[str]:
+        """Read one dconf key, keeping the raw GVariant text."""
+        ok, raw = run_cmd(["dconf", "read", path], timeout=5)
+        if not ok:
+            return None
+        raw = (raw or "").strip()
+        return raw or None
+
+    @staticmethod
+    def _gvariant_string(raw: Optional[str]) -> str:
+        """Return a Python string from a simple dconf string value."""
+        if not raw:
+            return ""
+        import ast
+
+        try:
+            parsed = ast.literal_eval(raw)
+        except (ValueError, SyntaxError):
+            return raw.strip().strip("'")
+        return parsed if isinstance(parsed, str) else ""
+
+    @staticmethod
+    def _string_list(value: Optional[str]) -> List[str]:
+        """Parse a dconf string-array literal, preserving order."""
+        if not value:
+            return []
+        import ast
+
+        try:
+            parsed = ast.literal_eval(value.strip())
+        except (ValueError, SyntaxError):
+            return []
+        if not isinstance(parsed, list):
+            return []
+        return [item for item in parsed if isinstance(item, str) and item]
+
+    @staticmethod
+    def _quote_string_list(values: Iterable[str]) -> str:
+        """Render a dconf-compatible string array."""
+        return repr([value for value in values if value])
+
+    @staticmethod
+    def _replace_or_add_dconf_key(text: str, section_path: str, key: str, value: str) -> str:
+        """Replace or add one key in a dconf dump string."""
+        clean_section = "/" + section_path.strip("/")
+        header = "[" + clean_section.strip("/") + "]"
+        lines = text.splitlines()
+        out: List[str] = []
+        section = ""
+        in_section = False
+        section_seen = False
+        replaced = False
+        inserted = False
+
+        for raw in lines:
+            stripped = raw.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                if in_section and not replaced and not inserted:
+                    out.append(f"{key}={value}")
+                    inserted = True
+                section = "/" + stripped[1:-1].strip("/")
+                in_section = section == clean_section
+                if in_section:
+                    section_seen = True
+                out.append(raw)
+                continue
+
+            if in_section and "=" in raw:
+                line_key, separator, value_part = raw.partition("=")
+                if line_key.strip() == key and not replaced:
+                    out.append(f"{line_key}{separator}{value}")
+                    replaced = True
+                    continue
+                if line_key.strip() == key:
+                    continue
+
+            out.append(raw)
+
+        if section_seen and not replaced and not inserted:
+            out.append(f"{key}={value}")
+        elif not section_seen:
+            if out and out[-1].strip():
+                out.append("")
+            out.extend([header, f"{key}={value}"])
+
+        joined = "\n".join(out)
+        if text.endswith("\n") or not joined.endswith("\n"):
+            joined += "\n"
+        return joined
+
+    @staticmethod
+    def _section_key_values(text: str, section_path: str) -> Dict[str, str]:
+        """Return raw key values for one section from a dconf dump."""
+        clean_section = "/" + section_path.strip("/")
+        section = ""
+        values: Dict[str, str] = {}
+        for raw in text.splitlines():
+            stripped = raw.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = "/" + stripped[1:-1].strip("/")
+                continue
+            if section != clean_section or "=" not in raw:
+                continue
+            key, _separator, value = raw.partition("=")
+            values[key.strip()] = value.strip()
+        return values
+
+    @staticmethod
+    def _prefers_dark(values: Dict[Tuple[str, str], str]) -> Optional[bool]:
+        """Infer current light/dark preference from live theme keys."""
+        color_scheme = LayoutApplier._gvariant_string(
+            values.get((_INTERFACE_SECTION, "color-scheme"))
+        )
+        gtk_theme = LayoutApplier._gvariant_string(
+            values.get((_INTERFACE_SECTION, "gtk-theme"))
+        )
+        icon_theme = LayoutApplier._gvariant_string(
+            values.get((_INTERFACE_SECTION, "icon-theme"))
+        )
+
+        if color_scheme == "prefer-dark":
+            return True
+        if color_scheme in {"prefer-light", "default"}:
+            has_dark_theme = any(
+                token in (gtk_theme + " " + icon_theme).lower()
+                for token in ("-dark", "_dark", " dark", "night", "black")
+            )
+            return True if has_dark_theme else False
+
+        names = (gtk_theme + " " + icon_theme).lower()
+        if any(token in names for token in ("-dark", "_dark", " dark", "night", "black")):
+            return True
+        if gtk_theme or icon_theme:
+            return False
+        return None
+
+    @classmethod
+    def _rewrite_shell_theme_mode(
+        cls,
+        text: str,
+        *,
+        prefer_dark: Optional[bool],
+    ) -> str:
+        """Keep Shell light/dark helper extensions aligned with user mode."""
+        if prefer_dark is None:
+            return text
+
+        shell_values = cls._section_key_values(text, "/org/gnome/shell")
+        enabled = cls._string_list(shell_values.get("enabled-extensions"))
+        disabled = cls._string_list(shell_values.get("disabled-extensions"))
+
+        def add_once(values: List[str], uuid: str) -> None:
+            if uuid not in values:
+                values.append(uuid)
+
+        if prefer_dark:
+            enabled = [uuid for uuid in enabled if uuid != _LIGHT_STYLE_UUID]
+            disabled = [uuid for uuid in disabled if uuid != _USER_THEME_UUID]
+            add_once(enabled, _USER_THEME_UUID)
+            add_once(disabled, _LIGHT_STYLE_UUID)
+        else:
+            enabled = [uuid for uuid in enabled if uuid != _USER_THEME_UUID]
+            disabled = [uuid for uuid in disabled if uuid != _LIGHT_STYLE_UUID]
+            add_once(enabled, _LIGHT_STYLE_UUID)
+            add_once(disabled, _USER_THEME_UUID)
+
+        text = cls._replace_or_add_dconf_key(
+            text,
+            "/org/gnome/shell",
+            "disabled-extensions",
+            cls._quote_string_list(disabled),
+        )
+        return cls._replace_or_add_dconf_key(
+            text,
+            "/org/gnome/shell",
+            "enabled-extensions",
+            cls._quote_string_list(enabled),
+        )
+
+    @classmethod
+    def _preserve_user_theme_preferences(cls, text: str) -> str:
+        """
+        Keep user light/dark/theme choices out of layout switching.
+
+        Layout dumps include theme keys because they are full dconf dumps,
+        but theme selection is managed by the Themes page. Applying a layout
+        must not turn a dark session light or the reverse.
+        """
+        current: Dict[Tuple[str, str], str] = {}
+        for section, key in _PRESERVED_THEME_KEYS:
+            value = cls._read_dconf_value(f"{section}/{key}")
+            if value is not None:
+                current[(section, key)] = value
+
+        if not current:
+            return text
+
+        prefer_dark = cls._prefers_dark(current)
+        if prefer_dark is True and (_INTERFACE_SECTION, "color-scheme") not in current:
+            current[(_INTERFACE_SECTION, "color-scheme")] = "'prefer-dark'"
+
+        out = text
+        for section, key in _PRESERVED_THEME_KEYS:
+            value = current.get((section, key))
+            if value is not None:
+                out = cls._replace_or_add_dconf_key(out, section, key, value)
+        return cls._rewrite_shell_theme_mode(out, prefer_dark=prefer_dark)
+
+    @staticmethod
     def _parse_dconf_dump_paths(text: str) -> Set[str]:
         """
         Parse a dconf dump and return the set of full key paths it contains.
@@ -311,11 +582,13 @@ class LayoutApplier:
         loaded biggnome inherits minimal's ``false`` and the panel blur
         stays off.
 
-        Restricting to ``/org/gnome/shell/extensions/`` keeps the signal
-        storm small (and skips paths where reset would lose unrelated user
-        state — settings-daemon caches, notification app history, etc.).
-        Extensions are already disabled when this runs, so the Notify
-        signals fire mostly into dead code.
+        Restricting resets to ``/org/gnome/shell/extensions/`` avoids
+        losing unrelated application/user state. If an extension branch is
+        fully absent from the target layout, reset the whole branch. If
+        the branch still exists, reset only the stale keys before loading
+        the target text. ``dconf load`` is a merge operation; without the
+        per-key reset, settings from another layout can survive forever
+        even though the new TXT does not define them.
 
         Returns the number of keys reset.
         """
@@ -333,19 +606,15 @@ class LayoutApplier:
             return 0
 
         # Group by extension subdir (/org/gnome/shell/extensions/<uuid>/).
-        # When every live key under a subdir is orphan (extension fully
-        # leaving the layout), one ``dconf reset -f <subdir>`` clears the
-        # whole branch in a single dconf call — orders of magnitude faster
-        # than per-key for hybrid → biggnome (arcmenu, dash-to-panel, pano,
-        # gtk4-ding can each contribute hundreds of keys). Extensions still
-        # present in the target layout fall back to per-key reset so
-        # surviving keys stay untouched.
+        # Whole-branch reset is used only when the extension branch is fully
+        # absent from the target. For branches that remain in the target,
+        # reset stale keys individually so the layout TXT is exact.
         ext_base = "/org/gnome/shell/extensions/"
 
         def ext_subdir(path: str) -> Optional[str]:
             if not path.startswith(ext_base):
                 return None
-            rest = path[len(ext_base):]
+            rest = path[len(ext_base) :]
             slash = rest.find("/")
             if slash < 0:
                 return None
@@ -363,18 +632,18 @@ class LayoutApplier:
                 orphan_by_subdir.setdefault(sd, set()).add(p)
 
         n = 0
-        handled: Set[str] = set()
-        for sd, orph_keys in orphan_by_subdir.items():
+        for sd in sorted(orphan_by_subdir):
+            orph_keys = orphan_by_subdir[sd]
             if orph_keys == live_by_subdir.get(sd, set()):
                 ok2, _msg = run_cmd(["dconf", "reset", "-f", sd], timeout=10)
                 if ok2:
                     n += len(orph_keys)
-                    handled.update(orph_keys)
+                continue
 
-        for path in sorted(orphans - handled):
-            ok2, _msg = run_cmd(["dconf", "reset", path], timeout=5)
-            if ok2:
-                n += 1
+            for path in sorted(orph_keys):
+                ok2, _msg = run_cmd(["dconf", "reset", path], timeout=10)
+                if ok2:
+                    n += 1
         if n:
             log.info("reset %d orphan key(s) before load", n)
         return n
@@ -391,10 +660,11 @@ class LayoutApplier:
     # reverts to default mid-switch, and other extensions register
     # their stylesheets on top of the live Big-Blue theme.
     _RELOAD_AFTER_LOAD = (
+        # Keep this list conservative. ReloadExtension calls disable() and
+        # enable() internally. Dash-to-panel and ArcMenu can stay in ERROR,
+        # while Dash to Dock can block the DBus call long enough to delay the
+        # switch. Their live gsettings handlers are enough for layout changes.
         "blur-my-shell@aunetx",
-        "dash-to-dock@micxgx.gmail.com",
-        "dash-to-panel@jderose9.github.com",
-        "big-shot@bigcommunity.org",
     )
 
     @classmethod
@@ -414,7 +684,7 @@ class LayoutApplier:
                 continue
             ok = ShellReloader.reload_extension(
                 uuid,
-                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+                timeout=cls._SHELL_RELOAD_TIMEOUT_SEC,
             )
             if not ok:
                 log.warning("ReloadExtension failed or timed out for %s", uuid)
@@ -422,10 +692,13 @@ class LayoutApplier:
             time.sleep(cls._DISABLE_STEP_SEC)
 
     @classmethod
-    def _disable_extensions_in_order(cls, uuids: Iterable[str]) -> bool:
+    def _disable_extensions_in_order(cls, uuids: Iterable[str], *, sort: bool = True) -> bool:
         """
-        Disable each extension via DBus, in sorted UUID order, with a
-        small delay between calls.
+        Disable each extension via DBus with a small delay between calls.
+
+        ``sort=True`` keeps the old stable UUID order for generic batches.
+        ``sort=False`` preserves caller order for batches already ordered
+        by GNOME Shell load order.
 
         We do NOT use ``gsettings set ... disable-user-extensions=true``
         for this because that triggers an async cascade where the Shell
@@ -447,8 +720,30 @@ class LayoutApplier:
         Returns False if the Shell DBus path timed out repeatedly and
         the caller should skip further extension DBus work in this apply.
         """
+        if sort:
+            ordered_uuids = sorted({u for u in uuids if u and u not in _NO_DISABLE})
+        else:
+            ordered_uuids = []
+            seen = set()
+            for uuid in uuids:
+                if not uuid or uuid in _NO_DISABLE or uuid in seen:
+                    continue
+                ordered_uuids.append(uuid)
+                seen.add(uuid)
+
         timeout_count = 0
-        for uuid in sorted({u for u in uuids if u and u not in _NO_DISABLE}):
+        for uuid in ordered_uuids:
+            states = ShellReloader.list_extensions_state()
+            if states:
+                state = states.get(uuid)
+                if state is not None and state not in _LIVE_EXTENSION_STATES:
+                    log.info(
+                        "skipping DisableExtension for non-live %s (state=%s)",
+                        uuid,
+                        state,
+                    )
+                    continue
+
             ok, msg = ShellReloader.enable_extension_dbus(
                 uuid,
                 enable=False,
@@ -471,6 +766,31 @@ class LayoutApplier:
                 )
                 return False
         return True
+
+    @staticmethod
+    def _leaving_extensions_in_disable_order(
+        before_uuids: Iterable[str],
+        leaving: Set[str],
+    ) -> List[str]:
+        """
+        Disable leaving extensions from newest to oldest Shell load order.
+
+        GNOME Shell rebases later extensions when an earlier extension is
+        disabled. Reversing the active order removes later leaving
+        extensions first, so paired layouts such as Hybrid -> G-Unity do
+        not disable dash-to-panel once via ArcMenu's rebase and again via
+        our direct call.
+        """
+        leaving_set = {u for u in leaving if u}
+        ordered = []
+        seen = set()
+        for uuid in reversed(list(before_uuids or ())):
+            if uuid in leaving_set and uuid not in seen:
+                ordered.append(uuid)
+                seen.add(uuid)
+        for uuid in sorted(leaving_set - seen):
+            ordered.append(uuid)
+        return ordered
 
     @classmethod
     def _persist_to_settings_file(cls, data: str) -> Tuple[bool, str]:
@@ -501,6 +821,18 @@ class LayoutApplier:
                 except Exception as exc:
                     log.debug("could not create .bak: %s", exc)
             tmp.replace(SETTINGS_GNOME)
+            digest = hashlib.sha256(data.encode("utf-8")).hexdigest()
+            try:
+                marker_tmp = _LAYOUT_SWITCHER_HASH_FILE.with_suffix(
+                    _LAYOUT_SWITCHER_HASH_FILE.suffix + ".tmp"
+                )
+                marker_tmp.write_text(
+                    f"{digest}  {SETTINGS_GNOME.name}\n",
+                    encoding="utf-8",
+                )
+                marker_tmp.replace(_LAYOUT_SWITCHER_HASH_FILE)
+            except Exception as exc:
+                log.warning("could not write layout-switcher hash marker: %s", exc)
             try:
                 dir_fd = os.open(str(SETTINGS_GNOME.parent), os.O_DIRECTORY)
                 try:
@@ -682,7 +1014,7 @@ class LayoutApplier:
           1. acquire lock                       (watcher won't dump)
           2. stop sync-gnome-theme-to-qt.path    (avoid re-fires
              during the dconf load's burst of writes)
-          3. disable ``before_uuids`` via DBus   (sorted, see
+          3. disable leaving UUIDs via DBus       (ordered, see
              ``_disable_extensions_in_order``)
           4. settle so disable() callbacks drain
           5. surgical reset of orphan extension keys (see
@@ -711,8 +1043,8 @@ class LayoutApplier:
         whose ``disable()`` left orphan signal handlers behind crash
         with ``this._settings is null`` and stay broken for the rest of
         the session. The surgical orphan-only reset above keeps the
-        Notify storm small (only keys actually leaving fire) and scoped
-        to extension storage (no risk to user data elsewhere).
+        Notify storm small (only branches actually leaving fire) and
+        scoped to extension storage (no risk to user data elsewhere).
 
         Why no ``reload_all`` after the load: ``dconf load`` writes
         ``enabled-extensions``, which fires the Shell's gsettings listener
@@ -744,8 +1076,14 @@ class LayoutApplier:
         try:
             cls._qt_theme_watcher("stop")
 
-            # Disable extensions in two phases: LEAVING (in before but not
-            # target) first, then STAYING (in both). Why two phases:
+            # Disable LEAVING extensions (present in before but not in
+            # target), with one exception: dash-to-panel is restarted when
+            # the target layout uses it. DTP does not reliably rebuild its
+            # panel actors from live GSettings updates, so layouts that keep
+            # it enabled (Desk-UX -> Hybrid, or reapplying Hybrid) can show
+            # stale icon sizes/positions unless its enable() runs after the
+            # target settings are fully loaded.
+            # Why not disable other STAYING extensions:
             #
             # Shell's ``_callExtensionDisable`` performs a "rebase" — it
             # disables every extension loaded *after* the target in
@@ -756,41 +1094,53 @@ class LayoutApplier:
             # Shell splices X out of ``_extensionOrder`` — Y's later
             # disable then has fewer (or no) post-X extensions to rebase.
             #
-            # Why LEAVING first: extensions like arcmenu hold static
-            # singletons that survive a re-enable, and don't tolerate
-            # being disabled twice. If a STAYING extension's rebase
-            # touches arcmenu mid-switch, arcmenu's enable() rebuilds
-            # its singleton; then the dconf load's listener cascade
-            # disables arcmenu *again*, which throws (and once the
-            # singleton is left set without a successful enable, both
-            # enable and disable throw forever — visible as the loop
-            # of "ArcMenu has been already initialized" /
-            # "_updateNotification is undefined" errors). Disabling
-            # LEAVING first puts arcmenu through one clean cycle while
-            # everything else is still healthy, then splices it out of
-            # ``_extensionOrder`` so no later rebase can touch it.
+            # Repeatedly disabling STAYING extensions mutates
+            # ``enabled-extensions`` into many transient states (sometimes
+            # down to ``@as []``). GNOME Shell processes those changes
+            # asynchronously; the later dconf load can then race pending
+            # enable/disable work and make singleton-heavy extensions such
+            # as dash-to-dock, Drive Menu and Pamac Updates enter ERROR
+            # ("already initialized" / status indicator conflicts).
             #
-            # Why STAYING is still pre-disabled: their keys are about
-            # to be mutated by the orphan reset and the dconf load, and
-            # live handlers reacting to the Notify storm have caused
-            # ``this._settings is null`` cascades.
+            # LEAVING extensions are still disabled before the orphan reset,
+            # because their entire settings branch may be removed.
             target_enabled = cls._parse_target_enabled_extensions(data)
             before_set = {u for u in (before_uuids or ()) if u}
             leaving = before_set - target_enabled
-            staying = before_set & target_enabled
-            if leaving or staying:
+            disable_batch = set(leaving)
+            restart_target_dtp = (
+                _DASH_TO_PANEL_UUID in before_set
+                and _DASH_TO_PANEL_UUID in target_enabled
+            )
+            if restart_target_dtp:
+                # GNOME Shell rebases later extensions when any earlier
+                # extension is disabled. If dash-to-panel stays enabled,
+                # that implicit rebase can call its async disable() with
+                # panelManager still null and leave a ghost panel. Restart
+                # DTP first so later removals cannot rebase it, and so its
+                # own panel actors are rebuilt from complete target settings.
+                disable_batch.add(_DASH_TO_PANEL_UUID)
+
+            if disable_batch:
                 progress("Disabling extensions…")
             shell_dbus_available = True
-            if leaving:
-                shell_dbus_available = cls._disable_extensions_in_order(leaving)
-                time.sleep(cls._DISABLE_STEP_SEC)
-            if staying and shell_dbus_available:
-                shell_dbus_available = cls._disable_extensions_in_order(staying)
-                # Let last extension's disable() body finish before
-                # we change the keys it was bound to.
+            if disable_batch:
+                leaving_order = cls._leaving_extensions_in_disable_order(
+                    before_uuids,
+                    disable_batch,
+                )
+                if restart_target_dtp:
+                    leaving_order = [
+                        _DASH_TO_PANEL_UUID,
+                        *[u for u in leaving_order if u != _DASH_TO_PANEL_UUID],
+                    ]
+                shell_dbus_available = cls._disable_extensions_in_order(
+                    leaving_order,
+                    sort=False,
+                )
+                # Let last extension's disable() body finish before the
+                # orphan reset removes its settings branch.
                 time.sleep(cls._SETTLE_SEC)
-            elif staying:
-                log.warning("skipping remaining extension disables after DBus timeouts")
 
             progress("Loading layout…")
             # Clear keys from the previous layout that the new layout
@@ -798,22 +1148,29 @@ class LayoutApplier:
             # disabling extensions so most Notify signals fire into
             # dead code, before the load so target wins everywhere.
             cls._reset_orphan_keys(data)
-
-            if persist:
-                ok_persist, info = cls._persist_to_settings_file(data)
-                if not ok_persist:
-                    log.warning("could not persist settings.gnome: %s", info)
+            settings_data, extension_switch_data = cls._split_shell_extension_switch_keys(data)
 
             ok, msg = run_cmd(
                 ["dconf", "load", "/"],
-                stdin_text=data,
+                stdin_text=settings_data,
                 timeout=20,
             )
             if not ok:
                 log.warning("dconf load failed: %s", msg)
                 return False, f"dconf load failed: {msg}"
 
-            # Force fresh JS module init for visually-stateful extensions.
+            if extension_switch_data:
+                ok, msg = run_cmd(
+                    ["dconf", "load", "/"],
+                    stdin_text=extension_switch_data,
+                    timeout=10,
+                )
+                if not ok:
+                    log.warning("dconf extension switch load failed: %s", msg)
+                    return False, f"dconf extension switch load failed: {msg}"
+
+            # Force fresh JS module init for a small allowlist of
+            # visually-stateful extensions known to tolerate ReloadExtension.
             # Disable→Enable alone reuses the extension's JS module and
             # leaves stale CSS references (e.g. user-theme keeps the
             # previous shell-theme CSS partly applied; panel transparency
@@ -821,6 +1178,11 @@ class LayoutApplier:
             # ReloadExtension does disable + drop module + load fresh +
             # enable, which is what logout would do — but per-extension,
             # without restarting gnome-shell.
+            #
+            # Keep dash-to-panel, ArcMenu, Dash to Dock and Big Shot out.
+            # Their live gsettings handlers apply layout changes, while
+            # ReloadExtension can leave them in Shell ERROR state or block
+            # long enough to make the layout switch look broken.
             #
             # Only ``after``: extensions present in ``before`` but not
             # ``after`` are LEAVING the layout — they were disabled by
@@ -835,11 +1197,24 @@ class LayoutApplier:
             # big-shot) live in ``before ∩ after`` — already covered by
             # ``after`` alone, no union needed.
             after_uuids = cls._enabled_extensions()
+            dtp_restarted = restart_target_dtp or (
+                _DASH_TO_PANEL_UUID in target_enabled
+                and _DASH_TO_PANEL_UUID not in before_set
+            )
+            if dtp_restarted:
+                time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
+
             if after_uuids and shell_dbus_available:
                 progress("Reloading components…")
                 cls._reload_visual_extensions(after_uuids)
             elif after_uuids:
                 log.warning("skipping visual extension reloads after DBus timeouts")
+
+            if persist:
+                ok_persist, info = cls._persist_to_settings_file(data)
+                if not ok_persist:
+                    log.warning("could not persist settings.gnome: %s", info)
+                    return False, f"settings.gnome write failed: {info}"
 
             # Note: we previously toggled ``org.gnome.Shell.OverviewActive``
             # true→false here to force a CSS style recompute on Main.panel
@@ -866,11 +1241,11 @@ class LayoutApplier:
         Apply a layout file as the complete next-login dconf state, and
         best-effort apply to the live session.
 
-        ``settings.gnome`` becomes a verbatim copy of the layout file
-        (after DTP monitor-id rewriting). The live session also gets
-        the layout via ``dconf load``; any leftover keys from the
-        previous layout that aren't in this one persist in live dconf
-        until the next login (harmless — see ``load_dconf_safely``).
+        ``settings.gnome`` becomes the layout file adjusted only for
+        machine-local DTP monitor IDs and the user's current theme mode.
+        The live session also gets stale extension keys reset before
+        ``dconf load`` so a layout applies as exact state instead of
+        inheriting values from the previous layout.
 
         ``progress_cb`` is forwarded to ``load_dconf_safely`` so the
         caller can update its loading overlay between stages.
@@ -888,6 +1263,7 @@ class LayoutApplier:
         layout_text = cls._rewrite_dtp_keys_in_text(layout_text, local_dtp_monitors)
 
         before = cls._enabled_extensions()
+        layout_text = cls._preserve_user_theme_preferences(layout_text)
         return cls.load_dconf_safely(
             layout_text,
             persist=True,

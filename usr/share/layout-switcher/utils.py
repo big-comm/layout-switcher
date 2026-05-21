@@ -35,7 +35,11 @@ def atomic_write_text(dest: Path, data: str, encoding: str = "utf-8") -> None:
     """
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dest.with_suffix(dest.suffix + ".tmp") if dest.suffix else dest.with_name(dest.name + ".tmp")
+    tmp = (
+        dest.with_suffix(dest.suffix + ".tmp")
+        if dest.suffix
+        else dest.with_name(dest.name + ".tmp")
+    )
     with open(tmp, "w", encoding=encoding) as fh:
         fh.write(data)
         fh.flush()
@@ -49,6 +53,7 @@ def atomic_write_text(dest: Path, data: str, encoding: str = "utf-8") -> None:
             os.close(dir_fd)
     except OSError as exc:
         log.debug("dir fsync skipped for %s: %s", dest.parent, exc)
+
 
 # ── Subprocess ────────────────────────────────────────────────────────────────
 

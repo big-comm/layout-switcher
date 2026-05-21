@@ -434,6 +434,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _show_backups(self) -> None:
         dlg = BackupsDialog(
+            pool=self._pool,
             toast_cb=self._toast,
             on_restored=self._on_backup_restored,
         )
@@ -463,7 +464,7 @@ class MainWindow(Adw.ApplicationWindow):
             comments=tr("Layouts, effects and themes for your GNOME desktop."),
             website="https://communitybig.org/",
             issue_url="https://github.com/BigCommunity/layout-switcher/issues",
-            copyright="© 2022–2025 Big Community & Contributors",
+            copyright="© 2022–2026 Big Community & Contributors",
             developers=["Big Community", "Ari Novais"],
         )
         about.present(self)

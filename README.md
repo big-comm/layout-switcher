@@ -11,7 +11,7 @@ A GTK4 + libadwaita application for switching GNOME desktop layouts, managing sh
   <img alt="GTK"        src="https://img.shields.io/badge/GTK-4.0-4a86cf.svg">
   <img alt="Libadwaita" src="https://img.shields.io/badge/libadwaita-1.x-3584e4.svg">
   <img alt="GNOME"      src="https://img.shields.io/badge/GNOME-45%2B-4a86cf.svg?logo=gnome&logoColor=white">
-  <img alt="Tests"      src="https://img.shields.io/badge/tests-135%20passing-success.svg">
+  <img alt="Tests"      src="https://img.shields.io/badge/tests-158%20passing-success.svg">
   <img alt="i18n"       src="https://img.shields.io/badge/i18n-28%20languages-blueviolet.svg">
 </p>
 
@@ -89,7 +89,7 @@ python usr/share/layout-switcher/main.py
 ruff check .
 ruff format .
 
-# tests (135 unit tests, no display required)
+# tests (158 unit tests, no display required)
 python -m pytest tests/ -q
 ```
 

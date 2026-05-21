@@ -365,9 +365,7 @@ class ThemesPage(Gtk.Box):
         """Versao grande do mockup — usada nos tiles de grid (GTK/Shell)."""
         accent = extract_theme_color(name, kind) or color_from_name(name)
         if kind == "gtk":
-            return MiniWindowPreview(
-                accent, dark=is_dark_theme_name(name), width=170, height=104
-            )
+            return MiniWindowPreview(accent, dark=is_dark_theme_name(name), width=170, height=104)
         panel_bg = extract_shell_panel_bg(name)
         return MiniPanelPreview(
             panel_bg,

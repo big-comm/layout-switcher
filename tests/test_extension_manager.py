@@ -219,6 +219,22 @@ class TestSchemaCompile:
         mock_run.assert_not_called()
 
 
+class TestInstall:
+    def test_empty_package_name_skips_package_managers(self):
+        def fake_which(cmd: str):
+            return "/usr/bin/pacman" if cmd == "pacman" else None
+
+        with (
+            patch("extension_manager.shutil.which", side_effect=fake_which),
+            patch("extension_manager.run_cmd") as mock_run,
+        ):
+            ok, msg = ExtMgr.install("uuid@x.com", ego_id=0, pkg="")
+
+        assert ok is False
+        assert msg == "no installation method succeeded"
+        mock_run.assert_not_called()
+
+
 class TestUpdate:
     def test_enable_after_install_marks_enabled_and_tries_live_activation(self):
         with (

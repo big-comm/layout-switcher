@@ -171,9 +171,9 @@ class FontsPage(Gtk.Box):
     def _build_smoothing_group(self) -> Adw.PreferencesGroup:
         grp = Adw.PreferencesGroup()
         grp.set_title(tr("Smoothing"))
-        current = (
-            gsettings_get("org.gnome.desktop.interface", "font-antialiasing") or ""
-        ).strip("'\"")
+        current = (gsettings_get("org.gnome.desktop.interface", "font-antialiasing") or "").strip(
+            "'\""
+        )
         self._add_radio_rows(
             grp,
             schema="org.gnome.desktop.interface",
@@ -432,9 +432,7 @@ class FontsPage(Gtk.Box):
             )
             return
         if self._google_query:
-            self._google_status_row.set_title(
-                tr("{n} fonts found").format(n=total)
-            )
+            self._google_status_row.set_title(tr("{n} fonts found").format(n=total))
             return
         loaded = len(self._google_catalog)
         shown = min(loaded, _GOOGLE_DEFAULT_LIMIT)

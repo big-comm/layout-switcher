@@ -257,9 +257,7 @@ def _find_icon_with_inheritance(
                 return candidate
 
     for parent in inherits:
-        found = _find_icon_with_inheritance(
-            parent, rel_paths, glob_patterns, _visited, _depth + 1
-        )
+        found = _find_icon_with_inheritance(parent, rel_paths, glob_patterns, _visited, _depth + 1)
         if found is not None:
             return found
 

@@ -250,7 +250,8 @@ class ShellReloader:
         # 1. D-Bus direto
         ok, msg = ShellReloader.enable_extension_dbus(uuid, enable)
         if ok:
-            ShellReloader.reload_extension(uuid)
+            if enable:
+                ShellReloader.reload_extension(uuid)
             return True, msg
 
         # 2. Fallback: gsettings + reload geral

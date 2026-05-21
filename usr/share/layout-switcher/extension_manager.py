@@ -260,22 +260,24 @@ class ExtMgr:
             if ok:
                 return True, "ego-download"
 
-        # 3. Gerenciadores de pacotes
-        for cmd in [
-            ["pkcon", "install", "-y", pkg],
-            ["apt-get", "install", "-y", pkg],
-            ["apt", "install", "-y", pkg],
-            ["dnf", "install", "-y", pkg],
-            ["pacman", "-S", "--noconfirm", pkg],
-            ["zypper", "install", "-y", pkg],
-        ]:
-            if shutil.which(cmd[0]):
-                ok, out = run_cmd(cmd, timeout=180)
-                if ok:
-                    schema_ok, schema_msg = ExtMgr._compile_user_schemas(uuid)
-                    if not schema_ok:
-                        return False, f"schema compile failed: {schema_msg}"
-                    return True, cmd[0]
+        # 3. Gerenciadores de pacotes. Browse/EGO callers may not know a
+        # distro package name; never invoke a package manager with an empty arg.
+        if pkg:
+            for cmd in [
+                ["pkcon", "install", "-y", pkg],
+                ["apt-get", "install", "-y", pkg],
+                ["apt", "install", "-y", pkg],
+                ["dnf", "install", "-y", pkg],
+                ["pacman", "-S", "--noconfirm", pkg],
+                ["zypper", "install", "-y", pkg],
+            ]:
+                if shutil.which(cmd[0]):
+                    ok, out = run_cmd(cmd, timeout=180)
+                    if ok:
+                        schema_ok, schema_msg = ExtMgr._compile_user_schemas(uuid)
+                        if not schema_ok:
+                            return False, f"schema compile failed: {schema_msg}"
+                        return True, cmd[0]
 
         return False, "no installation method succeeded"
 
