@@ -26,6 +26,8 @@ class ThemeMgr:
     sem encerrar a sessão.
     """
 
+    SHELL_DEFAULT_THEME_LABEL = "Adwaita (Default)"
+
     # ── Listar temas disponíveis ──────────────────────────────────────────────
 
     @staticmethod
@@ -80,7 +82,11 @@ class ThemeMgr:
                 if ThemeMgr._is_valid_theme(d, kind):
                     seen[d.name] = True
 
-        return sorted(seen.keys(), key=str.lower)
+        names = sorted(seen.keys(), key=str.lower)
+        if kind == "shell":
+            names = [n for n in names if n != ThemeMgr.SHELL_DEFAULT_THEME_LABEL]
+            return [ThemeMgr.SHELL_DEFAULT_THEME_LABEL] + names
+        return names
 
     # ── Aplicar tema ──────────────────────────────────────────────────────────
 
@@ -102,32 +108,52 @@ class ThemeMgr:
 
         if kind == "shell":
             uid = "user-theme@gnome-shell-extensions.gcampax.github.com"
+            settings_name = "" if name == ThemeMgr.SHELL_DEFAULT_THEME_LABEL else name
+            settings_value = "''" if not settings_name else settings_name
+
+            if not settings_name:
+                if not ExtMgr.is_installed(uid):
+                    return True, ""
+                ok, msg = gsettings_set(
+                    "org.gnome.shell.extensions.user-theme", "name", settings_value
+                )
+                if ok and ExtMgr.is_enabled(uid):
+                    ThemeMgr._reload_shell_user_theme(uid)
+                return ok, msg
+
             if not ExtMgr.is_installed(uid):
                 return False, "user-theme-not-installed"
             if not ExtMgr.is_enabled(uid):
                 return False, "user-theme-not-enabled"
 
-            ok, msg = gsettings_set("org.gnome.shell.extensions.user-theme", "name", name)
+            ok, msg = gsettings_set(
+                "org.gnome.shell.extensions.user-theme", "name", settings_value
+            )
             if ok:
                 # Recarrega shell theme via D-Bus (sem logout)
-                run_cmd(
-                    [
-                        "gdbus",
-                        "call",
-                        "--session",
-                        "--dest",
-                        DBUS_SHELL_NAME,
-                        "--object-path",
-                        DBUS_EXT_PATH,
-                        "--method",
-                        f"{DBUS_EXT_IFACE}.ReloadExtension",
-                        uid,
-                    ],
-                    timeout=5,
-                )
+                ThemeMgr._reload_shell_user_theme(uid)
             return ok, msg
 
         return False, f"unknown theme kind: {kind!r}"
+
+    @staticmethod
+    def _reload_shell_user_theme(uid: str) -> None:
+        """Reload User Themes so Shell CSS updates without logout."""
+        run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.ReloadExtension",
+                uid,
+            ],
+            timeout=5,
+        )
 
     # ── Esquema de cores ──────────────────────────────────────────────────────
 
@@ -170,7 +196,10 @@ class ThemeMgr:
         schema, key = key_map.get(kind, ("", ""))
         if not schema:
             return ""
-        return gsettings_get(schema, key) or ""
+        value = gsettings_get(schema, key) or ""
+        if kind == "shell" and not value:
+            return ThemeMgr.SHELL_DEFAULT_THEME_LABEL
+        return value
 
     @staticmethod
     def color_scheme() -> str:

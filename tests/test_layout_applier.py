@@ -10,7 +10,7 @@ from layout_applier import LayoutApplier
 class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
     @patch(
-        "layout_applier.LayoutApplier._preserve_user_theme_preferences",
+        "layout_applier.LayoutApplier._preserve_user_color_scheme",
         side_effect=lambda data: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
@@ -29,7 +29,7 @@ class TestLayoutApplier:
     ):
         """Cobre fluxo completo: mutter gdbus probe -> dtp dconf fallback (5
         reads) -> read enabled-ext (before, vazio) -> stop watcher Qt ->
-        orphan scan -> persist -> load -> read enabled-ext (after) ->
+        persist -> orphan scan -> load -> read enabled-ext (after) ->
         start watcher Qt."""
         layout = tmp_path / "classic.txt"
         layout.write_text("[/]\nfoo='bar'")
@@ -65,7 +65,7 @@ class TestLayoutApplier:
 
     @patch("layout_applier.time.sleep")
     @patch(
-        "layout_applier.LayoutApplier._preserve_user_theme_preferences",
+        "layout_applier.LayoutApplier._preserve_user_color_scheme",
         side_effect=lambda data: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
@@ -133,7 +133,7 @@ class TestLayoutApplier:
 
     @patch("layout_applier.time.sleep")
     @patch(
-        "layout_applier.LayoutApplier._preserve_user_theme_preferences",
+        "layout_applier.LayoutApplier._preserve_user_color_scheme",
         side_effect=lambda data: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
@@ -172,7 +172,7 @@ class TestLayoutApplier:
 
         ok, msg = LayoutApplier.apply(layout)
         assert ok is False
-        mock_persist.assert_not_called()
+        mock_persist.assert_called_once()
         mock_reload_visual.assert_not_called()
         # Garantir que a ultima chamada foi start do watcher (finally rodou)
         assert mock_run.call_args_list[-1].args[0][:3] == [
@@ -303,8 +303,8 @@ class TestLayoutApplier:
         assert out.rstrip().endswith("show-hidden=false")
 
     @patch("layout_applier.run_cmd")
-    def test_preserve_user_dark_theme_preferences(self, mock_run):
-        """Original layouts must not turn a dark user session light."""
+    def test_preserve_user_dark_color_scheme(self, mock_run):
+        """Original layouts keep user dark mode but restore factory themes."""
         light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
         user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
         data = (
@@ -317,21 +317,18 @@ class TestLayoutApplier:
             f"enabled-extensions=['{light_style}', 'dash-to-panel@jderose9.github.com']\n"
             "\n"
             "[org/gnome/shell/extensions/user-theme]\n"
-            "name='Big-Blue'\n"
+            "name=''\n"
         )
         mock_run.side_effect = [
             (True, "'prefer-dark'"),
-            (True, "'adw-gtk3-dark'"),
-            (True, "'bigicons-papient-dark'"),
-            (True, "'My-Dark-Shell'"),
         ]
 
-        out = LayoutApplier._preserve_user_theme_preferences(data)
+        out = LayoutApplier._preserve_user_color_scheme(data)
 
         assert "color-scheme='prefer-dark'" in out
-        assert "gtk-theme='adw-gtk3-dark'" in out
-        assert "icon-theme='bigicons-papient-dark'" in out
-        assert "name='My-Dark-Shell'" in out
+        assert "gtk-theme='adw-gtk3'\n" in out
+        assert "icon-theme='bigicons-papient'\n" in out
+        assert "name=''" in out
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
         disabled = LayoutApplier._string_list(shell["disabled-extensions"])
@@ -341,8 +338,8 @@ class TestLayoutApplier:
         assert user_theme not in disabled
 
     @patch("layout_applier.run_cmd")
-    def test_preserve_user_light_theme_preferences(self, mock_run):
-        """Original layouts must not turn a light user session dark."""
+    def test_preserve_user_light_color_scheme(self, mock_run):
+        """Original layouts keep user light mode but restore factory themes."""
         light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
         user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
         data = (
@@ -360,17 +357,14 @@ class TestLayoutApplier:
         )
         mock_run.side_effect = [
             (True, "'prefer-light'"),
-            (True, "'adw-gtk3'"),
-            (True, "'bigicons-papient'"),
-            (True, "'My-Light-Shell'"),
         ]
 
-        out = LayoutApplier._preserve_user_theme_preferences(data)
+        out = LayoutApplier._preserve_user_color_scheme(data)
 
         assert "color-scheme='prefer-light'" in out
-        assert "gtk-theme='adw-gtk3'" in out
-        assert "icon-theme='bigicons-papient'" in out
-        assert "name='My-Light-Shell'" in out
+        assert "gtk-theme='adw-gtk3-dark'" in out
+        assert "icon-theme='bigicons-papient-dark'" in out
+        assert "name='Big-Blue'" in out
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
         disabled = LayoutApplier._string_list(shell["disabled-extensions"])
@@ -378,6 +372,35 @@ class TestLayoutApplier:
         assert user_theme not in enabled
         assert user_theme in disabled
         assert light_style not in disabled
+
+    @patch("layout_applier.run_cmd")
+    def test_preserve_user_color_scheme_uses_effective_gsettings(self, mock_run):
+        """Preserve light/dark even when dconf has no explicit override."""
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "color-scheme='prefer-dark'\n"
+            "gtk-theme='adw-gtk3-dark'\n"
+        )
+        mock_run.side_effect = [
+            (True, ""),  # dconf read: default/unset
+            (True, "'prefer-light'"),  # gsettings effective value
+        ]
+
+        out = LayoutApplier._preserve_user_color_scheme(data)
+
+        assert "color-scheme='prefer-light'" in out
+        assert "gtk-theme='adw-gtk3-dark'" in out
+        assert mock_run.call_args_list[0].args[0] == [
+            "dconf",
+            "read",
+            "/org/gnome/desktop/interface/color-scheme",
+        ]
+        assert mock_run.call_args_list[1].args[0] == [
+            "gsettings",
+            "get",
+            "org.gnome.desktop.interface",
+            "color-scheme",
+        ]
 
     @patch("layout_applier.time.sleep")
     @patch("layout_applier.ShellReloader.reload_extension", return_value=True)

@@ -267,7 +267,10 @@ class LayoutsPage(Gtk.Box):
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
         root = self.get_root()
         initial_label = f"{tr('Applying')} {name}…"
-        if hasattr(root, "show_loading"):
+        loading_token = None
+        if hasattr(root, "begin_loading"):
+            loading_token = root.begin_loading(initial_label)
+        elif hasattr(root, "show_loading"):
             root.show_loading(initial_label)
         layout_id = self._layout_id(cfg)
 
@@ -275,21 +278,28 @@ class LayoutsPage(Gtk.Box):
         # Marshal to the GTK main loop with idle_add so we never touch
         # widgets off-thread.
         def progress(stage: str) -> None:
-            if not hasattr(root, "show_loading"):
-                return
             try:
                 translated = tr(stage)
             except Exception:
                 translated = stage
             text = f"{name} — {translated}"
-            GLib.idle_add(root.show_loading, text)
+            if loading_token is not None and hasattr(root, "update_loading"):
+                GLib.idle_add(root.update_loading, loading_token, text)
+            elif hasattr(root, "show_loading"):
+                GLib.idle_add(root.show_loading, text)
 
         def task():
             try:
                 if use_snapshot:
                     data = SnapshotManager.read(layout_id)
                     if not data:
-                        GLib.idle_add(self._done, name, False, tr("Snapshot not found"))
+                        GLib.idle_add(
+                            self._done,
+                            name,
+                            False,
+                            tr("Snapshot not found"),
+                            loading_token,
+                        )
                         return
                     # Snapshots são dumps locais — DTP monitor IDs já estão corretos.
                     # load_dconf_safely escreve settings.gnome e faz dconf load;
@@ -305,20 +315,34 @@ class LayoutsPage(Gtk.Box):
                 else:
                     path = find_file(cfg, ["layouts"])
                     if not path:
-                        GLib.idle_add(self._done, name, False, tr("Layout file not found"))
+                        GLib.idle_add(
+                            self._done,
+                            name,
+                            False,
+                            tr("Layout file not found"),
+                            loading_token,
+                        )
                         return
                     ok, err = LayoutApplier.apply(path, progress_cb=progress)
-                GLib.idle_add(self._done, name, ok, err)
+                GLib.idle_add(self._done, name, ok, err, loading_token)
             except Exception as exc:
                 log.exception("layout apply failed for %s", name)
                 msg = str(exc).strip() or exc.__class__.__name__
-                GLib.idle_add(self._done, name, False, msg)
+                GLib.idle_add(self._done, name, False, msg, loading_token)
 
         self._pool.submit(task)
 
-    def _done(self, name: str, ok: bool, msg: str) -> None:
+    def _done(
+        self,
+        name: str,
+        ok: bool,
+        msg: str,
+        loading_token: Optional[int] = None,
+    ) -> None:
         root = self.get_root()
-        if hasattr(root, "hide_loading"):
+        if loading_token is not None and hasattr(root, "end_loading"):
+            root.end_loading(loading_token)
+        elif hasattr(root, "hide_loading"):
             root.hide_loading()
         if ok:
             prev = self._active_layout
@@ -383,27 +407,34 @@ class LayoutsPage(Gtk.Box):
     def _undo_layout(self, prev_name, backup_path) -> None:
         """Restaura o layout anterior a partir do backup."""
         root = self.get_root()
-        if hasattr(root, "show_loading"):
+        loading_token = None
+        if hasattr(root, "begin_loading"):
+            loading_token = root.begin_loading(tr("Restoring previous layout…"))
+        elif hasattr(root, "show_loading"):
             root.show_loading(tr("Restoring previous layout…"))
 
         def task():
             ok, info = BackupManager.restore(backup_path)
             if ok:
-                GLib.idle_add(self._done_undo, prev_name)
+                GLib.idle_add(self._done_undo, prev_name, loading_token)
             else:
-                GLib.idle_add(self._undo_failed, info)
+                GLib.idle_add(self._undo_failed, info, loading_token)
 
         self._pool.submit(task)
 
-    def _undo_failed(self, info: str) -> None:
+    def _undo_failed(self, info: str, loading_token: Optional[int] = None) -> None:
         root = self.get_root()
-        if hasattr(root, "hide_loading"):
+        if loading_token is not None and hasattr(root, "end_loading"):
+            root.end_loading(loading_token)
+        elif hasattr(root, "hide_loading"):
             root.hide_loading()
         self._set_status(f"{tr('Error')}: {info}", "err-col")
 
-    def _done_undo(self, prev_name) -> None:
+    def _done_undo(self, prev_name, loading_token: Optional[int] = None) -> None:
         root = self.get_root()
-        if hasattr(root, "hide_loading"):
+        if loading_token is not None and hasattr(root, "end_loading"):
+            root.end_loading(loading_token)
+        elif hasattr(root, "hide_loading"):
             root.hide_loading()
         self._active_layout = prev_name
         if prev_name:

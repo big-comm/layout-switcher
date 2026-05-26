@@ -38,6 +38,18 @@ class TestListThemes:
                 seen[d.name] = True
         assert "Papirus" in seen
 
+    def test_list_shell_themes_includes_adwaita_default(self, tmp_path):
+        theme_root = tmp_path / "themes"
+        shell_dir = theme_root / "Big-Blue" / "gnome-shell"
+        shell_dir.mkdir(parents=True)
+        (shell_dir / "gnome-shell.css").write_text("#panel {}\n")
+
+        with patch.object(ThemeMgr, "_theme_roots", return_value=[theme_root]):
+            assert ThemeMgr.list_themes("shell") == [
+                ThemeMgr.SHELL_DEFAULT_THEME_LABEL,
+                "Big-Blue",
+            ]
+
 
 class TestApply:
     @patch("theme_manager.gsettings_set", return_value=(True, ""))
@@ -58,6 +70,35 @@ class TestApply:
         assert ok is False
         assert msg == "user-theme-not-installed"
 
+    @patch("theme_manager.gsettings_set")
+    @patch("theme_manager.ExtMgr.is_installed", return_value=False)
+    def test_apply_shell_default_without_user_theme(self, _mock_inst, mock_gs):
+        ok, msg = ThemeMgr.apply("shell", ThemeMgr.SHELL_DEFAULT_THEME_LABEL)
+
+        assert ok is True
+        assert msg == ""
+        mock_gs.assert_not_called()
+
+    @patch("theme_manager.ThemeMgr._reload_shell_user_theme")
+    @patch("theme_manager.ExtMgr.is_enabled", return_value=False)
+    @patch("theme_manager.ExtMgr.is_installed", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_apply_shell_default_resets_user_theme_name(
+        self,
+        mock_gs,
+        _mock_inst,
+        _mock_enabled,
+        mock_reload,
+    ):
+        ok, msg = ThemeMgr.apply("shell", ThemeMgr.SHELL_DEFAULT_THEME_LABEL)
+
+        assert ok is True
+        assert msg == ""
+        mock_gs.assert_called_once_with(
+            "org.gnome.shell.extensions.user-theme", "name", "''"
+        )
+        mock_reload.assert_not_called()
+
     def test_apply_unknown_kind(self):
         ok, msg = ThemeMgr.apply("invalid", "Theme")
         assert ok is False
@@ -71,6 +112,10 @@ class TestCurrent:
     @patch("theme_manager.gsettings_get", return_value=None)
     def test_current_empty(self, mock_gs):
         assert ThemeMgr.current("gtk") == ""
+
+    @patch("theme_manager.gsettings_get", return_value="")
+    def test_current_shell_default(self, mock_gs):
+        assert ThemeMgr.current("shell") == ThemeMgr.SHELL_DEFAULT_THEME_LABEL
 
     def test_current_unknown_kind(self):
         assert ThemeMgr.current("invalid") == ""

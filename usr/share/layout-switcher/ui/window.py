@@ -60,6 +60,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._pages: Dict[str, Gtk.Widget] = {}
         self._page_factories: Dict[str, Callable[[], Gtk.Widget]] = {}
         self._pending_updates: Dict = {}
+        self._loading_token = 0
+        self._active_loading_token = 0
 
         self.set_title(tr("Layout Switcher"))
         self.set_default_size(1080, 700)
@@ -514,10 +516,28 @@ class MainWindow(Adw.ApplicationWindow):
         self._loading_card.set_can_target(True)
 
     def hide_loading(self) -> None:
+        self._active_loading_token = 0
         self._loading_backdrop.remove_css_class("loading-show")
         self._loading_card.remove_css_class("loading-show")
         self._loading_backdrop.set_can_target(False)
         self._loading_card.set_can_target(False)
+
+    def begin_loading(self, text: str = "") -> int:
+        self._loading_token += 1
+        self._active_loading_token = self._loading_token
+        self.show_loading(text)
+        return self._loading_token
+
+    def update_loading(self, token: int, text: str = "") -> bool:
+        if token != self._active_loading_token:
+            return False
+        self.show_loading(text)
+        return False
+
+    def end_loading(self, token: int) -> bool:
+        if token == self._active_loading_token:
+            self.hide_loading()
+        return False
 
     # ── Toast ─────────────────────────────────────────────────────────────────
 

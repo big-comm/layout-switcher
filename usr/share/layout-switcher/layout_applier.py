@@ -61,12 +61,12 @@ Flow::
   1. read layout_file, rewrite DTP monitor-keyed values to local ids
   2. read before = enabled-extensions
   3. acquire lock file
-  4. stop dconf-sync-gnome.service
-  5. DisableExtension via DBus for UUIDs leaving the layout
-  6. dconf reset for orphan extension keys
-  7. atomic write settings.gnome = layout text  (clean, no garbage)
+  4. stop sync-gnome-theme-to-qt.path
+  5. atomic write settings.gnome = layout text  (clean, no garbage)
+  6. DisableExtension via DBus for UUIDs leaving the layout
+  7. dconf reset for orphan extension keys
   8. dconf load / < layout
-  9. start dconf-sync-gnome.service              (watcher honours lock)
+  9. start sync-gnome-theme-to-qt.path
  10. release lock file
 
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
@@ -127,13 +127,7 @@ _USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
 _LIVE_EXTENSION_STATES = {1, 8}
 _SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
 _INTERFACE_SECTION = "/org/gnome/desktop/interface"
-_USER_THEME_SECTION = "/org/gnome/shell/extensions/user-theme"
-_PRESERVED_THEME_KEYS = (
-    (_INTERFACE_SECTION, "color-scheme"),
-    (_INTERFACE_SECTION, "gtk-theme"),
-    (_INTERFACE_SECTION, "icon-theme"),
-    (_USER_THEME_SECTION, "name"),
-)
+_COLOR_SCHEME_KEY = (_INTERFACE_SECTION, "color-scheme")
 
 # Paths where we're allowed to reset orphan keys (keys present in live
 # dconf but absent from the target layout). Restricted to extension
@@ -463,6 +457,21 @@ class LayoutApplier:
         return None
 
     @classmethod
+    def _current_color_scheme_value(cls) -> Optional[str]:
+        """Read the user's effective color-scheme as raw GVariant text."""
+        section, key = _COLOR_SCHEME_KEY
+        value = cls._read_dconf_value(f"{section}/{key}")
+        if value is not None:
+            return value
+
+        ok, raw = run_cmd(
+            ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
+            timeout=5,
+        )
+        raw = (raw or "").strip()
+        return raw if ok and raw else None
+
+    @classmethod
     def _rewrite_shell_theme_mode(
         cls,
         text: str,
@@ -506,32 +515,23 @@ class LayoutApplier:
         )
 
     @classmethod
-    def _preserve_user_theme_preferences(cls, text: str) -> str:
+    def _preserve_user_color_scheme(cls, text: str) -> str:
         """
-        Keep user light/dark/theme choices out of layout switching.
+        Keep only the user's light/dark preference out of layout switching.
 
-        Layout dumps include theme keys because they are full dconf dumps,
-        but theme selection is managed by the Themes page. Applying a layout
-        must not turn a dark session light or the reverse.
+        Original layouts must restore their factory GTK, icon and Shell
+        themes. Light/dark remains a user preference, so only
+        ``color-scheme`` is copied from the live session.
         """
-        current: Dict[Tuple[str, str], str] = {}
-        for section, key in _PRESERVED_THEME_KEYS:
-            value = cls._read_dconf_value(f"{section}/{key}")
-            if value is not None:
-                current[(section, key)] = value
-
-        if not current:
+        value = cls._current_color_scheme_value()
+        if value is None:
             return text
 
+        current = {_COLOR_SCHEME_KEY: value}
         prefer_dark = cls._prefers_dark(current)
-        if prefer_dark is True and (_INTERFACE_SECTION, "color-scheme") not in current:
-            current[(_INTERFACE_SECTION, "color-scheme")] = "'prefer-dark'"
 
-        out = text
-        for section, key in _PRESERVED_THEME_KEYS:
-            value = current.get((section, key))
-            if value is not None:
-                out = cls._replace_or_add_dconf_key(out, section, key, value)
+        section, key = _COLOR_SCHEME_KEY
+        out = cls._replace_or_add_dconf_key(text, section, key, value)
         return cls._rewrite_shell_theme_mode(out, prefer_dark=prefer_dark)
 
     @staticmethod
@@ -1014,12 +1014,12 @@ class LayoutApplier:
           1. acquire lock                       (watcher won't dump)
           2. stop sync-gnome-theme-to-qt.path    (avoid re-fires
              during the dconf load's burst of writes)
-          3. disable leaving UUIDs via DBus       (ordered, see
+          3. atomic write settings.gnome = data  (clean, no garbage)
+          4. disable leaving UUIDs via DBus       (ordered, see
              ``_disable_extensions_in_order``)
-          4. settle so disable() callbacks drain
-          5. surgical reset of orphan extension keys (see
+          5. settle so disable() callbacks drain
+          6. surgical reset of orphan extension keys (see
              ``_reset_orphan_keys``)
-          6. atomic write settings.gnome = data  (clean, no garbage)
           7. dconf load < data
           8. ReloadExtension on visually-stateful UUIDs (see
              ``_reload_visual_extensions``) — fresh JS module init so
@@ -1075,6 +1075,12 @@ class LayoutApplier:
         cls._sync_lock_acquire()
         try:
             cls._qt_theme_watcher("stop")
+
+            if persist:
+                ok_persist, info = cls._persist_to_settings_file(data)
+                if not ok_persist:
+                    log.warning("could not persist settings.gnome: %s", info)
+                    return False, f"settings.gnome write failed: {info}"
 
             # Disable LEAVING extensions (present in before but not in
             # target), with one exception: dash-to-panel is restarted when
@@ -1210,12 +1216,6 @@ class LayoutApplier:
             elif after_uuids:
                 log.warning("skipping visual extension reloads after DBus timeouts")
 
-            if persist:
-                ok_persist, info = cls._persist_to_settings_file(data)
-                if not ok_persist:
-                    log.warning("could not persist settings.gnome: %s", info)
-                    return False, f"settings.gnome write failed: {info}"
-
             # Note: we previously toggled ``org.gnome.Shell.OverviewActive``
             # true→false here to force a CSS style recompute on Main.panel
             # (Big-Blue.css's transparent ``#panel`` rule wasn't repainting).
@@ -1242,7 +1242,8 @@ class LayoutApplier:
         best-effort apply to the live session.
 
         ``settings.gnome`` becomes the layout file adjusted only for
-        machine-local DTP monitor IDs and the user's current theme mode.
+        machine-local DTP monitor IDs and the user's current light/dark
+        preference. GTK, icon and Shell themes follow the target layout.
         The live session also gets stale extension keys reset before
         ``dconf load`` so a layout applies as exact state instead of
         inheriting values from the previous layout.
@@ -1263,7 +1264,7 @@ class LayoutApplier:
         layout_text = cls._rewrite_dtp_keys_in_text(layout_text, local_dtp_monitors)
 
         before = cls._enabled_extensions()
-        layout_text = cls._preserve_user_theme_preferences(layout_text)
+        layout_text = cls._preserve_user_color_scheme(layout_text)
         return cls.load_dconf_safely(
             layout_text,
             persist=True,
