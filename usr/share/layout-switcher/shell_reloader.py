@@ -38,6 +38,7 @@ _LIST_EXT_STATE_RE = re.compile(
     r"'([^']+)':\s*\{[^{}]*?'state':\s*<(\d+(?:\.\d+)?)>",
     re.DOTALL,
 )
+_EXT_INFO_STATE_RE = re.compile(r"'state':\s*<(\d+(?:\.\d+)?)>")
 
 
 class ShellReloader:
@@ -140,6 +141,34 @@ class ShellReloader:
             except ValueError:
                 continue
         return states
+
+    @staticmethod
+    def get_extension_state(uuid: str, timeout: int = 8) -> Optional[int]:
+        """Return one Shell extension state via GetExtensionInfo."""
+        ok, raw = run_cmd(
+            [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                DBUS_SHELL_NAME,
+                "--object-path",
+                DBUS_EXT_PATH,
+                "--method",
+                f"{DBUS_EXT_IFACE}.GetExtensionInfo",
+                uuid,
+            ],
+            timeout=timeout,
+        )
+        if not ok or not raw:
+            return None
+        match = _EXT_INFO_STATE_RE.search(raw)
+        if not match:
+            return None
+        try:
+            return int(float(match.group(1)))
+        except ValueError:
+            return None
 
     # ── Recarga geral ─────────────────────────────────────────────────────────
 

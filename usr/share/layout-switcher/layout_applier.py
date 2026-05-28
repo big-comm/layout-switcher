@@ -692,6 +692,105 @@ class LayoutApplier:
             time.sleep(cls._DISABLE_STEP_SEC)
 
     @classmethod
+    def _dash_to_panel_live_state(cls) -> Optional[bool]:
+        """Return True/False when Shell reports DTP state, None on DBus failure."""
+        state = ShellReloader.get_extension_state(
+            _DASH_TO_PANEL_UUID,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if state is None:
+            return None
+        return state in _LIVE_EXTENSION_STATES
+
+    @classmethod
+    def _set_enabled_extensions(cls, uuids: Iterable[str]) -> bool:
+        """Write GNOME Shell's enabled extension list, preserving caller order."""
+        seen: Set[str] = set()
+        ordered = []
+        for uuid in uuids:
+            if not uuid or uuid in seen:
+                continue
+            ordered.append(uuid)
+            seen.add(uuid)
+        ok, msg = run_cmd(
+            [
+                "dconf",
+                "write",
+                "/org/gnome/shell/enabled-extensions",
+                cls._quote_string_list(ordered),
+            ],
+            timeout=5,
+        )
+        if not ok:
+            log.warning("could not write enabled-extensions: %s", msg)
+        return ok
+
+    @classmethod
+    def _restart_dash_to_panel_after_load(cls, desired_uuids: Iterable[str]) -> bool:
+        """
+        Rebuild dash-to-panel after its target settings are fully loaded.
+
+        Shell can report DTP as ``enabled=true`` while its extension state is
+        DISABLED. A plain EnableExtension is then a no-op because the UUID is
+        already in ``enabled-extensions``. Remove it from the list first, let
+        Shell process the unload, then ask Shell to enable it again.
+        """
+        desired = []
+        seen: Set[str] = set()
+        for uuid in desired_uuids:
+            if not uuid or uuid in seen:
+                continue
+            desired.append(uuid)
+            seen.add(uuid)
+        if _DASH_TO_PANEL_UUID not in seen:
+            desired.append(_DASH_TO_PANEL_UUID)
+
+        without_dtp = [uuid for uuid in desired if uuid != _DASH_TO_PANEL_UUID]
+        if not cls._set_enabled_extensions(without_dtp):
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _DASH_TO_PANEL_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning(
+                "post-load EnableExtension failed for %s: %s",
+                _DASH_TO_PANEL_UUID,
+                msg,
+            )
+            return False
+        time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
+
+        live = cls._dash_to_panel_live_state()
+        if live is not False:
+            return True
+
+        log.warning("%s did not enter a live state after EnableExtension", _DASH_TO_PANEL_UUID)
+        if not cls._set_enabled_extensions(desired):
+            return False
+        time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
+
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _DASH_TO_PANEL_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning(
+                "fallback EnableExtension failed for %s: %s",
+                _DASH_TO_PANEL_UUID,
+                msg,
+            )
+            return False
+        time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
+
+        live = cls._dash_to_panel_live_state()
+        return live is not False
+
+    @classmethod
     def _disable_extensions_in_order(cls, uuids: Iterable[str], *, sort: bool = True) -> bool:
         """
         Disable each extension via DBus with a small delay between calls.
@@ -1110,7 +1209,14 @@ class LayoutApplier:
             #
             # LEAVING extensions are still disabled before the orphan reset,
             # because their entire settings branch may be removed.
-            target_enabled = cls._parse_target_enabled_extensions(data)
+            target_enabled_order = cls._string_list(
+                cls._section_key_values(data, "/org/gnome/shell").get(
+                    "enabled-extensions"
+                )
+            )
+            target_enabled = set(target_enabled_order)
+            if not target_enabled:
+                target_enabled = cls._parse_target_enabled_extensions(data)
             before_set = {u for u in (before_uuids or ()) if u}
             leaving = before_set - target_enabled
             disable_batch = set(leaving)
@@ -1203,11 +1309,13 @@ class LayoutApplier:
             # big-shot) live in ``before ∩ after`` — already covered by
             # ``after`` alone, no union needed.
             after_uuids = cls._enabled_extensions()
-            dtp_restarted = restart_target_dtp or (
-                _DASH_TO_PANEL_UUID in target_enabled
-                and _DASH_TO_PANEL_UUID not in before_set
-            )
-            if dtp_restarted:
+            target_uses_dtp = _DASH_TO_PANEL_UUID in target_enabled
+            if target_uses_dtp and shell_dbus_available:
+                progress("Reloading components…")
+                shell_dbus_available = cls._restart_dash_to_panel_after_load(
+                    after_uuids or target_enabled_order or target_enabled
+                )
+            elif target_uses_dtp:
                 time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
 
             if after_uuids and shell_dbus_available:

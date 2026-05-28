@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.10.2"
+APP_VERSION = "2.10.3"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -184,7 +184,7 @@ EFFECT_EXTENSIONS: List[Dict] = [
 # Layouts shown in the grid but greyed out and not clickable.
 # Use for work-in-progress layouts that should remain visible to users
 # (so they know it's coming) but can't be applied yet.
-DISABLED_LAYOUTS: List[str] = ["Classic"]
+DISABLED_LAYOUTS: List[str] = []
 
 # ── Layouts: (name, config_file, icon_svg, icon_fallback, description) ────────
 LAYOUTS: List[Tuple[str, str, str, str, str]] = [

@@ -479,6 +479,7 @@ class TestLayoutApplier:
         assert "enabled-extensions=['stay@ext']" in mock_run.call_args_list[1].kwargs["stdin_text"]
 
     @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch(
         "layout_applier.LayoutApplier._enabled_extensions",
@@ -501,6 +502,7 @@ class TestLayoutApplier:
         mock_disable,
         _enabled,
         _reload,
+        mock_restart_dtp,
         mock_sleep,
     ):
         """Protect staying dash-to-panel from Shell rebase during removals."""
@@ -524,9 +526,13 @@ class TestLayoutApplier:
             "leave@ext",
         ]
         assert mock_disable.call_args.kwargs == {"sort": False}
-        mock_sleep.assert_any_call(LayoutApplier._DTP_REENABLE_SETTLE_SEC)
+        mock_restart_dtp.assert_called_once_with(
+            ["stay@ext", "dash-to-panel@jderose9.github.com"]
+        )
+        mock_sleep.assert_any_call(LayoutApplier._SETTLE_SEC)
 
     @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch(
         "layout_applier.LayoutApplier._enabled_extensions",
@@ -546,6 +552,7 @@ class TestLayoutApplier:
         mock_disable,
         _enabled,
         _reload,
+        mock_restart_dtp,
         mock_sleep,
     ):
         """Reapplying a DTP layout must rebuild DTP panel actors."""
@@ -564,7 +571,91 @@ class TestLayoutApplier:
             "dash-to-panel@jderose9.github.com",
         ]
         assert mock_disable.call_args.kwargs == {"sort": False}
+        mock_restart_dtp.assert_called_once_with(["dash-to-panel@jderose9.github.com"])
+        mock_sleep.assert_any_call(LayoutApplier._SETTLE_SEC)
+
+    @patch("layout_applier.time.sleep")
+    @patch(
+        "layout_applier.ShellReloader.get_extension_state",
+        return_value=1,
+    )
+    @patch("layout_applier.ShellReloader.enable_extension_dbus", return_value=(True, ""))
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        return_value=["dash-to-panel@jderose9.github.com"],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order")
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_restarts_new_dash_to_panel_after_layout_load(
+        self,
+        _mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable_batch,
+        _enabled,
+        _reload,
+        mock_dtp_toggle,
+        _mock_state,
+        mock_sleep,
+    ):
+        """DTP enabled by the target layout gets a clean post-load init."""
+        data = (
+            "[org/gnome/shell]\n"
+            "enabled-extensions=['dash-to-panel@jderose9.github.com']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(data, before_uuids=[])
+
+        assert ok is True
+        mock_disable_batch.assert_not_called()
+        mock_dtp_toggle.assert_called_once_with(
+            "dash-to-panel@jderose9.github.com",
+            enable=True,
+            timeout=LayoutApplier._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        calls = [call.args[0] for call in _mock_run.call_args_list]
+        assert [
+            "dconf",
+            "write",
+            "/org/gnome/shell/enabled-extensions",
+            "[]",
+        ] in calls
+        mock_sleep.assert_any_call(LayoutApplier._DISABLE_STEP_SEC)
         mock_sleep.assert_any_call(LayoutApplier._DTP_REENABLE_SETTLE_SEC)
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._set_enabled_extensions", return_value=True)
+    @patch("layout_applier.ShellReloader.enable_extension_dbus", return_value=(True, ""))
+    @patch(
+        "layout_applier.ShellReloader.get_extension_state",
+        side_effect=[
+            2,
+            1,
+        ],
+    )
+    def test_restart_dash_to_panel_recovers_enabled_but_disabled_state(
+        self,
+        _mock_states,
+        mock_enable,
+        mock_set_enabled,
+        _mock_sleep,
+    ):
+        """Remove DTP from enabled-extensions before enabling a disabled shell state."""
+        ok = LayoutApplier._restart_dash_to_panel_after_load(
+            ["stay@ext", "dash-to-panel@jderose9.github.com"]
+        )
+
+        assert ok is True
+        assert [call.args[0] for call in mock_set_enabled.call_args_list] == [
+            ["stay@ext"],
+            ["stay@ext", "dash-to-panel@jderose9.github.com"],
+        ]
+        assert mock_enable.call_count == 2
 
     @patch("layout_applier.run_cmd")
     def test_reset_orphan_keys_resets_leaving_branches_and_stale_keys(
@@ -655,7 +746,40 @@ class TestRewriteDtpKeysInText:
         assert "old" not in out
 
 
+class TestCuratedLayoutFiles:
+    def test_desk_ux_dtp_position_and_size_are_explicit(self):
+        """Desk UX must not depend on inherited DTP defaults."""
+        text = Path("usr/share/layout-switcher/layouts/desk-ux.txt").read_text(
+            encoding="utf-8"
+        )
+        values = LayoutApplier._section_key_values(
+            text,
+            "/org/gnome/shell/extensions/dash-to-panel",
+        )
+
+        assert LayoutApplier._parse_dtp_json(values["panel-positions"])
+        assert LayoutApplier._parse_dtp_json(values["panel-sizes"])
+        assert values["group-apps"] == "true"
+        assert values["show-favorites"] == "true"
+        assert values["show-running-apps"] == "true"
+
+
 class TestShellReloader:
+    @patch("shell_reloader.run_cmd")
+    def test_get_extension_state_handles_nested_metadata(self, mock_run):
+        from shell_reloader import ShellReloader
+
+        mock_run.return_value = (
+            True,
+            "({'uuid': <'dash-to-panel@jderose9.github.com'>, "
+            "'donations': <{'paypal': <'charlesg99'>}>, "
+            "'state': <1.0>, 'enabled': <true>},)",
+        )
+
+        assert ShellReloader.get_extension_state(
+            "dash-to-panel@jderose9.github.com"
+        ) == 1
+
     @patch("shell_reloader.run_cmd", return_value=(True, ""))
     @patch("shell_reloader.is_wayland", return_value=True)
     def test_reload_all_wayland(self, _mock_way, mock_run):
