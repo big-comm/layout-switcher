@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: layout-switcher\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-08 20:09-0300\n"
+"POT-Creation-Date: 2026-05-30 19:34-0300\n"
 "PO-Revision-Date: 2026-04-22 14:39\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -20,431 +20,496 @@ msgstr ""
 msgid "Rotate workspaces on a 3D cube"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:146
+#: usr/share/layout-switcher/constants.py:147
 msgid "Magic Lamp"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:147
+#: usr/share/layout-switcher/constants.py:148
 msgid "Genie effect when minimizing windows"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:156
+#: usr/share/layout-switcher/constants.py:158
 msgid "Compiz Windows"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:157
+#: usr/share/layout-switcher/constants.py:159
 msgid "Wobbly windows and extra animations"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:166
+#: usr/share/layout-switcher/constants.py:169
 msgid "Desktop Icons NG"
 msgstr ""
 
-#: usr/share/layout-switcher/constants.py:167
+#: usr/share/layout-switcher/constants.py:170
 #, fuzzy
 msgid "Files and folders on your desktop"
 msgstr "Efekty wizualne dla Twojego pulpitu GNOME"
 
-#: usr/share/layout-switcher/constants.py:189
+#: usr/share/layout-switcher/constants.py:196
 msgid "Default Big Gnome layout"
 msgstr "Domyślny układ Big Gnome"
 
-#: usr/share/layout-switcher/constants.py:196
+#: usr/share/layout-switcher/constants.py:203
 msgid "Clean and contemporary desktop"
 msgstr "Czysty i nowoczesny pulpit"
 
-#: usr/share/layout-switcher/constants.py:203
+#: usr/share/layout-switcher/constants.py:210
 msgid "Centered dock-taskbar, Windows 11 / Deepin / Pop!_OS style"
 msgstr "Wyśrodkowany dock-pasek zadań, styl Windows 11 / Deepin / Pop!_OS"
 
-#: usr/share/layout-switcher/constants.py:210
+#: usr/share/layout-switcher/constants.py:217
 msgid "Unity-style layout with left dock and top bar"
 msgstr "Układ w stylu Unity z lewym dockiem i górnym paskiem"
 
-#: usr/share/layout-switcher/constants.py:217
+#: usr/share/layout-switcher/constants.py:224
 msgid "Traditional desktop with taskbar and system tray"
 msgstr "Tradycyjny pulpit z paskiem zadań i zasobnikiem systemowym"
 
-#: usr/share/layout-switcher/constants.py:224
+#: usr/share/layout-switcher/constants.py:231
 msgid "Near-vanilla GNOME with minimal distro tweaks"
 msgstr "Prawie czysty GNOME z minimalnymi modyfikacjami dystrybucji"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:57
+#: usr/share/layout-switcher/ui/dialog_backups.py:63
 msgid "Backups"
 msgstr "Kopie zapasowe"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:72
+#: usr/share/layout-switcher/ui/dialog_backups.py:78
 msgid "Create backup now"
 msgstr "Utwórz kopię zapasową teraz"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:74
+#: usr/share/layout-switcher/ui/dialog_backups.py:80
 msgid "Snapshot current dconf settings"
 msgstr "Zrób migawkę bieżących ustawień dconf"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:87
+#: usr/share/layout-switcher/ui/dialog_backups.py:93
 msgid "No backups yet"
 msgstr "Brak kopii zapasowych"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:89
+#: usr/share/layout-switcher/ui/dialog_backups.py:95
 msgid "A backup is created automatically every time you apply a layout."
 msgstr ""
 "Kopia zapasowa jest tworzona automatycznie za każdym razem, gdy zastosujesz "
 "układ."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:142
+#: usr/share/layout-switcher/ui/dialog_backups.py:148
 msgid "Latest"
 msgstr "Najnowsza"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:147
+#: usr/share/layout-switcher/ui/dialog_backups.py:153
 msgid "Restore this backup"
 msgstr "Przywróć tę kopię zapasową"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:155
+#: usr/share/layout-switcher/ui/dialog_backups.py:161
 msgid "Delete this backup"
 msgstr "Usuń tę kopię zapasową"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:169
+#: usr/share/layout-switcher/ui/dialog_backups.py:184
 msgid "Backup created"
 msgstr "Kopia zapasowa utworzona"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:172
-#: usr/share/layout-switcher/ui/page_layouts.py:245
+#: usr/share/layout-switcher/ui/dialog_backups.py:187
+#: usr/share/layout-switcher/ui/page_layouts.py:255
 msgid "Backup failed"
 msgstr "Nie udało się utworzyć kopii zapasowej"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:176
+#: usr/share/layout-switcher/ui/dialog_backups.py:192
 msgid "Restore this backup?"
 msgstr "Przywrócić tę kopię zapasową?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:178
+#: usr/share/layout-switcher/ui/dialog_backups.py:194
 #, python-brace-format
 msgid ""
 "All current dconf settings will be overwritten with the snapshot from {ts}."
-msgstr ""
-"Oznaczone układy zawierają Twoje zapisane dostosowania — kliknij, aby je "
-"wznowić lub zastosować oryginał."
+msgstr "Wszystkie bieżące ustawienia dconf zostaną zastąpione migawką z {ts}."
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:181
-#: usr/share/layout-switcher/ui/dialog_backups.py:206
-#: usr/share/layout-switcher/ui/page_fonts.py:451
+#: usr/share/layout-switcher/ui/dialog_backups.py:197
+#: usr/share/layout-switcher/ui/dialog_backups.py:230
+#: usr/share/layout-switcher/ui/page_effects.py:274
+#: usr/share/layout-switcher/ui/page_effects.py:318
 #: usr/share/layout-switcher/ui/page_extensions.py:384
-#: usr/share/layout-switcher/ui/page_extensions.py:422
-#: usr/share/layout-switcher/ui/page_extensions.py:788
-#: usr/share/layout-switcher/ui/page_effects.py:260
-#: usr/share/layout-switcher/ui/page_effects.py:299
-#: usr/share/layout-switcher/ui/page_themes.py:314
-#: usr/share/layout-switcher/ui/page_layouts.py:221
-#: usr/share/layout-switcher/ui/page_layouts.py:233
+#: usr/share/layout-switcher/ui/page_extensions.py:427
+#: usr/share/layout-switcher/ui/page_extensions.py:834
+#: usr/share/layout-switcher/ui/page_fonts.py:567
+#: usr/share/layout-switcher/ui/page_layouts.py:231
+#: usr/share/layout-switcher/ui/page_layouts.py:243
+#: usr/share/layout-switcher/ui/page_themes.py:423
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:182
+#: usr/share/layout-switcher/ui/dialog_backups.py:198
 msgid "Restore"
 msgstr "Przywróć"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:192
+#: usr/share/layout-switcher/ui/dialog_backups.py:218
 msgid "Backup restored"
 msgstr "Kopia zapasowa przywrócona"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:196
+#: usr/share/layout-switcher/ui/dialog_backups.py:222
 msgid "Restore failed"
 msgstr "Przywracanie nie powiodło się"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:203
+#: usr/share/layout-switcher/ui/dialog_backups.py:227
 msgid "Delete this backup?"
 msgstr "Usunąć tę kopię zapasową?"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:207
+#: usr/share/layout-switcher/ui/dialog_backups.py:231
 msgid "Delete"
 msgstr "Usuń"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:227
+#: usr/share/layout-switcher/ui/dialog_backups.py:251
 msgid "Backup deleted"
 msgstr "Kopia zapasowa usunięta"
 
-#: usr/share/layout-switcher/ui/dialog_backups.py:230
+#: usr/share/layout-switcher/ui/dialog_backups.py:254
 msgid "Delete failed"
 msgstr "Usuwanie nie powiodło się"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:102
-msgid "System fonts"
-msgstr "Czcionki systemowe"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:41
+msgid "Popularity"
+msgstr "Popularność"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:103
-msgid "Fonts used by the GNOME interface"
-msgstr "Czcionki używane przez interfejs GNOME"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:42
+msgid "Downloads"
+msgstr "Pobrania"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:107
-msgid "Interface"
-msgstr "Interfejs"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:43
+msgid "Recent"
+msgstr "Ostatnie"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:113
-msgid "Document"
-msgstr "Dokument"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:44
+msgid "Name"
+msgstr "Nazwa"
 
-#: usr/share/layout-switcher/ui/page_fonts.py:119
-msgid "Monospace"
-msgstr "Monospace"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:125
-msgid "Window titles (legacy)"
-msgstr "Tytuły okien (stare)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:142
-#: usr/share/layout-switcher/ui/page_fonts.py:486
-msgid "(not set)"
-msgstr "(nie ustawiono)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:144
-msgid "Choose…"
-msgstr "Wybierz…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:158
-msgid "Choose font"
-msgstr "Wybierz czcionkę"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:174
-msgid "Font updated"
-msgstr "Czcionka zaktualizowana"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:176
-#: usr/share/layout-switcher/ui/page_fonts.py:241
-#: usr/share/layout-switcher/ui/page_extensions.py:731
-msgid "Update failed"
-msgstr "Aktualizacja nie powiodła się"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:185
-msgid "Appearance"
-msgstr "Wygląd"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:186
-msgid "How fonts are rendered on screen"
-msgstr "Jak czcionki są renderowane na ekranie"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:190
-msgid "Hinting"
-msgstr "Hinting"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:194
-#: usr/share/layout-switcher/ui/page_fonts.py:207
-msgid "None"
-msgstr "Brak"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:195
-msgid "Slight"
-msgstr "Lekki"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:196
-msgid "Medium"
-msgstr "Średni"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:197
-msgid "Full"
-msgstr "Pełny"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:203
-msgid "Antialiasing"
-msgstr "Wygładzanie krawędzi"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:208
-msgid "Grayscale"
-msgstr "Skala szarości"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:209
-msgid "Subpixel (RGBA)"
-msgstr "Subpiksele (RGBA)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:251
-msgid "Installed fonts"
-msgstr "Zainstalowane czcionki"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:252
-msgid "Browse font families installed on your system"
-msgstr "Przeglądaj rodziny czcionek zainstalowanych w systemie"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:259
-msgid "Search fonts…"
-msgstr "Szukaj czcionek…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:266
-msgid "Refresh font list"
-msgstr "Odśwież listę czcionek"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:310
-msgid "Loading fonts…"
-msgstr "Ładowanie czcionek…"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:340
-msgid "No fonts match your search"
-msgstr "Brak czcionek pasujących do wyszukiwania"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:360
-msgid "(refine search to see more)"
-msgstr "(doprecyzuj wyszukiwanie, aby zobaczyć więcej)"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:362
-msgid "fonts"
-msgstr "czcionki"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:380
-msgid "The quick brown fox jumps over the lazy dog 0123"
-msgstr "Pchnąć w tę łódź jeża lub ośm skrzyń fig 0123"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:404
-msgid "Install more fonts"
-msgstr "Zainstaluj więcej czcionek"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:407
-msgid "Browse Google Fonts"
-msgstr "Przeglądaj Google Fonts"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:408
-msgid "Opens fonts.google.com in your browser"
-msgstr "Otwiera fonts.google.com w Twojej przeglądarce"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:421
-msgid "How to install"
-msgstr "Jak zainstalować"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:424
-msgid ""
-"Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and "
-"refresh this list."
+#: usr/share/layout-switcher/ui/ext_browse_view.py:93
+msgid "Search extensions on extensions.gnome.org"
 msgstr ""
-"Umieść pliki .ttf/.otf w ~/.local/share/fonts/, następnie uruchom 'fc-cache "
-"-f -v' i odśwież tę listę."
 
-#: usr/share/layout-switcher/ui/page_fonts.py:436
-msgid "Reset to system defaults"
-msgstr "Przywróć ustawienia domyślne systemu"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:445
-msgid "Reset all font settings?"
-msgstr "Zresetować wszystkie ustawienia czcionek?"
-
-#: usr/share/layout-switcher/ui/page_fonts.py:447
-msgid ""
-"Interface, document, monospace and window-title fonts will return to system "
-"defaults. Hinting and antialiasing reset too."
+#: usr/share/layout-switcher/ui/ext_browse_view.py:101
+msgid "Sort by"
 msgstr ""
-"Czcionki interfejsu, dokumentów, monospace i tytułów okien zostaną "
-"przywrócone do ustawień domyślnych systemu. Wskazówki i wygładzanie również "
-"zostaną zresetowane."
 
-#: usr/share/layout-switcher/ui/page_fonts.py:452
-msgid "Reset"
-msgstr "Resetuj"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:112
+#, python-brace-format
+msgid "Only compatible with GNOME {ver}"
+msgstr ""
 
-#: usr/share/layout-switcher/ui/page_fonts.py:472
-msgid "Fonts reset to defaults"
-msgstr "Czcionki przywrócone do ustawień domyślnych"
-
-#: usr/share/layout-switcher/ui/ext_detail_view.py:65
-#: usr/share/layout-switcher/ui/ext_detail_view.py:398
-#: usr/share/layout-switcher/ui/page_extensions.py:323
-#: usr/share/layout-switcher/ui/page_extensions.py:385
-#: usr/share/layout-switcher/ui/page_effects.py:205
-#: usr/share/layout-switcher/ui/page_effects.py:261
-#: usr/share/layout-switcher/ui/ext_browse_view.py:376
-msgid "Install"
-msgstr "Zainstaluj"
-
-#: usr/share/layout-switcher/ui/ext_detail_view.py:104
+#: usr/share/layout-switcher/ui/ext_browse_view.py:139
 #, fuzzy
-msgid "Loading extension details…"
-msgstr "Ładowanie czcionek…"
+msgid "Browse extensions"
+msgstr "Rozszerzenie systemowe"
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:111
-msgid "Could not load details"
+#: usr/share/layout-switcher/ui/ext_browse_view.py:140
+msgid "Search above or hit Enter to load popular extensions."
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:112
-#: usr/share/layout-switcher/ui/ext_browse_view.py:175
+#: usr/share/layout-switcher/ui/ext_browse_view.py:143
+msgid "Load popular"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:159
+#, fuzzy
+msgid "Loading…"
+msgstr "Ładowanie czcionek…"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:166
+msgid "No results"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:167
+msgid "Try a different search or sort."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:173
+msgid "Could not reach extensions.gnome.org"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:174
+#: usr/share/layout-switcher/ui/ext_detail_view.py:111
 msgid "Check your network connection and try again."
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:115
-#: usr/share/layout-switcher/ui/ext_browse_view.py:178
+#: usr/share/layout-switcher/ui/ext_browse_view.py:177
+#: usr/share/layout-switcher/ui/ext_detail_view.py:114
 msgid "Retry"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:148
+#: usr/share/layout-switcher/ui/ext_browse_view.py:216
+#: usr/share/layout-switcher/ui/page_fonts.py:334
+msgid "Previous page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:227
+#: usr/share/layout-switcher/ui/page_fonts.py:346
+msgid "Next page"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:238
+#: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "Shell"
+msgstr "Powłoka"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:284
+#, python-brace-format
+msgid "Page {p} of {t}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:345
+#: usr/share/layout-switcher/ui/ext_detail_view.py:147
+#: usr/share/layout-switcher/ui/page_effects.py:165
 #: usr/share/layout-switcher/ui/page_extensions.py:262
-#: usr/share/layout-switcher/ui/page_effects.py:151
-#: usr/share/layout-switcher/ui/ext_browse_view.py:346
 #, python-brace-format
 msgid "by {author}"
 msgstr "autorstwa {author}"
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:207
+#: usr/share/layout-switcher/ui/ext_browse_view.py:358
+msgid "Details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:361
+#, fuzzy
+msgid "View extension details"
+msgstr "Ładowanie czcionek…"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:369
+#: usr/share/layout-switcher/ui/page_extensions.py:65
+#: usr/share/layout-switcher/ui/page_extensions.py:548
+#: usr/share/layout-switcher/ui/page_fonts.py:487
+#: usr/share/layout-switcher/ui/page_fonts.py:529
+msgid "Installed"
+msgstr "Zainstalowane"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:375
+#: usr/share/layout-switcher/ui/ext_detail_view.py:64
+#: usr/share/layout-switcher/ui/ext_detail_view.py:397
+#: usr/share/layout-switcher/ui/page_effects.py:219
+#: usr/share/layout-switcher/ui/page_effects.py:275
+#: usr/share/layout-switcher/ui/page_extensions.py:323
+#: usr/share/layout-switcher/ui/page_extensions.py:385
+#: usr/share/layout-switcher/ui/page_fonts.py:490
+#: usr/share/layout-switcher/ui/page_fonts.py:493
+#: usr/share/layout-switcher/ui/page_fonts.py:534
+msgid "Install"
+msgstr "Zainstaluj"
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:412
+#: usr/share/layout-switcher/ui/ext_detail_view.py:431
+#: usr/share/layout-switcher/ui/page_effects.py:296
+#: usr/share/layout-switcher/ui/page_extensions.py:405
+#, fuzzy, python-brace-format
+msgid "{name} installed and enabled. Restart the session to use it."
+msgstr ""
+"Zainstaluj i włącz rozszerzenie User Themes, aby zastosować motywy powłoki."
+
+#: usr/share/layout-switcher/ui/ext_browse_view.py:420
+#: usr/share/layout-switcher/ui/page_effects.py:302
+#: usr/share/layout-switcher/ui/page_extensions.py:411
+msgid "Install failed"
+msgstr "Instalacja nie powiodła się"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:103
+#, fuzzy
+msgid "Loading extension details…"
+msgstr "Ładowanie czcionek…"
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:110
+msgid "Could not load details"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/ext_detail_view.py:206
 #, python-brace-format
 msgid "{n} ratings"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:210
+#: usr/share/layout-switcher/ui/ext_detail_view.py:209
 msgid "downloads"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:213
+#: usr/share/layout-switcher/ui/ext_detail_view.py:212
 msgid "compatibility"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:255
+#: usr/share/layout-switcher/ui/ext_detail_view.py:254
 msgid "Description"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:270
+#: usr/share/layout-switcher/ui/ext_detail_view.py:269
 msgid "Recent comments"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:283
+#: usr/share/layout-switcher/ui/ext_detail_view.py:282
 msgid "View all comments on extensions.gnome.org"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:344
+#: usr/share/layout-switcher/ui/ext_detail_view.py:343
 msgid "Links"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:351
+#: usr/share/layout-switcher/ui/ext_detail_view.py:350
 msgid "Homepage"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:355
+#: usr/share/layout-switcher/ui/ext_detail_view.py:354
+#: usr/share/layout-switcher/ui/page_effects.py:236
 #: usr/share/layout-switcher/ui/page_extensions.py:340
-#: usr/share/layout-switcher/ui/page_effects.py:222
 msgid "View on GNOME Extensions"
 msgstr "Zobacz na GNOME Extensions"
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:360
+#: usr/share/layout-switcher/ui/ext_detail_view.py:359
 #, python-brace-format
 msgid "License: {lic}"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:388
-#: usr/share/layout-switcher/ui/page_extensions.py:563
-#: usr/share/layout-switcher/ui/page_extensions.py:649
-#: usr/share/layout-switcher/ui/page_extensions.py:660
+#: usr/share/layout-switcher/ui/ext_detail_view.py:387
+#: usr/share/layout-switcher/ui/page_extensions.py:568
+#: usr/share/layout-switcher/ui/page_extensions.py:655
+#: usr/share/layout-switcher/ui/page_extensions.py:666
 #, fuzzy
 msgid "Update"
 msgstr "Aktualizacja nie powiodła się"
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:393
+#: usr/share/layout-switcher/ui/ext_detail_view.py:392
 msgid "Open prefs"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:410
+#: usr/share/layout-switcher/ui/ext_detail_view.py:409
 msgid "Working…"
 msgstr ""
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:428
 #, fuzzy, python-brace-format
-msgid "{name} installed"
+msgid "{name} updated"
 msgstr "zainstalowano"
 
-#: usr/share/layout-switcher/ui/ext_detail_view.py:432
+#: usr/share/layout-switcher/ui/ext_detail_view.py:437
 #, fuzzy
 msgid "Operation failed"
 msgstr "Aktualizacja nie powiodła się"
+
+#: usr/share/layout-switcher/ui/page_effects.py:44
+msgid "Visual effects for your GNOME desktop"
+msgstr "Efekty wizualne dla Twojego pulpitu GNOME"
+
+#: usr/share/layout-switcher/ui/page_effects.py:107
+#: usr/share/layout-switcher/ui/page_extensions.py:207
+msgid "System extension"
+msgstr "Rozszerzenie systemowe"
+
+#: usr/share/layout-switcher/ui/page_effects.py:124
+#, fuzzy, python-brace-format
+msgid "{name} (enabled)"
+msgstr "zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_effects.py:126
+#, fuzzy, python-brace-format
+msgid "{name} (disabled)"
+msgstr "zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_effects.py:128
+#, fuzzy, python-brace-format
+msgid "{name} (not installed)"
+msgstr "zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_effects.py:176
+#: usr/share/layout-switcher/ui/page_extensions.py:277
+msgid "On"
+msgstr "Włączone"
+
+#: usr/share/layout-switcher/ui/page_effects.py:176
+#: usr/share/layout-switcher/ui/page_extensions.py:277
+msgid "Off"
+msgstr "Wyłączone"
+
+#: usr/share/layout-switcher/ui/page_effects.py:184
+#: usr/share/layout-switcher/ui/page_extensions.py:285
+#: usr/share/layout-switcher/ui/page_extensions.py:694
+msgid "Toggle"
+msgstr "Przełącz"
+
+#: usr/share/layout-switcher/ui/page_effects.py:192
+#: usr/share/layout-switcher/ui/page_effects.py:196
+#: usr/share/layout-switcher/ui/page_effects.py:319
+#: usr/share/layout-switcher/ui/page_extensions.py:295
+#: usr/share/layout-switcher/ui/page_extensions.py:299
+#: usr/share/layout-switcher/ui/page_extensions.py:428
+#: usr/share/layout-switcher/ui/page_extensions.py:730
+#: usr/share/layout-switcher/ui/page_extensions.py:731
+msgid "Remove"
+msgstr "Usuń"
+
+#: usr/share/layout-switcher/ui/page_effects.py:204
+#: usr/share/layout-switcher/ui/page_extensions.py:307
+#: usr/share/layout-switcher/ui/page_extensions.py:680
+#: usr/share/layout-switcher/ui/page_extensions.py:684
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: usr/share/layout-switcher/ui/page_effects.py:215
+#: usr/share/layout-switcher/ui/page_extensions.py:235
+#: usr/share/layout-switcher/ui/page_extensions.py:319
+msgid "Not installed"
+msgstr "Nie zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_effects.py:260
+#: usr/share/layout-switcher/ui/page_extensions.py:231
+#: usr/share/layout-switcher/ui/page_extensions.py:370
+#: usr/share/layout-switcher/ui/page_extensions.py:562
+msgid "enabled"
+msgstr "włączone"
+
+#: usr/share/layout-switcher/ui/page_effects.py:260
+#: usr/share/layout-switcher/ui/page_extensions.py:233
+#: usr/share/layout-switcher/ui/page_extensions.py:370
+msgid "disabled"
+msgstr "wyłączone"
+
+#: usr/share/layout-switcher/ui/page_effects.py:264
+#: usr/share/layout-switcher/ui/page_extensions.py:374
+#: usr/share/layout-switcher/ui/page_extensions.py:707
+#: usr/share/layout-switcher/ui/page_extensions.py:858
+#: usr/share/layout-switcher/ui/page_layouts.py:395
+#: usr/share/layout-switcher/ui/page_layouts.py:438
+#: usr/share/layout-switcher/ui/page_themes.py:413
+msgid "Error"
+msgstr "Błąd"
+
+#: usr/share/layout-switcher/ui/page_effects.py:271
+msgid "Install effect?"
+msgstr "Zainstalować efekt?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:272
+#: usr/share/layout-switcher/ui/page_extensions.py:382
+msgid "Will try to install automatically."
+msgstr "Spróbuję zainstalować automatycznie."
+
+#: usr/share/layout-switcher/ui/page_effects.py:283
+#: usr/share/layout-switcher/ui/page_extensions.py:391
+#: usr/share/layout-switcher/ui/page_fonts.py:513
+msgid "Installing…"
+msgstr "Instalowanie…"
+
+#: usr/share/layout-switcher/ui/page_effects.py:311
+#: usr/share/layout-switcher/ui/page_extensions.py:420
+msgid "System extension — cannot remove"
+msgstr "Rozszerzenie systemowe — nie można usunąć"
+
+#: usr/share/layout-switcher/ui/page_effects.py:315
+msgid "Remove effect?"
+msgstr "Usunąć efekt?"
+
+#: usr/share/layout-switcher/ui/page_effects.py:316
+#: usr/share/layout-switcher/ui/page_extensions.py:425
+msgid "This cannot be undone."
+msgstr "Operacji nie można cofnąć."
+
+#: usr/share/layout-switcher/ui/page_effects.py:331
+#: usr/share/layout-switcher/ui/page_extensions.py:440
+msgid "removed"
+msgstr "usunięto"
+
+#: usr/share/layout-switcher/ui/page_effects.py:333
+#: usr/share/layout-switcher/ui/page_extensions.py:442
+msgid "Remove failed"
+msgstr "Usuwanie nie powiodło się"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:63
 msgid "Featured"
@@ -455,518 +520,380 @@ msgstr "Polecane"
 msgid "Browse"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/page_extensions.py:65
-#: usr/share/layout-switcher/ui/page_extensions.py:543
-#: usr/share/layout-switcher/ui/ext_browse_view.py:370
-msgid "Installed"
-msgstr "Zainstalowane"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:207
-#: usr/share/layout-switcher/ui/page_effects.py:105
-msgid "System extension"
-msgstr "Rozszerzenie systemowe"
-
 #: usr/share/layout-switcher/ui/page_extensions.py:219
 #, fuzzy
 msgid "Update available"
 msgstr "Aktualizacja nie powiodła się"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:231
-#: usr/share/layout-switcher/ui/page_extensions.py:370
-#: usr/share/layout-switcher/ui/page_extensions.py:557
-#: usr/share/layout-switcher/ui/page_effects.py:246
-msgid "enabled"
-msgstr "włączone"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:233
-#: usr/share/layout-switcher/ui/page_extensions.py:370
-#: usr/share/layout-switcher/ui/page_effects.py:246
-msgid "disabled"
-msgstr "wyłączone"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:235
-#: usr/share/layout-switcher/ui/page_extensions.py:319
-#: usr/share/layout-switcher/ui/page_effects.py:201
-msgid "Not installed"
-msgstr "Nie zainstalowano"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:277
-#: usr/share/layout-switcher/ui/page_effects.py:162
-msgid "On"
-msgstr "Włączone"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:277
-#: usr/share/layout-switcher/ui/page_effects.py:162
-msgid "Off"
-msgstr "Wyłączone"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:285
-#: usr/share/layout-switcher/ui/page_extensions.py:675
-#: usr/share/layout-switcher/ui/page_effects.py:170
-msgid "Toggle"
-msgstr "Przełącz"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:295
-#: usr/share/layout-switcher/ui/page_extensions.py:299
-#: usr/share/layout-switcher/ui/page_extensions.py:423
-#: usr/share/layout-switcher/ui/page_extensions.py:698
-#: usr/share/layout-switcher/ui/page_extensions.py:699
-#: usr/share/layout-switcher/ui/page_effects.py:178
-#: usr/share/layout-switcher/ui/page_effects.py:182
-#: usr/share/layout-switcher/ui/page_effects.py:300
-msgid "Remove"
-msgstr "Usuń"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:307
-#: usr/share/layout-switcher/ui/page_effects.py:190
-msgid "Settings"
-msgstr "Ustawienia"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:374
-#: usr/share/layout-switcher/ui/page_extensions.py:688
-#: usr/share/layout-switcher/ui/page_extensions.py:812
-#: usr/share/layout-switcher/ui/page_effects.py:250
-#: usr/share/layout-switcher/ui/page_themes.py:304
-#: usr/share/layout-switcher/ui/page_layouts.py:341
-#: usr/share/layout-switcher/ui/page_layouts.py:379
-msgid "Error"
-msgstr "Błąd"
-
 #: usr/share/layout-switcher/ui/page_extensions.py:381
 msgid "Install extension?"
 msgstr "Zainstalować rozszerzenie?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:382
-#: usr/share/layout-switcher/ui/page_effects.py:258
-msgid "Will try to install automatically."
-msgstr "Spróbuję zainstalować automatycznie."
-
-#: usr/share/layout-switcher/ui/page_extensions.py:391
-#: usr/share/layout-switcher/ui/page_effects.py:269
-msgid "Installing…"
-msgstr "Instalowanie…"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:403
-#: usr/share/layout-switcher/ui/page_extensions.py:557
-#: usr/share/layout-switcher/ui/page_effects.py:280
-#: usr/share/layout-switcher/ui/ext_browse_view.py:411
-msgid "installed"
-msgstr "zainstalowano"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:406
-#: usr/share/layout-switcher/ui/page_effects.py:283
-#: usr/share/layout-switcher/ui/ext_browse_view.py:416
-msgid "Install failed"
-msgstr "Instalacja nie powiodła się"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:415
-#: usr/share/layout-switcher/ui/page_effects.py:292
-msgid "System extension — cannot remove"
-msgstr "Rozszerzenie systemowe — nie można usunąć"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:419
+#: usr/share/layout-switcher/ui/page_extensions.py:424
 msgid "Remove extension?"
 msgstr "Usunąć rozszerzenie?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:420
-#: usr/share/layout-switcher/ui/page_effects.py:297
-msgid "This cannot be undone."
-msgstr "Operacji nie można cofnąć."
-
-#: usr/share/layout-switcher/ui/page_extensions.py:435
-#: usr/share/layout-switcher/ui/page_effects.py:312
-msgid "removed"
-msgstr "usunięto"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:437
-#: usr/share/layout-switcher/ui/page_effects.py:314
-msgid "Remove failed"
-msgstr "Usuwanie nie powiodło się"
-
-#: usr/share/layout-switcher/ui/page_extensions.py:485
-#: usr/share/layout-switcher/ui/page_extensions.py:563
+#: usr/share/layout-switcher/ui/page_extensions.py:490
+#: usr/share/layout-switcher/ui/page_extensions.py:568
 #, fuzzy
 msgid "Update all"
 msgstr "Aktualizacja nie powiodła się"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:493
+#: usr/share/layout-switcher/ui/page_extensions.py:498
 msgid "Open GNOME Extensions"
 msgstr "Otwórz GNOME Extensions"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:549
+#: usr/share/layout-switcher/ui/page_extensions.py:554
 msgid "No extensions installed"
 msgstr "Brak zainstalowanych rozszerzeń"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:559
+#: usr/share/layout-switcher/ui/page_extensions.py:562
+msgid "installed"
+msgstr "zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:564
 #, fuzzy
 msgid "update available"
 msgstr "dostępne motywy"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:571
+#: usr/share/layout-switcher/ui/page_extensions.py:576
 msgid "Enabled"
 msgstr "Włączone"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:572
+#: usr/share/layout-switcher/ui/page_extensions.py:577
 msgid "Disabled"
 msgstr "Wyłączone"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:654
+#: usr/share/layout-switcher/ui/page_extensions.py:660
 #, python-brace-format
 msgid "Update from v{old} to v{new}"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/page_extensions.py:667
-msgid "system"
-msgstr "system"
+#: usr/share/layout-switcher/ui/page_extensions.py:724
+msgid ""
+"This extension cannot be removed here because it was installed by the "
+"system."
+msgstr ""
 
-#: usr/share/layout-switcher/ui/page_extensions.py:726
+#: usr/share/layout-switcher/ui/page_extensions.py:772
 #, python-brace-format
 msgid "{name} updated to v{ver}"
 msgstr ""
 
-#: usr/share/layout-switcher/ui/page_extensions.py:755
+#: usr/share/layout-switcher/ui/page_extensions.py:777
+#: usr/share/layout-switcher/ui/page_fonts.py:147
+#: usr/share/layout-switcher/ui/page_fonts.py:216
+#: usr/share/layout-switcher/ui/page_fonts.py:281
+msgid "Update failed"
+msgstr "Aktualizacja nie powiodła się"
+
+#: usr/share/layout-switcher/ui/page_extensions.py:801
 #, fuzzy, python-brace-format
 msgid "Updated {n} extensions"
 msgstr "Rozszerzenie systemowe"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:760
+#: usr/share/layout-switcher/ui/page_extensions.py:806
 #, fuzzy, python-brace-format
 msgid "Updated {n}/{t}; failed: {f}"
 msgstr "Aktualizacja nie powiodła się"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:771
-#: usr/share/layout-switcher/ui/page_extensions.py:789
+#: usr/share/layout-switcher/ui/page_extensions.py:817
+#: usr/share/layout-switcher/ui/page_extensions.py:835
 msgid "Disable All"
 msgstr "Wyłącz wszystkie"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:771
+#: usr/share/layout-switcher/ui/page_extensions.py:817
 msgid "Enable All"
 msgstr "Włącz wszystko"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:785
+#: usr/share/layout-switcher/ui/page_extensions.py:831
 msgid "Disable all extensions?"
 msgstr "Wyłączyć wszystkie rozszerzenia?"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:786
+#: usr/share/layout-switcher/ui/page_extensions.py:832
 msgid "All extensions will be disabled. You can re-enable them later."
 msgstr ""
-"Wszystkie rozszerzenia zostaną wyłączone. Możesz je ponownie włączyć później."
+"Wszystkie rozszerzenia zostaną wyłączone. Możesz je ponownie włączyć "
+"później."
 
-#: usr/share/layout-switcher/ui/page_extensions.py:806
+#: usr/share/layout-switcher/ui/page_extensions.py:852
 msgid "All extensions disabled"
 msgstr "Wszystkie rozszerzenia wyłączone"
 
-#: usr/share/layout-switcher/ui/page_extensions.py:806
+#: usr/share/layout-switcher/ui/page_extensions.py:852
 msgid "All extensions enabled"
 msgstr "Wszystkie rozszerzenia włączone"
 
-#: usr/share/layout-switcher/ui/page_effects.py:43
-msgid "Visual effects for your GNOME desktop"
-msgstr "Efekty wizualne dla Twojego pulpitu GNOME"
+#: usr/share/layout-switcher/ui/page_fonts.py:76
+#, fuzzy
+msgid "Preferred fonts"
+msgstr "Odśwież listę czcionek"
 
-#: usr/share/layout-switcher/ui/page_effects.py:122
+#: usr/share/layout-switcher/ui/page_fonts.py:80
+#, fuzzy
+msgid "Interface text"
+msgstr "Interfejs"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:86
+#, fuzzy
+msgid "Document text"
+msgstr "Dokument"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:92
+#, fuzzy
+msgid "Monospace text"
+msgstr "Monospace"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:109
+#: usr/share/layout-switcher/ui/page_fonts.py:601
+msgid "(not set)"
+msgstr "(nie ustawiono)"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:129
+msgid "Choose font"
+msgstr "Wybierz czcionkę"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:145
+msgid "Font updated"
+msgstr "Czcionka zaktualizowana"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:155
+msgid "Hinting"
+msgstr "Hinting"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:163
+msgid "Full"
+msgstr "Pełny"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:164
+msgid "Medium"
+msgstr "Średni"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:165
+msgid "Slight"
+msgstr "Lekki"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:166
+#: usr/share/layout-switcher/ui/page_fonts.py:185
+msgid "None"
+msgstr "Brak"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:173
+msgid "Smoothing"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:183
+msgid "Subpixel (for LCD screens)"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:184
+msgid "Standard (grayscale)"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:228
+msgid "Size"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:231
+#: usr/share/layout-switcher/ui/page_fonts.py:251
+msgid "Scale factor"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:239
+msgid "Decrease"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:246
+msgid "Increase"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:287
+#, fuzzy
+msgid "Google Fonts"
+msgstr "Przeglądaj Google Fonts"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:297
+#, fuzzy
+msgid "Search Google Fonts…"
+msgstr "Szukaj czcionek…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:308
+#: usr/share/layout-switcher/ui/page_fonts.py:363
+#, fuzzy
+msgid "Loading Google Fonts…"
+msgstr "Ładowanie czcionek…"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:312
+#, fuzzy
+msgid "Refresh Google Fonts list"
+msgstr "Odśwież listę czcionek"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:424
+#, python-brace-format
+msgid "Page {page} of {pages}"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:431
+msgid "Internet connection is required to load the Google Fonts list."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:435
 #, fuzzy, python-brace-format
-msgid "{name} (enabled)"
-msgstr "zainstalowano"
+msgid "{n} fonts found"
+msgstr "Migawka nie znaleziona"
 
-#: usr/share/layout-switcher/ui/page_effects.py:124
-#, fuzzy, python-brace-format
-msgid "{name} (disabled)"
-msgstr "zainstalowano"
+#: usr/share/layout-switcher/ui/page_fonts.py:440
+#, python-brace-format
+msgid "Showing top {shown} of {total} Google Fonts"
+msgstr ""
 
-#: usr/share/layout-switcher/ui/page_effects.py:126
-#, fuzzy, python-brace-format
-msgid "{name} (not installed)"
-msgstr "zainstalowano"
-
-#: usr/share/layout-switcher/ui/page_effects.py:257
-msgid "Install effect?"
-msgstr "Zainstalować efekt?"
-
-#: usr/share/layout-switcher/ui/page_effects.py:296
-msgid "Remove effect?"
-msgstr "Usunąć efekt?"
-
-#: usr/share/layout-switcher/ui/page_themes.py:71
-msgid "Filter themes…"
-msgstr "Filtruj motywy…"
-
-#: usr/share/layout-switcher/ui/page_themes.py:107
-msgid "GTK"
-msgstr "GTK"
-
-#: usr/share/layout-switcher/ui/page_themes.py:107
-msgid "Icons"
-msgstr "Ikony"
-
-#: usr/share/layout-switcher/ui/page_themes.py:107
-#: usr/share/layout-switcher/ui/ext_browse_view.py:239
-msgid "Shell"
-msgstr "Powłoka"
-
-#: usr/share/layout-switcher/ui/page_themes.py:187
-msgid "No themes found"
+#: usr/share/layout-switcher/ui/page_fonts.py:449
+#, fuzzy
+msgid "No fonts found"
 msgstr "Nie znaleziono motywów"
 
-#: usr/share/layout-switcher/ui/page_themes.py:188
-msgid "Install themes to ~/.themes or /usr/share/themes"
-msgstr "Zainstaluj motywy w ~/.themes lub /usr/share/themes"
+#: usr/share/layout-switcher/ui/page_fonts.py:502
+msgid "Sans serif"
+msgstr ""
 
-#: usr/share/layout-switcher/ui/page_themes.py:195
-#, fuzzy, python-brace-format
-msgid "{n} themes available"
-msgstr "dostępne motywy"
+#: usr/share/layout-switcher/ui/page_fonts.py:503
+msgid "Serif"
+msgstr ""
 
-#: usr/share/layout-switcher/ui/page_themes.py:262
+#: usr/share/layout-switcher/ui/page_fonts.py:504
+msgid "Monospace"
+msgstr "Monospace"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:505
+msgid "Display"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:506
+#, fuzzy
+msgid "Handwriting"
+msgstr "Hinting"
+
+#: usr/share/layout-switcher/ui/page_fonts.py:507
+msgid "Exact Google Fonts family name"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:531
 #, fuzzy, python-brace-format
-msgid "{name} theme"
+msgid "{family} installed"
 msgstr "zainstalowano"
 
-#: usr/share/layout-switcher/ui/page_themes.py:264
-#: usr/share/layout-switcher/ui/page_layouts.py:149
-#: usr/share/layout-switcher/ui/page_layouts.py:196
-msgid "Active"
-msgstr "Aktywny"
-
-#: usr/share/layout-switcher/ui/page_themes.py:311
-msgid "User Themes required"
-msgstr "Wymagane User Themes"
-
-#: usr/share/layout-switcher/ui/page_themes.py:312
-msgid "Install and enable the User Themes extension to apply shell themes."
-msgstr ""
-"Zainstaluj i włącz rozszerzenie User Themes, aby zastosować motywy powłoki."
-
-#: usr/share/layout-switcher/ui/page_themes.py:315
-msgid "Open Extensions Page"
-msgstr "Otwórz stronę rozszerzeń"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:42
-msgid "Popularity"
-msgstr "Popularność"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:43
-msgid "Downloads"
-msgstr "Pobrania"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:44
-msgid "Recent"
-msgstr "Ostatnie"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:45
-msgid "Name"
-msgstr "Nazwa"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:94
-msgid "Search extensions on extensions.gnome.org"
+#: usr/share/layout-switcher/ui/page_fonts.py:537
+msgid "Internet connection is required to install Google Fonts."
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:102
-msgid "Sort by"
+#: usr/share/layout-switcher/ui/page_fonts.py:538
+msgid "Font not found on Google Fonts."
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:113
-#, python-brace-format
-msgid "Only compatible with GNOME {ver}"
+#: usr/share/layout-switcher/ui/page_fonts.py:539
+msgid "Font download failed."
 msgstr ""
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:140
+#: usr/share/layout-switcher/ui/page_fonts.py:540
+msgid "The font download is too large."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:541
+msgid "Could not install the font."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:542
+msgid "Enter a font family name."
+msgstr ""
+
+#: usr/share/layout-switcher/ui/page_fonts.py:544
 #, fuzzy
-msgid "Browse extensions"
-msgstr "Rozszerzenie systemowe"
+msgid "Font installation failed."
+msgstr "Instalacja nie powiodła się"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:141
-msgid "Search above or hit Enter to load popular extensions."
-msgstr ""
+#: usr/share/layout-switcher/ui/page_fonts.py:552
+msgid "Reset to system defaults"
+msgstr "Przywróć ustawienia domyślne systemu"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:144
-msgid "Load popular"
-msgstr ""
+#: usr/share/layout-switcher/ui/page_fonts.py:561
+msgid "Reset all font settings?"
+msgstr "Zresetować wszystkie ustawienia czcionek?"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:160
+#: usr/share/layout-switcher/ui/page_fonts.py:563
 #, fuzzy
-msgid "Loading…"
-msgstr "Ładowanie czcionek…"
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:167
-msgid "No results"
+msgid ""
+"Interface, document and monospace fonts will return to system defaults. "
+"Rendering and scale settings will reset too."
 msgstr ""
+"Czcionki interfejsu, dokumentów, monospace i tytułów okien zostaną "
+"przywrócone do ustawień domyślnych systemu. Wskazówki i wygładzanie również "
+"zostaną zresetowane."
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:168
-msgid "Try a different search or sort."
-msgstr ""
+#: usr/share/layout-switcher/ui/page_fonts.py:568
+msgid "Reset"
+msgstr "Resetuj"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:174
-msgid "Could not reach extensions.gnome.org"
-msgstr ""
+#: usr/share/layout-switcher/ui/page_fonts.py:587
+msgid "Fonts reset to defaults"
+msgstr "Czcionki przywrócone do ustawień domyślnych"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:217
-msgid "Previous page"
-msgstr ""
+#: usr/share/layout-switcher/ui/page_layouts.py:34
+msgid "Disabling extensions…"
+msgstr "Wyłączanie rozszerzeń…"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:228
-msgid "Next page"
-msgstr ""
+#: usr/share/layout-switcher/ui/page_layouts.py:35
+msgid "Loading layout…"
+msgstr "Wczytywanie układu…"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:285
-#, python-brace-format
-msgid "Page {p} of {t}"
-msgstr ""
+#: usr/share/layout-switcher/ui/page_layouts.py:36
+msgid "Reloading components…"
+msgstr "Ponowne wczytywanie składników…"
 
-#: usr/share/layout-switcher/ui/ext_browse_view.py:359
-msgid "Details"
-msgstr ""
-
-#: usr/share/layout-switcher/ui/ext_browse_view.py:362
-#, fuzzy
-msgid "View extension details"
-msgstr "Ładowanie czcionek…"
-
-#: usr/share/layout-switcher/ui/window.py:61
-#: usr/share/layout-switcher/ui/window.py:293
-msgid "Layout Switcher"
-msgstr "Layout Switcher"
-
-#: usr/share/layout-switcher/ui/window.py:175
-#: usr/share/layout-switcher/ui/window.py:176
-msgid "Show Sidebar"
-msgstr "Pokaż pasek boczny"
-
-#: usr/share/layout-switcher/ui/window.py:182
-#: usr/share/layout-switcher/ui/window.py:317
-#: usr/share/layout-switcher/ui/window.py:388
-msgid "Layouts"
-msgstr "Układy"
-
-#: usr/share/layout-switcher/ui/window.py:188
-msgid "Menu"
-msgstr "Menu"
-
-#: usr/share/layout-switcher/ui/window.py:189
-msgid "Main menu"
-msgstr "Menu główne"
-
-#: usr/share/layout-switcher/ui/window.py:193
-msgid "Check for updates"
-msgstr ""
-
-#: usr/share/layout-switcher/ui/window.py:194
-#, fuzzy
-msgid "Auto-update extensions"
-msgstr "Rozszerzenie systemowe"
-
-#: usr/share/layout-switcher/ui/window.py:196
-msgid "Backups…"
-msgstr "Kopie zapasowe…"
-
-#: usr/share/layout-switcher/ui/window.py:197
-msgid "About"
-msgstr "Informacje"
-
-#: usr/share/layout-switcher/ui/window.py:206
-msgid "Welcome! Choose a desktop layout below to get started."
-msgstr "Witamy! Wybierz poniżej układ pulpitu, aby rozpocząć."
-
-#: usr/share/layout-switcher/ui/window.py:207
-msgid "Got it"
-msgstr "Rozumiem"
-
-#: usr/share/layout-switcher/ui/window.py:318
-#: usr/share/layout-switcher/ui/window.py:389
-msgid "Fonts"
-msgstr "Czcionki"
-
-#: usr/share/layout-switcher/ui/window.py:319
-#: usr/share/layout-switcher/ui/window.py:390
-msgid "Themes"
-msgstr "Motywy"
-
-#: usr/share/layout-switcher/ui/window.py:320
-#: usr/share/layout-switcher/ui/window.py:391
-msgid "Effects"
-msgstr "Efekty"
-
-#: usr/share/layout-switcher/ui/window.py:321
-#: usr/share/layout-switcher/ui/window.py:392
-msgid "Extensions"
-msgstr "Rozszerzenia"
-
-#: usr/share/layout-switcher/ui/window.py:420
-msgid "Community Layout Switcher"
-msgstr "Społeczność Layout Switcher"
-
-#: usr/share/layout-switcher/ui/window.py:425
-msgid "Layouts, effects and themes for your GNOME desktop."
-msgstr "Układy, efekty i motywy dla twojego pulpitu GNOME."
-
-#: usr/share/layout-switcher/ui/window.py:467
-msgid "Applying…"
-msgstr "Zastosowywanie…"
-
-#: usr/share/layout-switcher/ui/window.py:518
-#, fuzzy
-msgid "All extensions up to date"
-msgstr "Wszystkie rozszerzenia wyłączone"
-
-#: usr/share/layout-switcher/ui/window.py:530
-#, python-brace-format
-msgid "Auto-updated {n} extensions"
-msgstr ""
-
-#: usr/share/layout-switcher/ui/window.py:535
-#, fuzzy, python-brace-format
-msgid "{n} update(s) available"
-msgstr "dostępne motywy"
-
-#: usr/share/layout-switcher/ui/window.py:542
-#, fuzzy
-msgid "Auto-update enabled"
-msgstr "Aktualizacja nie powiodła się"
-
-#: usr/share/layout-switcher/ui/window.py:542
-#, fuzzy
-msgid "Auto-update disabled"
-msgstr "Aktualizacja nie powiodła się"
-
-#: usr/share/layout-switcher/ui/page_layouts.py:54
+#: usr/share/layout-switcher/ui/page_layouts.py:64
 msgid "Layout status"
 msgstr "Status układu"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:131
+#: usr/share/layout-switcher/ui/page_layouts.py:141
 msgid "Contains your saved customizations"
 msgstr "Zawiera twoje zapisane dostosowania"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:135
+#: usr/share/layout-switcher/ui/page_layouts.py:145
 msgid "Modified"
 msgstr "Zmodyfikowano"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:167
-#: usr/share/layout-switcher/ui/page_layouts.py:194
+#: usr/share/layout-switcher/ui/page_layouts.py:159
+#: usr/share/layout-switcher/ui/page_layouts.py:206
+#: usr/share/layout-switcher/ui/page_themes.py:306
+#: usr/share/layout-switcher/ui/page_themes.py:360
+msgid "Active"
+msgstr "Aktywny"
+
+#: usr/share/layout-switcher/ui/page_layouts.py:177
+#: usr/share/layout-switcher/ui/page_layouts.py:204
 msgid "Coming soon"
 msgstr "Wkrótce"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:205
+#: usr/share/layout-switcher/ui/page_layouts.py:215
 msgid "This layout is already active"
 msgstr "Ten układ jest już aktywny"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:217
-#, fuzzy
+#: usr/share/layout-switcher/ui/page_layouts.py:227
 msgid ""
 "You have previously modified this layout. Apply the original system default "
 "or resume your changes?"
 msgstr ""
-"Wcześniej zmodyfikowałeś ten układ. Kontynuować zmiany czy zastosować "
-"oryginalne ustawienia systemowe?"
+"Ten układ został wcześniej zmodyfikowany. Zastosować oryginalne ustawienia "
+"systemowe czy wznowić własne zmiany?"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:222
+#: usr/share/layout-switcher/ui/page_layouts.py:232
 msgid "Resume my changes"
-msgstr "Kontynuuj moje zmiany"
+msgstr "Wznów moje zmiany"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:223
+#: usr/share/layout-switcher/ui/page_layouts.py:233
 msgid "Apply original"
-msgstr "Zastosuj oryginalny"
+msgstr "Zastosuj oryginał"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:229
+#: usr/share/layout-switcher/ui/page_layouts.py:239
 msgid ""
 "Apply this layout? A backup of your current configuration will be created "
 "automatically."
@@ -974,56 +901,271 @@ msgstr ""
 "Zastosować ten układ? Kopia zapasowa twojej bieżącej konfiguracji zostanie "
 "utworzona automatycznie."
 
-#: usr/share/layout-switcher/ui/page_layouts.py:234
+#: usr/share/layout-switcher/ui/page_layouts.py:244
 msgid "Apply"
 msgstr "Zastosuj"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:264
-#: usr/share/layout-switcher/ui/page_layouts.py:267
+#: usr/share/layout-switcher/ui/page_layouts.py:274
+#: usr/share/layout-switcher/ui/page_layouts.py:276
 msgid "Applying"
 msgstr "Zastosowywanie"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:274
+#: usr/share/layout-switcher/ui/page_layouts.py:307
 msgid "Snapshot not found"
 msgstr "Migawka nie znaleziona"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:289
+#: usr/share/layout-switcher/ui/page_layouts.py:329
 msgid "Layout file not found"
 msgstr "Plik układu nie znaleziony"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:304
-#: usr/share/layout-switcher/ui/page_layouts.py:312
-#: usr/share/layout-switcher/ui/page_layouts.py:321
+#: usr/share/layout-switcher/ui/page_layouts.py:358
+#: usr/share/layout-switcher/ui/page_layouts.py:366
+#: usr/share/layout-switcher/ui/page_layouts.py:375
 msgid "applied"
 msgstr "zastosowano"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:314
+#: usr/share/layout-switcher/ui/page_layouts.py:368
 msgid "Undo"
 msgstr "Cofnij"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:331
+#: usr/share/layout-switcher/ui/page_layouts.py:385
 msgid "Restart the session for the 100% clean state"
-msgstr ""
+msgstr "Uruchom sesję ponownie, aby uzyskać w 100% czysty stan"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:334
+#: usr/share/layout-switcher/ui/page_layouts.py:388
 msgid "Restart now"
-msgstr ""
+msgstr "Uruchom ponownie teraz"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:358
+#: usr/share/layout-switcher/ui/page_layouts.py:412
 msgid "Cannot restart session"
-msgstr ""
+msgstr "Nie można ponownie uruchomić sesji"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:364
+#: usr/share/layout-switcher/ui/page_layouts.py:419
+#: usr/share/layout-switcher/ui/page_layouts.py:421
 msgid "Restoring previous layout…"
 msgstr "Przywracanie poprzedniego układu…"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:388
+#: usr/share/layout-switcher/ui/page_layouts.py:449
 msgid "Layout restored"
 msgstr "Układ przywrócony"
 
-#: usr/share/layout-switcher/ui/page_layouts.py:390
+#: usr/share/layout-switcher/ui/page_layouts.py:451
 msgid "Previous layout restored"
 msgstr "Poprzedni układ przywrócony"
+
+#: usr/share/layout-switcher/ui/page_themes.py:94
+msgid "Filter themes…"
+msgstr "Filtruj motywy…"
+
+#: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "GTK"
+msgstr "GTK"
+
+#: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "Icons"
+msgstr "Ikony"
+
+#: usr/share/layout-switcher/ui/page_themes.py:210
+msgid "No themes found"
+msgstr "Nie znaleziono motywów"
+
+#: usr/share/layout-switcher/ui/page_themes.py:211
+msgid "Install themes to ~/.themes or /usr/share/themes"
+msgstr "Zainstaluj motywy w ~/.themes lub /usr/share/themes"
+
+#: usr/share/layout-switcher/ui/page_themes.py:218
+#, fuzzy, python-brace-format
+msgid "{n} themes available"
+msgstr "dostępne motywy"
+
+#: usr/share/layout-switcher/ui/page_themes.py:304
+#: usr/share/layout-switcher/ui/page_themes.py:358
+#, fuzzy, python-brace-format
+msgid "{name} theme"
+msgstr "zainstalowano"
+
+#: usr/share/layout-switcher/ui/page_themes.py:420
+msgid "User Themes required"
+msgstr "Wymagane User Themes"
+
+#: usr/share/layout-switcher/ui/page_themes.py:421
+msgid "Install and enable the User Themes extension to apply shell themes."
+msgstr ""
+"Zainstaluj i włącz rozszerzenie User Themes, aby zastosować motywy powłoki."
+
+#: usr/share/layout-switcher/ui/page_themes.py:424
+msgid "Open Extensions Page"
+msgstr "Otwórz stronę rozszerzeń"
+
+#: usr/share/layout-switcher/ui/window.py:66
+#: usr/share/layout-switcher/ui/window.py:323
+msgid "Layout Switcher"
+msgstr "Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:190
+#: usr/share/layout-switcher/ui/window.py:191
+msgid "Show Sidebar"
+msgstr "Pokaż pasek boczny"
+
+#: usr/share/layout-switcher/ui/window.py:197
+#: usr/share/layout-switcher/ui/window.py:347
+#: usr/share/layout-switcher/ui/window.py:422
+msgid "Layouts"
+msgstr "Układy"
+
+#: usr/share/layout-switcher/ui/window.py:203
+msgid "Menu"
+msgstr "Menu"
+
+#: usr/share/layout-switcher/ui/window.py:204
+msgid "Main menu"
+msgstr "Menu główne"
+
+#: usr/share/layout-switcher/ui/window.py:208
+msgid "Check for updates"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/window.py:209
+#, fuzzy
+msgid "Auto-update extensions"
+msgstr "Rozszerzenie systemowe"
+
+#: usr/share/layout-switcher/ui/window.py:211
+msgid "Backups…"
+msgstr "Kopie zapasowe…"
+
+#: usr/share/layout-switcher/ui/window.py:212
+msgid "About"
+msgstr "Informacje"
+
+#: usr/share/layout-switcher/ui/window.py:221
+msgid "Welcome! Choose a desktop layout below to get started."
+msgstr "Witamy! Wybierz poniżej układ pulpitu, aby rozpocząć."
+
+#: usr/share/layout-switcher/ui/window.py:222
+msgid "Got it"
+msgstr "Rozumiem"
+
+#: usr/share/layout-switcher/ui/window.py:348
+#: usr/share/layout-switcher/ui/window.py:423
+msgid "Fonts"
+msgstr "Czcionki"
+
+#: usr/share/layout-switcher/ui/window.py:349
+#: usr/share/layout-switcher/ui/window.py:424
+msgid "Themes"
+msgstr "Motywy"
+
+#: usr/share/layout-switcher/ui/window.py:350
+#: usr/share/layout-switcher/ui/window.py:425
+msgid "Effects"
+msgstr "Efekty"
+
+#: usr/share/layout-switcher/ui/window.py:351
+#: usr/share/layout-switcher/ui/window.py:426
+msgid "Extensions"
+msgstr "Rozszerzenia"
+
+#: usr/share/layout-switcher/ui/window.py:461
+msgid "Community Layout Switcher"
+msgstr "Społeczność Layout Switcher"
+
+#: usr/share/layout-switcher/ui/window.py:466
+msgid "Layouts, effects and themes for your GNOME desktop."
+msgstr "Układy, efekty i motywy dla twojego pulpitu GNOME."
+
+#: usr/share/layout-switcher/ui/window.py:512
+msgid "Applying…"
+msgstr "Zastosowywanie…"
+
+#: usr/share/layout-switcher/ui/window.py:585
+#, fuzzy
+msgid "All extensions up to date"
+msgstr "Wszystkie rozszerzenia wyłączone"
+
+#: usr/share/layout-switcher/ui/window.py:600
+#, python-brace-format
+msgid "Auto-updated {n} extensions"
+msgstr ""
+
+#: usr/share/layout-switcher/ui/window.py:605
+#, fuzzy, python-brace-format
+msgid "{n} update(s) available"
+msgstr "dostępne motywy"
+
+#: usr/share/layout-switcher/ui/window.py:612
+#, fuzzy
+msgid "Auto-update enabled"
+msgstr "Aktualizacja nie powiodła się"
+
+#: usr/share/layout-switcher/ui/window.py:612
+#, fuzzy
+msgid "Auto-update disabled"
+msgstr "Aktualizacja nie powiodła się"
+
+#~ msgid "System fonts"
+#~ msgstr "Czcionki systemowe"
+
+#~ msgid "Fonts used by the GNOME interface"
+#~ msgstr "Czcionki używane przez interfejs GNOME"
+
+#~ msgid "Window titles (legacy)"
+#~ msgstr "Tytuły okien (stare)"
+
+#~ msgid "Choose…"
+#~ msgstr "Wybierz…"
+
+#~ msgid "Appearance"
+#~ msgstr "Wygląd"
+
+#~ msgid "How fonts are rendered on screen"
+#~ msgstr "Jak czcionki są renderowane na ekranie"
+
+#~ msgid "Antialiasing"
+#~ msgstr "Wygładzanie krawędzi"
+
+#~ msgid "Grayscale"
+#~ msgstr "Skala szarości"
+
+#~ msgid "Subpixel (RGBA)"
+#~ msgstr "Subpiksele (RGBA)"
+
+#~ msgid "Installed fonts"
+#~ msgstr "Zainstalowane czcionki"
+
+#~ msgid "Browse font families installed on your system"
+#~ msgstr "Przeglądaj rodziny czcionek zainstalowanych w systemie"
+
+#~ msgid "No fonts match your search"
+#~ msgstr "Brak czcionek pasujących do wyszukiwania"
+
+#~ msgid "(refine search to see more)"
+#~ msgstr "(doprecyzuj wyszukiwanie, aby zobaczyć więcej)"
+
+#~ msgid "fonts"
+#~ msgstr "czcionki"
+
+#~ msgid "The quick brown fox jumps over the lazy dog 0123"
+#~ msgstr "Pchnąć w tę łódź jeża lub ośm skrzyń fig 0123"
+
+#~ msgid "Install more fonts"
+#~ msgstr "Zainstaluj więcej czcionek"
+
+#~ msgid "Opens fonts.google.com in your browser"
+#~ msgstr "Otwiera fonts.google.com w Twojej przeglądarce"
+
+#~ msgid "How to install"
+#~ msgstr "Jak zainstalować"
+
+#~ msgid ""
+#~ "Place .ttf/.otf files in ~/.local/share/fonts/ then run 'fc-cache -f -v' and"
+#~ " refresh this list."
+#~ msgstr ""
+#~ "Umieść pliki .ttf/.otf w ~/.local/share/fonts/, następnie uruchom 'fc-cache "
+#~ "-f -v' i odśwież tę listę."
+
+#~ msgid "system"
+#~ msgstr "system"
 
 #~ msgid "theme"
 #~ msgstr "motyw"
@@ -1032,8 +1174,8 @@ msgstr "Poprzedni układ przywrócony"
 #~ msgstr "Kliknij układ, aby go zastosować"
 
 #~ msgid ""
-#~ "Marked layouts contain your saved customizations — click to resume them "
-#~ "or apply the original."
+#~ "Marked layouts contain your saved customizations — click to resume them or "
+#~ "apply the original."
 #~ msgstr ""
 #~ "Oznaczone układy zawierają Twoje zapisane dostosowania — kliknij, aby je "
 #~ "wznowić lub zastosować oryginał."

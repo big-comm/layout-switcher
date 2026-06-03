@@ -129,3 +129,197 @@ class TestColorScheme:
     @patch("theme_manager.gsettings_get", return_value=None)
     def test_color_scheme_default(self, mock_gs):
         assert ThemeMgr.color_scheme() == "prefer-light"
+
+    @patch(
+        "theme_manager.gsettings_get",
+        side_effect=[
+            "['user-theme@gnome-shell-extensions.gcampax.github.com', 'stay@ext']",
+            "['light-style@gnome-shell-extensions.gcampax.github.com']",
+        ],
+    )
+    @patch("theme_manager.ShellReloader.reload_extension", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_set_light_scheme_syncs_shell_helpers(self, mock_set, mock_reload, _mock_get):
+        with patch("theme_manager.Settings") as mock_settings:
+            mock_settings.return_value.get.return_value = None
+            ok, msg = ThemeMgr.set_color_scheme(False)
+
+        assert ok is True
+        assert msg == ""
+        assert mock_set.call_args_list[0].args == (
+            "org.gnome.desktop.interface",
+            "color-scheme",
+            "prefer-light",
+        )
+        assert mock_set.call_args_list[1].args == (
+            "org.gnome.shell",
+            "disabled-extensions",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert mock_set.call_args_list[2].args == (
+            "org.gnome.shell",
+            "enabled-extensions",
+            "['stay@ext', 'light-style@gnome-shell-extensions.gcampax.github.com']",
+        )
+        mock_reload.assert_called_once_with(
+            "light-style@gnome-shell-extensions.gcampax.github.com",
+            timeout=5,
+        )
+
+    @patch(
+        "theme_manager.gsettings_get",
+        side_effect=[
+            "['light-style@gnome-shell-extensions.gcampax.github.com', 'stay@ext']",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com']",
+            "''",
+        ],
+    )
+    @patch("theme_manager.ShellReloader.reload_extension", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_set_dark_scheme_syncs_shell_helpers(self, mock_set, mock_reload, _mock_get):
+        with patch("theme_manager.Settings") as mock_settings:
+            mock_settings.return_value.get.return_value = None
+            ok, msg = ThemeMgr.set_color_scheme(True)
+
+        assert ok is True
+        assert msg == ""
+        assert mock_set.call_args_list[0].args == (
+            "org.gnome.desktop.interface",
+            "color-scheme",
+            "prefer-dark",
+        )
+        assert mock_set.call_args_list[1].args == (
+            "org.gnome.shell",
+            "disabled-extensions",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com', 'light-style@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert mock_set.call_args_list[2].args == (
+            "org.gnome.shell",
+            "enabled-extensions",
+            "['stay@ext']",
+        )
+        mock_reload.assert_called_once_with(
+            "light-style@gnome-shell-extensions.gcampax.github.com",
+            timeout=5,
+        )
+
+    @patch(
+        "theme_manager.gsettings_get",
+        side_effect=[
+            "['light-style@gnome-shell-extensions.gcampax.github.com', 'stay@ext']",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com']",
+            "''",
+        ],
+    )
+    @patch("theme_manager.ShellReloader.reload_extension", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_set_light_scheme_keeps_g_unity_shell_dark(
+        self,
+        mock_set,
+        mock_reload,
+        _mock_get,
+    ):
+        with patch("theme_manager.Settings") as mock_settings:
+            mock_settings.return_value.get.return_value = "G-Unity"
+            ok, msg = ThemeMgr.set_color_scheme(False)
+
+        assert ok is True
+        assert msg == ""
+        assert mock_set.call_args_list[0].args == (
+            "org.gnome.desktop.interface",
+            "color-scheme",
+            "prefer-light",
+        )
+        assert mock_set.call_args_list[1].args == (
+            "org.gnome.shell",
+            "disabled-extensions",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com', 'light-style@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert mock_set.call_args_list[2].args == (
+            "org.gnome.shell",
+            "enabled-extensions",
+            "['stay@ext']",
+        )
+        mock_reload.assert_called_once_with(
+            "light-style@gnome-shell-extensions.gcampax.github.com",
+            timeout=5,
+        )
+
+    @patch(
+        "theme_manager.gsettings_get",
+        side_effect=[
+            "['light-style@gnome-shell-extensions.gcampax.github.com', 'stay@ext']",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com']",
+            "'Big-Blue'",
+        ],
+    )
+    @patch("theme_manager.ShellReloader.reload_extension", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_set_light_scheme_keeps_biggnome_shell_dark(
+        self,
+        mock_set,
+        mock_reload,
+        _mock_get,
+    ):
+        with patch("theme_manager.Settings") as mock_settings:
+            mock_settings.return_value.get.return_value = "BigGnome"
+            ok, msg = ThemeMgr.set_color_scheme(False)
+
+        assert ok is True
+        assert msg == ""
+        assert mock_set.call_args_list[0].args == (
+            "org.gnome.desktop.interface",
+            "color-scheme",
+            "prefer-light",
+        )
+        assert mock_set.call_args_list[1].args == (
+            "org.gnome.shell",
+            "disabled-extensions",
+            "['light-style@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert mock_set.call_args_list[2].args == (
+            "org.gnome.shell",
+            "enabled-extensions",
+            "['stay@ext', 'user-theme@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert [call.args[0] for call in mock_reload.call_args_list] == [
+            "light-style@gnome-shell-extensions.gcampax.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+        ]
+
+    @patch(
+        "theme_manager.gsettings_get",
+        side_effect=[
+            "['light-style@gnome-shell-extensions.gcampax.github.com', 'stay@ext']",
+            "['user-theme@gnome-shell-extensions.gcampax.github.com']",
+            "'Big-Blue'",
+        ],
+    )
+    @patch("theme_manager.ShellReloader.reload_extension", return_value=True)
+    @patch("theme_manager.gsettings_set", return_value=(True, ""))
+    def test_set_dark_scheme_keeps_named_shell_theme(
+        self,
+        mock_set,
+        mock_reload,
+        _mock_get,
+    ):
+        with patch("theme_manager.Settings") as mock_settings:
+            mock_settings.return_value.get.return_value = None
+            ok, msg = ThemeMgr.set_color_scheme(True)
+
+        assert ok is True
+        assert msg == ""
+        assert mock_set.call_args_list[1].args == (
+            "org.gnome.shell",
+            "disabled-extensions",
+            "['light-style@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert mock_set.call_args_list[2].args == (
+            "org.gnome.shell",
+            "enabled-extensions",
+            "['stay@ext', 'user-theme@gnome-shell-extensions.gcampax.github.com']",
+        )
+        assert [call.args[0] for call in mock_reload.call_args_list] == [
+            "light-style@gnome-shell-extensions.gcampax.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+        ]

@@ -11,7 +11,7 @@ class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
     @patch(
         "layout_applier.LayoutApplier._preserve_user_color_scheme",
-        side_effect=lambda data: data,
+        side_effect=lambda data, **_kwargs: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
@@ -66,7 +66,7 @@ class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
     @patch(
         "layout_applier.LayoutApplier._preserve_user_color_scheme",
-        side_effect=lambda data: data,
+        side_effect=lambda data, **_kwargs: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
@@ -134,7 +134,7 @@ class TestLayoutApplier:
     @patch("layout_applier.time.sleep")
     @patch(
         "layout_applier.LayoutApplier._preserve_user_color_scheme",
-        side_effect=lambda data: data,
+        side_effect=lambda data, **_kwargs: data,
     )
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
@@ -207,6 +207,7 @@ class TestLayoutApplier:
         )
 
     @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.get_extension_state", return_value=2)
     @patch(
         "layout_applier.ShellReloader.enable_extension_dbus",
         return_value=(True, ""),
@@ -219,6 +220,7 @@ class TestLayoutApplier:
         self,
         _mock_states,
         mock_disable,
+        _mock_get_state,
         mock_sleep,
     ):
         """Do not call DisableExtension for UUIDs Shell already disabled/errored."""
@@ -234,6 +236,30 @@ class TestLayoutApplier:
             timeout=LayoutApplier._SHELL_DBUS_TIMEOUT_SEC,
         )
         mock_sleep.assert_called_once()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.get_extension_state", side_effect=[1, 2])
+    @patch(
+        "layout_applier.ShellReloader.enable_extension_dbus",
+        return_value=(True, ""),
+    )
+    @patch(
+        "layout_applier.ShellReloader.list_extensions_state",
+        return_value={"panel@ext": 1},
+    )
+    def test_disable_extensions_waits_until_shell_state_not_live(
+        self,
+        _mock_states,
+        _mock_disable,
+        mock_get_state,
+        mock_sleep,
+    ):
+        """Fragile Shell actors must finish disabling before the load continues."""
+        ok = LayoutApplier._disable_extensions_in_order(["panel@ext"], sort=False)
+
+        assert ok is True
+        assert mock_get_state.call_count == 2
+        assert mock_sleep.call_count == 2
 
     def test_leaving_extensions_disable_newest_first(self):
         """Leaving extensions follow reverse active order to avoid Shell rebase."""
@@ -332,10 +358,10 @@ class TestLayoutApplier:
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
         disabled = LayoutApplier._string_list(shell["disabled-extensions"])
-        assert user_theme in enabled
+        assert user_theme not in enabled
         assert light_style not in enabled
         assert light_style in disabled
-        assert user_theme not in disabled
+        assert user_theme in disabled
 
     @patch("layout_applier.run_cmd")
     def test_preserve_user_light_color_scheme(self, mock_run):
@@ -401,6 +427,101 @@ class TestLayoutApplier:
             "org.gnome.desktop.interface",
             "color-scheme",
         ]
+
+    @patch("layout_applier.run_cmd")
+    def test_g_unity_keeps_shell_dark_with_light_user_scheme(self, mock_run):
+        """G-Unity preserves light apps but keeps Shell/top bar dark."""
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "color-scheme='prefer-dark'\n"
+            "gtk-theme='adw-gtk3-dark'\n"
+            "\n"
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{light_style}']\n"
+            f"enabled-extensions=['{user_theme}', 'dash-to-dock@micxgx.gmail.com']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name=''\n"
+        )
+        mock_run.return_value = (True, "'prefer-light'")
+
+        out = LayoutApplier._preserve_user_color_scheme(
+            data,
+            force_shell_dark=True,
+        )
+
+        assert "color-scheme='prefer-light'" in out
+        assert "gtk-theme='adw-gtk3-dark'" in out
+        shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
+        enabled = LayoutApplier._string_list(shell["enabled-extensions"])
+        disabled = LayoutApplier._string_list(shell["disabled-extensions"])
+        assert user_theme not in enabled
+        assert light_style not in enabled
+        assert light_style in disabled
+        assert user_theme in disabled
+
+    @patch("layout_applier.run_cmd")
+    def test_preserve_user_dark_color_scheme_keeps_named_shell_theme(self, mock_run):
+        """Named Shell themes still use user-theme in dark mode."""
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "gtk-theme='adw-gtk3'\n"
+            "\n"
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{user_theme}']\n"
+            f"enabled-extensions=['{light_style}']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+        mock_run.return_value = (True, "'prefer-dark'")
+
+        out = LayoutApplier._preserve_user_color_scheme(data)
+
+        shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
+        enabled = LayoutApplier._string_list(shell["enabled-extensions"])
+        disabled = LayoutApplier._string_list(shell["disabled-extensions"])
+        assert user_theme in enabled
+        assert light_style not in enabled
+        assert light_style in disabled
+        assert user_theme not in disabled
+
+    @patch("layout_applier.run_cmd")
+    def test_biggnome_keeps_named_shell_theme_with_light_user_scheme(self, mock_run):
+        """BigGnome preserves light apps but keeps its dark Shell theme."""
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "color-scheme='prefer-dark'\n"
+            "gtk-theme='adw-gtk3-dark'\n"
+            "\n"
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{light_style}']\n"
+            f"enabled-extensions=['{user_theme}', 'dash-to-dock@micxgx.gmail.com']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+        mock_run.return_value = (True, "'prefer-light'")
+
+        out = LayoutApplier._preserve_user_color_scheme(
+            data,
+            force_shell_dark=True,
+        )
+
+        assert "color-scheme='prefer-light'" in out
+        shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
+        enabled = LayoutApplier._string_list(shell["enabled-extensions"])
+        disabled = LayoutApplier._string_list(shell["disabled-extensions"])
+        assert user_theme in enabled
+        assert light_style not in enabled
+        assert light_style in disabled
+        assert user_theme not in disabled
 
     @patch("layout_applier.time.sleep")
     @patch("layout_applier.ShellReloader.reload_extension", return_value=True)
@@ -479,7 +600,7 @@ class TestLayoutApplier:
         assert "enabled-extensions=['stay@ext']" in mock_run.call_args_list[1].kwargs["stdin_text"]
 
     @patch("layout_applier.time.sleep")
-    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load")
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch(
         "layout_applier.LayoutApplier._enabled_extensions",
@@ -575,11 +696,8 @@ class TestLayoutApplier:
         mock_sleep.assert_any_call(LayoutApplier._SETTLE_SEC)
 
     @patch("layout_applier.time.sleep")
-    @patch(
-        "layout_applier.ShellReloader.get_extension_state",
-        return_value=1,
-    )
-    @patch("layout_applier.ShellReloader.enable_extension_dbus", return_value=(True, ""))
+    @patch("layout_applier.LayoutApplier._enable_extensions_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
     @patch("layout_applier.LayoutApplier._reload_visual_extensions")
     @patch(
         "layout_applier.LayoutApplier._enabled_extensions",
@@ -590,7 +708,7 @@ class TestLayoutApplier:
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
     @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
-    def test_load_restarts_new_dash_to_panel_after_layout_load(
+    def test_load_restarts_dash_to_panel_after_layout_load(
         self,
         _mock_run,
         _has,
@@ -599,11 +717,11 @@ class TestLayoutApplier:
         mock_disable_batch,
         _enabled,
         _reload,
-        mock_dtp_toggle,
-        _mock_state,
+        mock_restart_dtp,
+        mock_enable_after_load,
         mock_sleep,
     ):
-        """DTP enabled by the target layout gets a clean post-load init."""
+        """DTP is rebuilt after its target settings are loaded."""
         data = (
             "[org/gnome/shell]\n"
             "enabled-extensions=['dash-to-panel@jderose9.github.com']\n"
@@ -613,20 +731,551 @@ class TestLayoutApplier:
 
         assert ok is True
         mock_disable_batch.assert_not_called()
-        mock_dtp_toggle.assert_called_once_with(
-            "dash-to-panel@jderose9.github.com",
-            enable=True,
-            timeout=LayoutApplier._SHELL_DBUS_TIMEOUT_SEC,
+        mock_restart_dtp.assert_called_once_with(
+            ["dash-to-panel@jderose9.github.com"]
         )
-        calls = [call.args[0] for call in _mock_run.call_args_list]
-        assert [
-            "dconf",
-            "write",
-            "/org/gnome/shell/enabled-extensions",
-            "[]",
-        ] in calls
-        mock_sleep.assert_any_call(LayoutApplier._DISABLE_STEP_SEC)
-        mock_sleep.assert_any_call(LayoutApplier._DTP_REENABLE_SETTLE_SEC)
+        mock_enable_after_load.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._enable_user_theme_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        return_value=["user-theme@gnome-shell-extensions.gcampax.github.com"],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_enables_named_user_theme_after_settings_load(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_enable_user_theme,
+        _sleep,
+    ):
+        """Named Shell themes must start after their name key is loaded."""
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            "disabled-extensions=[]\n"
+            f"enabled-extensions=['{user_theme}', 'stay@ext']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=["leave@ext"],
+        )
+
+        assert ok is True
+        assert mock_disable.call_args.args[0] == ["leave@ext"]
+        assert mock_disable.call_args.kwargs == {"sort": False}
+        assert mock_run.call_count == 2
+        assert "enabled-extensions" not in mock_run.call_args_list[0].kwargs["stdin_text"]
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        assert f"enabled-extensions=['{user_theme}', 'stay@ext']" in switch_data
+        mock_enable_user_theme.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._enable_user_theme_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._enabled_extensions", return_value=[])
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=False)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_disables_empty_user_theme_name_in_shell_switch(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_enable_user_theme,
+        _sleep,
+    ):
+        """Empty user-theme names must not enable the user-theme extension."""
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{light_style}']\n"
+            f"enabled-extensions=['{user_theme}', 'stay@ext']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name=''\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=["leave@ext"],
+        )
+
+        assert ok is True
+        assert mock_disable.call_args.args[0] == ["leave@ext"]
+        assert mock_disable.call_args.kwargs == {"sort": False}
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        assert f"enabled-extensions=['stay@ext']" in switch_data
+        assert f"'{user_theme}'" not in LayoutApplier._section_key_values(
+            switch_data,
+            "/org/gnome/shell",
+        )["enabled-extensions"]
+        disabled = LayoutApplier._string_list(
+            LayoutApplier._section_key_values(
+                switch_data,
+                "/org/gnome/shell",
+            )["disabled-extensions"]
+        )
+        assert light_style in disabled
+        assert user_theme in disabled
+        mock_enable_user_theme.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._enable_user_theme_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._enabled_extensions", return_value=[])
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_keeps_running_user_theme_for_name_changes(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_enable_user_theme,
+        _sleep,
+    ):
+        """Running user-theme consumes name changes without a DBus restart."""
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{light_style}']\n"
+            f"enabled-extensions=['{user_theme}', 'stay@ext']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name=''\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=[user_theme, "leave@ext"],
+        )
+
+        assert ok is True
+        assert mock_disable.call_args.args[0] == ["leave@ext"]
+        assert mock_disable.call_args.kwargs == {"sort": False}
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        shell = LayoutApplier._section_key_values(switch_data, "/org/gnome/shell")
+        enabled = LayoutApplier._string_list(shell["enabled-extensions"])
+        disabled = LayoutApplier._string_list(shell["disabled-extensions"])
+        assert user_theme not in enabled
+        assert "stay@ext" in enabled
+        assert light_style in disabled
+        assert user_theme in disabled
+        mock_enable_user_theme.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._wait_extension_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._enable_extensions_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        side_effect=[
+            ["stay@ext"],
+            ["stay@ext", "dash-to-panel@jderose9.github.com"],
+            ["stay@ext", "dash-to-panel@jderose9.github.com", "arcmenu@arcmenu.com"],
+        ],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_stages_new_dash_to_panel_after_settings_load(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_restart_dtp,
+        mock_enable_after_load,
+        _sleep,
+    ):
+        """New DTP starts first; ArcMenu starts after the DTP panel exists."""
+        arcmenu = "arcmenu@arcmenu.com"
+        dash_to_panel = "dash-to-panel@jderose9.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            "disabled-extensions=[]\n"
+            f"enabled-extensions=['stay@ext', '{arcmenu}', '{dash_to_panel}']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(data, before_uuids=["stay@ext"])
+
+        assert ok is True
+        mock_disable.assert_not_called()
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        assert "enabled-extensions=['stay@ext']" in switch_data
+        assert f"'{arcmenu}'" not in switch_data
+        assert f"'{dash_to_panel}'" not in switch_data
+        mock_restart_dtp.assert_called_once_with(["stay@ext"])
+        mock_enable_after_load.assert_called_once_with([arcmenu])
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._wait_extension_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._enable_extensions_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        side_effect=[
+            ["stay@ext", "light-style@gnome-shell-extensions.gcampax.github.com"],
+            [
+                "stay@ext",
+                "light-style@gnome-shell-extensions.gcampax.github.com",
+                "dash-to-panel@jderose9.github.com",
+            ],
+        ],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_keeps_light_style_stable_before_dash_to_panel_enters(
+        self,
+        _mock_run,
+        _has,
+        _persist,
+        _reset,
+        _disable,
+        _enabled,
+        _reload,
+        mock_restart_dtp,
+        _enable_after_load,
+        _wait_live,
+        _sleep,
+    ):
+        """Light DTP layouts start DTP after light-style is already active."""
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        dash_to_panel = "dash-to-panel@jderose9.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            "disabled-extensions=[]\n"
+            f"enabled-extensions=['stay@ext', '{light_style}', '{dash_to_panel}']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(data, before_uuids=["stay@ext"])
+
+        assert ok is True
+        mock_restart_dtp.assert_called_once_with(["stay@ext", light_style])
+        _enable_after_load.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._enable_extensions_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._restart_dash_to_panel_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._enabled_extensions", return_value=[])
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=False)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_still_enables_target_panel_after_disable_timeout(
+        self,
+        _mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_restart_dtp,
+        mock_enable_after_load,
+        _sleep,
+    ):
+        """Target panel extensions are required even after secondary DBus timeouts."""
+        arcmenu = "arcmenu@arcmenu.com"
+        dash_to_panel = "dash-to-panel@jderose9.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            "disabled-extensions=[]\n"
+            f"enabled-extensions=['stay@ext', '{arcmenu}', '{dash_to_panel}']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=["leave@ext", "stay@ext"],
+        )
+
+        assert ok is True
+        mock_disable.assert_not_called()
+        mock_restart_dtp.assert_called_once_with(["stay@ext"])
+        mock_enable_after_load.assert_called_once_with([arcmenu])
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.get_extension_state", return_value=1)
+    @patch(
+        "layout_applier.ShellReloader.enable_extension_dbus",
+        side_effect=[(False, "timeout"), (True, "")],
+    )
+    def test_enable_extensions_after_load_continues_after_one_timeout(
+        self,
+        mock_enable,
+        _state,
+        _sleep,
+    ):
+        """One extension timeout must not skip the next target extension."""
+        ok = LayoutApplier._enable_extensions_after_load(
+            ["arcmenu@arcmenu.com", "dash-to-panel@jderose9.github.com"]
+        )
+
+        assert ok is False
+        assert [call.args[0] for call in mock_enable.call_args_list] == [
+            "arcmenu@arcmenu.com",
+            "dash-to-panel@jderose9.github.com",
+        ]
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._wait_extension_not_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch("layout_applier.LayoutApplier._enabled_extensions", return_value=[])
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_disables_leaving_dash_to_panel_before_final_switch(
+        self,
+        _mock_run,
+        _has,
+        _persist,
+        mock_reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        _wait_not_live,
+        _sleep,
+    ):
+        """Leaving DTP is torn down before the final Shell extension list."""
+        arcmenu = "arcmenu@arcmenu.com"
+        dash_to_panel = "dash-to-panel@jderose9.github.com"
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{arcmenu}', '{dash_to_panel}', '{light_style}']\n"
+            "enabled-extensions=['stay@ext']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=[light_style, arcmenu, dash_to_panel, "stay@ext"],
+        )
+
+        assert ok is True
+        mock_disable.assert_called_once_with(
+            [
+                "dash-to-panel@jderose9.github.com",
+                "arcmenu@arcmenu.com",
+                "light-style@gnome-shell-extensions.gcampax.github.com",
+            ],
+            sort=False,
+        )
+        assert mock_reset.call_args.kwargs["skip_subdirs"] == {
+            "/org/gnome/shell/extensions/arcmenu/",
+            "/org/gnome/shell/extensions/dash-to-panel/",
+            "/org/gnome/shell/extensions/light-style/",
+        }
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._wait_extension_not_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._enable_extensions_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        side_effect=[
+            ["stay@ext"],
+            [
+                "stay@ext",
+                "dash-to-dock@micxgx.gmail.com",
+                "kiwi@kemma",
+            ],
+        ],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_stages_dark_shell_extensions_after_light_style_leaves(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_enable_after_load,
+        _wait_not_live,
+        _sleep,
+    ):
+        """Classic -> G-Unity starts Kiwi/DTD after light-style is disabled."""
+        arcmenu = "arcmenu@arcmenu.com"
+        dash_to_panel = "dash-to-panel@jderose9.github.com"
+        dash_to_dock = "dash-to-dock@micxgx.gmail.com"
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        kiwi = "kiwi@kemma"
+        data = (
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{arcmenu}', '{dash_to_panel}', '{light_style}']\n"
+            f"enabled-extensions=['{dash_to_dock}', '{kiwi}', 'stay@ext']\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=[light_style, arcmenu, dash_to_panel, "stay@ext"],
+        )
+
+        assert ok is True
+        mock_disable.assert_called_once_with(
+            [
+                "dash-to-panel@jderose9.github.com",
+                "arcmenu@arcmenu.com",
+                "light-style@gnome-shell-extensions.gcampax.github.com",
+            ],
+            sort=False,
+        )
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        assert f"'{dash_to_dock}'" not in switch_data
+        assert f"'{kiwi}'" not in switch_data
+        assert f"'{light_style}'" in switch_data
+        mock_enable_after_load.assert_called_once_with([dash_to_dock, kiwi])
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._enable_user_theme_after_load", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        return_value=["user-theme@gnome-shell-extensions.gcampax.github.com"],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._read_dconf_value", return_value="'Big-Blue'")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_keeps_same_named_user_theme_running(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        _read_dconf,
+        _reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        mock_enable_user_theme,
+        _sleep,
+    ):
+        """Desk UX -> BigGnome should not churn the same Big-Blue user-theme."""
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            "disabled-extensions=[]\n"
+            f"enabled-extensions=['{user_theme}', 'stay@ext']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=[user_theme, "leave@ext"],
+        )
+
+        assert ok is True
+        assert mock_disable.call_args.args[0] == ["leave@ext"]
+        assert mock_disable.call_args.kwargs == {"sort": False}
+        switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
+        assert f"'{user_theme}'" in switch_data
+        mock_enable_user_theme.assert_not_called()
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.LayoutApplier._wait_extension_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._wait_extension_not_live", return_value=True)
+    @patch("layout_applier.LayoutApplier._reload_visual_extensions")
+    @patch(
+        "layout_applier.LayoutApplier._enabled_extensions",
+        return_value=["light-style@gnome-shell-extensions.gcampax.github.com"],
+    )
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_load_to_light_layout_forces_dark_shell_helpers_off(
+        self,
+        mock_run,
+        _has,
+        _persist,
+        mock_reset,
+        mock_disable,
+        _enabled,
+        _reload,
+        _wait_not_live,
+        _wait_live,
+        _sleep,
+    ):
+        """Leaving G-Unity for a light layout must drop dark Shell helpers."""
+        dash_to_dock = "dash-to-dock@micxgx.gmail.com"
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{user_theme}', '{dash_to_dock}']\n"
+            f"enabled-extensions=['{light_style}']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+
+        ok, _ = LayoutApplier.load_dconf_safely(
+            data,
+            before_uuids=[user_theme, dash_to_dock],
+        )
+
+        assert ok is True
+        mock_disable.assert_called_once_with([dash_to_dock], sort=False)
+        settings_data = mock_run.call_args_list[0].kwargs["stdin_text"]
+        assert "name='Big-Blue'" not in settings_data
+        assert mock_reset.call_args.kwargs["skip_subdirs"] == {
+            "/org/gnome/shell/extensions/dash-to-dock/",
+            "/org/gnome/shell/extensions/user-theme/",
+        }
 
     @patch("layout_applier.time.sleep")
     @patch("layout_applier.LayoutApplier._set_enabled_extensions", return_value=True)
@@ -656,6 +1305,65 @@ class TestLayoutApplier:
             ["stay@ext", "dash-to-panel@jderose9.github.com"],
         ]
         assert mock_enable.call_count == 2
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.get_extension_state", return_value=1)
+    @patch("layout_applier.ShellReloader.enable_extension_dbus", return_value=(True, ""))
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_enable_user_theme_after_load_writes_name_first(
+        self,
+        mock_run,
+        mock_enable,
+        _mock_state,
+        mock_sleep,
+    ):
+        ok = LayoutApplier._enable_user_theme_after_load("Big-Blue")
+
+        assert ok is True
+        mock_run.assert_called_once_with(
+            [
+                "dconf",
+                "write",
+                "/org/gnome/shell/extensions/user-theme/name",
+                "'Big-Blue'",
+            ],
+            timeout=5,
+        )
+        mock_enable.assert_called_once_with(
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            enable=True,
+            timeout=LayoutApplier._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        assert mock_sleep.call_count == 2
+
+    @patch("layout_applier.time.sleep")
+    @patch("layout_applier.ShellReloader.get_extension_state", return_value=1)
+    @patch("layout_applier.ShellReloader.enable_extension_dbus", return_value=(True, ""))
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    def test_enable_user_theme_after_load_accepts_empty_name(
+        self,
+        mock_run,
+        mock_enable,
+        _mock_state,
+        _mock_sleep,
+    ):
+        ok = LayoutApplier._enable_user_theme_after_load("")
+
+        assert ok is True
+        mock_run.assert_called_once_with(
+            [
+                "dconf",
+                "write",
+                "/org/gnome/shell/extensions/user-theme/name",
+                "''",
+            ],
+            timeout=5,
+        )
+        mock_enable.assert_called_once_with(
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            enable=True,
+            timeout=LayoutApplier._SHELL_DBUS_TIMEOUT_SEC,
+        )
 
     @patch("layout_applier.run_cmd")
     def test_reset_orphan_keys_resets_leaving_branches_and_stale_keys(

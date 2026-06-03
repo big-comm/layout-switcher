@@ -29,6 +29,13 @@ from utils import find_file
 
 log = logging.getLogger("layout-switcher")
 
+# Progress labels are emitted by layout_applier.py and translated here.
+_PROGRESS_TRANSLATION_KEYS = (
+    tr("Disabling extensions…"),
+    tr("Loading layout…"),
+    tr("Reloading components…"),
+)
+
 
 class LayoutsPage(Gtk.Box):
     """Pagina de Layouts com grid de cards + Resume/Original."""
@@ -341,7 +348,8 @@ class LayoutsPage(Gtk.Box):
     ) -> None:
         root = self.get_root()
         if loading_token is not None and hasattr(root, "end_loading"):
-            root.end_loading(loading_token)
+            if not root.end_loading(loading_token) and hasattr(root, "hide_loading"):
+                root.hide_loading()
         elif hasattr(root, "hide_loading"):
             root.hide_loading()
         if ok:
@@ -425,7 +433,8 @@ class LayoutsPage(Gtk.Box):
     def _undo_failed(self, info: str, loading_token: Optional[int] = None) -> None:
         root = self.get_root()
         if loading_token is not None and hasattr(root, "end_loading"):
-            root.end_loading(loading_token)
+            if not root.end_loading(loading_token) and hasattr(root, "hide_loading"):
+                root.hide_loading()
         elif hasattr(root, "hide_loading"):
             root.hide_loading()
         self._set_status(f"{tr('Error')}: {info}", "err-col")
@@ -433,7 +442,8 @@ class LayoutsPage(Gtk.Box):
     def _done_undo(self, prev_name, loading_token: Optional[int] = None) -> None:
         root = self.get_root()
         if loading_token is not None and hasattr(root, "end_loading"):
-            root.end_loading(loading_token)
+            if not root.end_loading(loading_token) and hasattr(root, "hide_loading"):
+                root.hide_loading()
         elif hasattr(root, "hide_loading"):
             root.hide_loading()
         self._active_layout = prev_name

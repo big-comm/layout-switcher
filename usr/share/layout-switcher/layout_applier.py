@@ -121,9 +121,12 @@ _DTP_MONITOR_KEYED = (
     "panel-anchors",
     "panel-lengths",
 )
+_ARCMENU_UUID = "arcmenu@arcmenu.com"
 _DASH_TO_PANEL_UUID = "dash-to-panel@jderose9.github.com"
+_DASH_TO_DOCK_UUID = "dash-to-dock@micxgx.gmail.com"
 _LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
 _USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
+_KIWI_UUID = "kiwi@kemma"
 _LIVE_EXTENSION_STATES = {1, 8}
 _SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
 _INTERFACE_SECTION = "/org/gnome/desktop/interface"
@@ -138,22 +141,35 @@ _COLOR_SCHEME_KEY = (_INTERFACE_SECTION, "color-scheme")
 # notification app history, third-party apps) are off-limits — resetting
 # them would lose unrelated user state.
 _ORPHAN_RESET_PREFIXES = ("/org/gnome/shell/extensions/",)
+_FRAGILE_LIVE_LEAVING = frozenset(
+    {
+        _ARCMENU_UUID,
+        _DASH_TO_DOCK_UUID,
+        _DASH_TO_PANEL_UUID,
+        _KIWI_UUID,
+        _LIGHT_STYLE_UUID,
+    }
+)
+_FRAGILE_LIVE_ENTERING = frozenset(
+    {
+        _DASH_TO_PANEL_UUID,
+    }
+)
+_SHELL_MODE_DEPENDENT_ENTERING = (
+    _DASH_TO_DOCK_UUID,
+    _KIWI_UUID,
+)
+_EXTENSION_SETTINGS_SUBDIRS = {
+    _ARCMENU_UUID: "/org/gnome/shell/extensions/arcmenu/",
+    _DASH_TO_PANEL_UUID: "/org/gnome/shell/extensions/dash-to-panel/",
+    _USER_THEME_UUID: "/org/gnome/shell/extensions/user-theme/",
+}
 
-# Extensions that should NOT be disabled at the start of a layout switch.
+# Extensions that should NOT be disabled during generic leave cleanup.
 #
-# user-theme is special: it owns the global ``StTheme`` (Main.loadTheme).
-# Other visual extensions (blur-my-shell, dash-to-dock) register their
-# stylesheets on top of whatever StTheme is current at the time of their
-# enable(). If we disable user-theme during the switch, StTheme reverts
-# to the default GNOME theme; subsequent re-enables run against that
-# default. By the time user-theme's enable() runs again and rebuilds
-# StTheme, blur-my-shell's panel-class wiring has already happened
-# against the wrong theme — and the rebuild doesn't re-trigger
-# blur-my-shell's _set_should_override_panel(), so the panel's
-# ``.transparent-panel`` class either isn't set or has no matching rule.
-#
-# user-theme has no setting watchers that the dconf load's Notify
-# storm would crash, so it's safe to leave enabled throughout.
+# user-theme owns the global ``StTheme`` (Main.loadTheme). Do not DBus-toggle
+# it during generic cleanup; Shell layouts with an empty theme name disable it
+# through the final enabled/disabled lists instead.
 _NO_DISABLE = frozenset(
     {
         _USER_THEME_UUID,
@@ -173,10 +189,11 @@ class LayoutApplier:
     _DISABLE_STEP_SEC = 0.1
     _SETTLE_SEC = 0.5  # final settle after last disable, before dconf load
     _MIN_DUMP_BYTES = 100
-    _SHELL_DBUS_TIMEOUT_SEC = 2
+    _SHELL_DBUS_TIMEOUT_SEC = 6
     _SHELL_RELOAD_TIMEOUT_SEC = 8
     _MAX_DISABLE_DBUS_TIMEOUTS = 3
-    _DTP_REENABLE_SETTLE_SEC = 0.7
+    _DTP_REENABLE_SETTLE_SEC = 1.5
+    _DISABLE_CONFIRM_TIMEOUT_SEC = 2.0
 
     # ── Helpers de infraestrutura ────────────────────────────────────────────
 
@@ -362,6 +379,11 @@ class LayoutApplier:
         return repr([value for value in values if value])
 
     @staticmethod
+    def _quote_gvariant_string(value: str) -> str:
+        """Render a simple GVariant string."""
+        return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+    @staticmethod
     def _replace_or_add_dconf_key(text: str, section_path: str, key: str, value: str) -> str:
         """Replace or add one key in a dconf dump string."""
         clean_section = "/" + section_path.strip("/")
@@ -404,6 +426,33 @@ class LayoutApplier:
             if out and out[-1].strip():
                 out.append("")
             out.extend([header, f"{key}={value}"])
+
+        joined = "\n".join(out)
+        if text.endswith("\n") or not joined.endswith("\n"):
+            joined += "\n"
+        return joined
+
+    @staticmethod
+    def _remove_dconf_key(text: str, section_path: str, key: str) -> str:
+        """Remove one key from a dconf dump string."""
+        clean_section = "/" + section_path.strip("/")
+        lines = text.splitlines()
+        out: List[str] = []
+        section = ""
+
+        for raw in lines:
+            stripped = raw.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = "/" + stripped[1:-1].strip("/")
+                out.append(raw)
+                continue
+
+            if section == clean_section and "=" in raw:
+                line_key, _separator, _value = raw.partition("=")
+                if line_key.strip() == key:
+                    continue
+
+            out.append(raw)
 
         joined = "\n".join(out)
         if text.endswith("\n") or not joined.endswith("\n"):
@@ -485,16 +534,24 @@ class LayoutApplier:
         shell_values = cls._section_key_values(text, "/org/gnome/shell")
         enabled = cls._string_list(shell_values.get("enabled-extensions"))
         disabled = cls._string_list(shell_values.get("disabled-extensions"))
-
+        user_theme_values = cls._section_key_values(
+            text,
+            "/org/gnome/shell/extensions/user-theme",
+        )
+        user_theme_name = cls._gvariant_string(user_theme_values.get("name"))
         def add_once(values: List[str], uuid: str) -> None:
             if uuid not in values:
                 values.append(uuid)
 
         if prefer_dark:
             enabled = [uuid for uuid in enabled if uuid != _LIGHT_STYLE_UUID]
-            disabled = [uuid for uuid in disabled if uuid != _USER_THEME_UUID]
-            add_once(enabled, _USER_THEME_UUID)
             add_once(disabled, _LIGHT_STYLE_UUID)
+            if user_theme_name:
+                disabled = [uuid for uuid in disabled if uuid != _USER_THEME_UUID]
+                add_once(enabled, _USER_THEME_UUID)
+            else:
+                enabled = [uuid for uuid in enabled if uuid != _USER_THEME_UUID]
+                add_once(disabled, _USER_THEME_UUID)
         else:
             enabled = [uuid for uuid in enabled if uuid != _USER_THEME_UUID]
             disabled = [uuid for uuid in disabled if uuid != _LIGHT_STYLE_UUID]
@@ -515,7 +572,12 @@ class LayoutApplier:
         )
 
     @classmethod
-    def _preserve_user_color_scheme(cls, text: str) -> str:
+    def _preserve_user_color_scheme(
+        cls,
+        text: str,
+        *,
+        force_shell_dark: bool = False,
+    ) -> str:
         """
         Keep only the user's light/dark preference out of layout switching.
 
@@ -527,12 +589,12 @@ class LayoutApplier:
         if value is None:
             return text
 
-        current = {_COLOR_SCHEME_KEY: value}
-        prefer_dark = cls._prefers_dark(current)
+        prefer_dark = cls._prefers_dark({_COLOR_SCHEME_KEY: value})
+        shell_dark = True if force_shell_dark else prefer_dark
 
         section, key = _COLOR_SCHEME_KEY
         out = cls._replace_or_add_dconf_key(text, section, key, value)
-        return cls._rewrite_shell_theme_mode(out, prefer_dark=prefer_dark)
+        return cls._rewrite_shell_theme_mode(out, prefer_dark=shell_dark)
 
     @staticmethod
     def _parse_dconf_dump_paths(text: str) -> Set[str]:
@@ -569,7 +631,12 @@ class LayoutApplier:
         return paths
 
     @classmethod
-    def _reset_orphan_keys(cls, target_text: str) -> int:
+    def _reset_orphan_keys(
+        cls,
+        target_text: str,
+        *,
+        skip_subdirs: Optional[Iterable[str]] = None,
+    ) -> int:
         """
         Reset keys present in live dconf but absent from ``target_text``,
         restricted to ``_ORPHAN_RESET_PREFIXES`` (extension storage only).
@@ -597,10 +664,12 @@ class LayoutApplier:
             return 0
         live_paths = cls._parse_dconf_dump_paths(dump)
         target_paths = cls._parse_dconf_dump_paths(target_text)
+        skipped = {p for p in (skip_subdirs or ()) if p}
         orphans = {
             p
             for p in (live_paths - target_paths)
             if any(p.startswith(pre) for pre in _ORPHAN_RESET_PREFIXES)
+            and not any(p.startswith(skip) for skip in skipped)
         }
         if not orphans:
             return 0
@@ -647,6 +716,19 @@ class LayoutApplier:
         if n:
             log.info("reset %d orphan key(s) before load", n)
         return n
+
+    @staticmethod
+    def _extension_settings_subdir(uuid: str) -> Optional[str]:
+        """Best-effort dconf settings branch for one Shell extension UUID."""
+        if not uuid:
+            return None
+        known = _EXTENSION_SETTINGS_SUBDIRS.get(uuid)
+        if known:
+            return known
+        stem = uuid.split("@", 1)[0].strip()
+        if not stem:
+            return None
+        return f"/org/gnome/shell/extensions/{stem}/"
 
     # Extensions that own visual state (CSS, panel actors, theme
     # references) and don't recover it cleanly from a plain
@@ -791,7 +873,226 @@ class LayoutApplier:
         return live is not False
 
     @classmethod
-    def _disable_extensions_in_order(cls, uuids: Iterable[str], *, sort: bool = True) -> bool:
+    def _enable_dash_to_dock_after_load(cls) -> bool:
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _DASH_TO_DOCK_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning("post-load EnableExtension failed for %s: %s", _DASH_TO_DOCK_UUID, msg)
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+        state = ShellReloader.get_extension_state(
+            _DASH_TO_DOCK_UUID,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if state is None:
+            return True
+        return state in _LIVE_EXTENSION_STATES
+
+    @classmethod
+    def _restart_light_style_after_load(cls) -> bool:
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _LIGHT_STYLE_UUID,
+            enable=False,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning("post-load DisableExtension failed for %s: %s", _LIGHT_STYLE_UUID, msg)
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _LIGHT_STYLE_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning("post-load EnableExtension failed for %s: %s", _LIGHT_STYLE_UUID, msg)
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+
+        state = ShellReloader.get_extension_state(
+            _LIGHT_STYLE_UUID,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if state is None:
+            return True
+        return state in _LIVE_EXTENSION_STATES
+
+    @classmethod
+    def _enable_extensions_after_load(cls, uuids: Iterable[str]) -> bool:
+        ordered = []
+        seen = set()
+        for uuid in uuids:
+            if not uuid or uuid in seen:
+                continue
+            ordered.append(uuid)
+            seen.add(uuid)
+
+        success = True
+        for uuid in ordered:
+            ok, msg = ShellReloader.enable_extension_dbus(
+                uuid,
+                enable=True,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if not ok:
+                log.warning("post-load EnableExtension failed for %s: %s", uuid, msg)
+                success = False
+                continue
+
+            time.sleep(
+                cls._DTP_REENABLE_SETTLE_SEC
+                if uuid == _DASH_TO_PANEL_UUID
+                else cls._DISABLE_STEP_SEC
+            )
+            state = ShellReloader.get_extension_state(
+                uuid,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if state is not None and state not in _LIVE_EXTENSION_STATES:
+                log.warning("%s did not enter a live state after EnableExtension", uuid)
+                success = False
+
+        return success
+
+    @classmethod
+    def _wait_extension_not_live(cls, uuid: str) -> bool:
+        """Wait until Shell reports the extension out of live states."""
+        deadline = time.monotonic() + cls._DISABLE_CONFIRM_TIMEOUT_SEC
+        while time.monotonic() < deadline:
+            state = ShellReloader.get_extension_state(
+                uuid,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if state is None or state not in _LIVE_EXTENSION_STATES:
+                return True
+            time.sleep(cls._DISABLE_STEP_SEC)
+        state = ShellReloader.get_extension_state(
+            uuid,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        return state is None or state not in _LIVE_EXTENSION_STATES
+
+    @classmethod
+    def _wait_extension_live(cls, uuid: str) -> bool:
+        """Wait until Shell reports the extension in a live state."""
+        deadline = time.monotonic() + cls._DISABLE_CONFIRM_TIMEOUT_SEC
+        while time.monotonic() < deadline:
+            state = ShellReloader.get_extension_state(
+                uuid,
+                timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+            )
+            if state is None or state in _LIVE_EXTENSION_STATES:
+                return True
+            time.sleep(cls._DISABLE_STEP_SEC)
+        state = ShellReloader.get_extension_state(
+            uuid,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        return state is None or state in _LIVE_EXTENSION_STATES
+
+    @classmethod
+    def _enable_user_theme_after_load(cls, theme_name: str) -> bool:
+        ok, msg = run_cmd(
+            [
+                "dconf",
+                "write",
+                "/org/gnome/shell/extensions/user-theme/name",
+                cls._quote_gvariant_string(theme_name),
+            ],
+            timeout=5,
+        )
+        if not ok:
+            log.warning("could not write user-theme name before enable: %s", msg)
+            return False
+        time.sleep(cls._SETTLE_SEC if not theme_name else cls._DISABLE_STEP_SEC)
+
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _USER_THEME_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning("post-load EnableExtension failed for %s: %s", _USER_THEME_UUID, msg)
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+
+        state = ShellReloader.get_extension_state(
+            _USER_THEME_UUID,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if state is None:
+            return True
+        if state in _LIVE_EXTENSION_STATES:
+            return True
+
+        time.sleep(cls._SETTLE_SEC)
+        ok, msg = ShellReloader.enable_extension_dbus(
+            _USER_THEME_UUID,
+            enable=True,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if not ok:
+            log.warning("retry EnableExtension failed for %s: %s", _USER_THEME_UUID, msg)
+            return False
+        time.sleep(cls._DISABLE_STEP_SEC)
+
+        state = ShellReloader.get_extension_state(
+            _USER_THEME_UUID,
+            timeout=cls._SHELL_DBUS_TIMEOUT_SEC,
+        )
+        if state is not None and state not in _LIVE_EXTENSION_STATES:
+            log.warning("%s did not enter a live state after EnableExtension", _USER_THEME_UUID)
+            return False
+        return True
+
+    @classmethod
+    def _remove_enabled_extension_from_switch_data(cls, data: str, uuid: str) -> str:
+        if not data or not uuid:
+            return data
+        shell_values = cls._section_key_values(data, "/org/gnome/shell")
+        if "enabled-extensions" not in shell_values:
+            return data
+        enabled = [u for u in cls._string_list(shell_values["enabled-extensions"]) if u != uuid]
+        return cls._replace_or_add_dconf_key(
+            data,
+            "/org/gnome/shell",
+            "enabled-extensions",
+            cls._quote_string_list(enabled),
+        )
+
+    @classmethod
+    def _disable_extension_in_switch_data(cls, data: str, uuid: str) -> str:
+        if not data or not uuid:
+            return data
+        shell_values = cls._section_key_values(data, "/org/gnome/shell")
+        enabled = [u for u in cls._string_list(shell_values.get("enabled-extensions")) if u != uuid]
+        disabled = [u for u in cls._string_list(shell_values.get("disabled-extensions")) if u != uuid]
+        disabled.append(uuid)
+        out = cls._replace_or_add_dconf_key(
+            data,
+            "/org/gnome/shell",
+            "enabled-extensions",
+            cls._quote_string_list(enabled),
+        )
+        return cls._replace_or_add_dconf_key(
+            out,
+            "/org/gnome/shell",
+            "disabled-extensions",
+            cls._quote_string_list(disabled),
+        )
+
+    @classmethod
+    def _disable_extensions_in_order(
+        cls,
+        uuids: Iterable[str],
+        *,
+        sort: bool = True,
+        force_uuids: Optional[Iterable[str]] = None,
+    ) -> bool:
         """
         Disable each extension via DBus with a small delay between calls.
 
@@ -819,13 +1120,18 @@ class LayoutApplier:
         Returns False if the Shell DBus path timed out repeatedly and
         the caller should skip further extension DBus work in this apply.
         """
+        force_set = {u for u in (force_uuids or ()) if u}
+
+        def can_disable(uuid: str) -> bool:
+            return bool(uuid) and (uuid not in _NO_DISABLE or uuid in force_set)
+
         if sort:
-            ordered_uuids = sorted({u for u in uuids if u and u not in _NO_DISABLE})
+            ordered_uuids = sorted({u for u in uuids if can_disable(u)})
         else:
             ordered_uuids = []
             seen = set()
             for uuid in uuids:
-                if not uuid or uuid in _NO_DISABLE or uuid in seen:
+                if not can_disable(uuid) or uuid in seen:
                     continue
                 ordered_uuids.append(uuid)
                 seen.add(uuid)
@@ -851,6 +1157,8 @@ class LayoutApplier:
             if ok:
                 timeout_count = 0
                 time.sleep(cls._DISABLE_STEP_SEC)
+                if not cls._wait_extension_not_live(uuid):
+                    log.warning("%s still live after DisableExtension", uuid)
                 continue
 
             log.warning("DisableExtension failed for %s: %s", uuid, msg)
@@ -1119,7 +1427,7 @@ class LayoutApplier:
           5. settle so disable() callbacks drain
           6. surgical reset of orphan extension keys (see
              ``_reset_orphan_keys``)
-          7. dconf load < data
+          7. dconf load settings, then extension switch keys
           8. ReloadExtension on visually-stateful UUIDs (see
              ``_reload_visual_extensions``) — fresh JS module init so
              CSS/actor state matches the new dconf values
@@ -1209,17 +1517,60 @@ class LayoutApplier:
             #
             # LEAVING extensions are still disabled before the orphan reset,
             # because their entire settings branch may be removed.
+            shell_values = cls._section_key_values(data, "/org/gnome/shell")
             target_enabled_order = cls._string_list(
-                cls._section_key_values(data, "/org/gnome/shell").get(
-                    "enabled-extensions"
-                )
+                shell_values.get("enabled-extensions")
             )
             target_enabled = set(target_enabled_order)
             if not target_enabled:
                 target_enabled = cls._parse_target_enabled_extensions(data)
+            user_theme_values = cls._section_key_values(
+                data,
+                "/org/gnome/shell/extensions/user-theme",
+            )
+            target_user_theme_name = cls._gvariant_string(user_theme_values.get("name"))
+            target_uses_user_theme = _USER_THEME_UUID in target_enabled
+            # GNOME's user-theme extension must only be enabled with a
+            # real theme name. On GNOME 50, enabling it with name='' throws
+            # "Argument file may not be null" and leaves Shell styling stale.
+            target_user_theme_live_enabled = (
+                target_uses_user_theme and bool(target_user_theme_name)
+            )
+            live_target_enabled = set(target_enabled)
+            if not target_user_theme_live_enabled:
+                live_target_enabled.discard(_USER_THEME_UUID)
             before_set = {u for u in (before_uuids or ()) if u}
-            leaving = before_set - target_enabled
-            disable_batch = set(leaving)
+            user_theme_leaving = (
+                _USER_THEME_UUID in before_set and not target_user_theme_live_enabled
+            )
+            if not target_user_theme_live_enabled:
+                data = cls._remove_dconf_key(
+                    data,
+                    "/org/gnome/shell/extensions/user-theme",
+                    "name",
+                )
+            target_uses_dtp = _DASH_TO_PANEL_UUID in target_enabled
+            target_uses_arcmenu = _ARCMENU_UUID in target_enabled
+            target_uses_light_style = _LIGHT_STYLE_UUID in target_enabled
+            target_arcmenu_after_dtp = target_uses_dtp and target_uses_arcmenu
+            light_style_leaving = (
+                _LIGHT_STYLE_UUID in before_set and not target_uses_light_style
+            )
+            leaving = before_set - live_target_enabled
+            fragile_live_leaving = {
+                uuid for uuid in leaving if uuid in _FRAGILE_LIVE_LEAVING
+            }
+            fragile_live_entering_order = [
+                uuid
+                for uuid in target_enabled_order
+                if uuid in _FRAGILE_LIVE_ENTERING and uuid not in before_set
+            ]
+            panel_live_transition = bool(fragile_live_leaving or fragile_live_entering_order)
+            disable_batch = (
+                {uuid for uuid in fragile_live_leaving if uuid not in _NO_DISABLE}
+                if panel_live_transition
+                else {uuid for uuid in leaving if uuid not in _NO_DISABLE}
+            )
             restart_target_dtp = (
                 _DASH_TO_PANEL_UUID in before_set
                 and _DASH_TO_PANEL_UUID in target_enabled
@@ -1233,9 +1584,9 @@ class LayoutApplier:
                 # own panel actors are rebuilt from complete target settings.
                 disable_batch.add(_DASH_TO_PANEL_UUID)
 
+            shell_dbus_available = True
             if disable_batch:
                 progress("Disabling extensions…")
-            shell_dbus_available = True
             if disable_batch:
                 leaving_order = cls._leaving_extensions_in_disable_order(
                     before_uuids,
@@ -1259,8 +1610,52 @@ class LayoutApplier:
             # doesn't cover (scoped to extension storage). Done after
             # disabling extensions so most Notify signals fire into
             # dead code, before the load so target wins everywhere.
-            cls._reset_orphan_keys(data)
+            skip_orphan_subdirs = {
+                subdir
+                for uuid in fragile_live_leaving
+                for subdir in (_EXTENSION_SETTINGS_SUBDIRS.get(uuid),)
+                if subdir
+            }
+            if panel_live_transition:
+                skip_orphan_subdirs.update(
+                    subdir
+                    for uuid in leaving
+                    for subdir in (cls._extension_settings_subdir(uuid),)
+                    if subdir
+                )
+            if user_theme_leaving:
+                skip_orphan_subdirs.add(_EXTENSION_SETTINGS_SUBDIRS[_USER_THEME_UUID])
+            cls._reset_orphan_keys(data, skip_subdirs=skip_orphan_subdirs)
             settings_data, extension_switch_data = cls._split_shell_extension_switch_keys(data)
+            post_dtp_enabled: List[str] = []
+            post_shell_mode_enabled: List[str] = []
+            if target_uses_dtp:
+                extension_switch_data = cls._remove_enabled_extension_from_switch_data(
+                    extension_switch_data,
+                    _DASH_TO_PANEL_UUID,
+                )
+            if target_arcmenu_after_dtp:
+                extension_switch_data = cls._remove_enabled_extension_from_switch_data(
+                    extension_switch_data,
+                    _ARCMENU_UUID,
+                )
+                post_dtp_enabled.append(_ARCMENU_UUID)
+            if light_style_leaving:
+                for uuid in target_enabled_order:
+                    if (
+                        uuid in _SHELL_MODE_DEPENDENT_ENTERING
+                        and uuid not in before_set
+                    ):
+                        extension_switch_data = cls._remove_enabled_extension_from_switch_data(
+                            extension_switch_data,
+                            uuid,
+                        )
+                        post_shell_mode_enabled.append(uuid)
+            staged_enabled_order = [
+                uuid
+                for uuid in target_enabled_order
+                if uuid not in {_DASH_TO_PANEL_UUID, *post_dtp_enabled}
+            ]
 
             ok, msg = run_cmd(
                 ["dconf", "load", "/"],
@@ -1271,6 +1666,11 @@ class LayoutApplier:
                 log.warning("dconf load failed: %s", msg)
                 return False, f"dconf load failed: {msg}"
 
+            if target_uses_user_theme and not target_user_theme_live_enabled:
+                extension_switch_data = cls._disable_extension_in_switch_data(
+                    extension_switch_data,
+                    _USER_THEME_UUID,
+                )
             if extension_switch_data:
                 ok, msg = run_cmd(
                     ["dconf", "load", "/"],
@@ -1280,6 +1680,36 @@ class LayoutApplier:
                 if not ok:
                     log.warning("dconf extension switch load failed: %s", msg)
                     return False, f"dconf extension switch load failed: {msg}"
+
+            # Let Shell settle theme/panel extensions before starting the
+            # next panel. GNOME Shell rebases later extensions during
+            # DisableExtension, so the final enabled-extensions load is the
+            # point where we verify that the old panel and Shell mode are
+            # actually gone.
+            for uuid in target_enabled_order:
+                if uuid == _LIGHT_STYLE_UUID:
+                    shell_dbus_available = (
+                        cls._wait_extension_live(uuid) and shell_dbus_available
+                    )
+                    break
+            for uuid in cls._leaving_extensions_in_disable_order(
+                before_uuids,
+                fragile_live_leaving,
+            ):
+                shell_dbus_available = (
+                    cls._wait_extension_not_live(uuid) and shell_dbus_available
+                )
+
+            # Let Shell finish disabling light-style before extensions that
+            # sample panel colors during enable() (Kiwi/Dash-to-Dock) start.
+            after_uuids = cls._enabled_extensions()
+            if post_shell_mode_enabled:
+                progress("Reloading components…")
+                time.sleep(cls._SETTLE_SEC)
+                shell_mode_ok = cls._enable_extensions_after_load(post_shell_mode_enabled)
+                shell_dbus_available = shell_dbus_available and shell_mode_ok
+                if shell_mode_ok:
+                    after_uuids = cls._enabled_extensions()
 
             # Force fresh JS module init for a small allowlist of
             # visually-stateful extensions known to tolerate ReloadExtension.
@@ -1297,9 +1727,9 @@ class LayoutApplier:
             # long enough to make the layout switch look broken.
             #
             # Only ``after``: extensions present in ``before`` but not
-            # ``after`` are LEAVING the layout — they were disabled by
-            # ``_disable_extensions_in_order`` and the gsettings listener
-            # confirmed it when ``dconf load`` rewrote enabled-extensions.
+            # ``after`` are LEAVING the layout. They were either disabled
+            # before the load when safe, or by Shell's own enabled-extensions
+            # listener when the final switch keys were loaded.
             # Calling ``ReloadExtension`` on a leaving extension re-enables
             # it (Reload = disable+drop+load+enable), which re-creates its
             # actors. That's how the dash-to-panel bottom bar leaks into
@@ -1308,15 +1738,25 @@ class LayoutApplier:
             # Extensions that "stay enabled across the switch" (user-theme,
             # big-shot) live in ``before ∩ after`` — already covered by
             # ``after`` alone, no union needed.
-            after_uuids = cls._enabled_extensions()
-            target_uses_dtp = _DASH_TO_PANEL_UUID in target_enabled
-            if target_uses_dtp and shell_dbus_available:
+            dtp_rebuilt = False
+            if target_uses_dtp:
                 progress("Reloading components…")
-                shell_dbus_available = cls._restart_dash_to_panel_after_load(
-                    after_uuids or target_enabled_order or target_enabled
+                dtp_rebuilt = cls._restart_dash_to_panel_after_load(
+                    after_uuids or staged_enabled_order or target_enabled
                 )
-            elif target_uses_dtp:
+                shell_dbus_available = shell_dbus_available and dtp_rebuilt
+                if dtp_rebuilt:
+                    after_uuids = cls._enabled_extensions()
+                else:
+                    log.warning("dash-to-panel live rebuild failed; next login will be clean")
                 time.sleep(cls._DTP_REENABLE_SETTLE_SEC)
+
+            if post_dtp_enabled and dtp_rebuilt:
+                progress("Reloading components…")
+                post_dtp_ok = cls._enable_extensions_after_load(post_dtp_enabled)
+                shell_dbus_available = shell_dbus_available and post_dtp_ok
+                if post_dtp_ok:
+                    after_uuids = cls._enabled_extensions()
 
             if after_uuids and shell_dbus_available:
                 progress("Reloading components…")
@@ -1372,7 +1812,10 @@ class LayoutApplier:
         layout_text = cls._rewrite_dtp_keys_in_text(layout_text, local_dtp_monitors)
 
         before = cls._enabled_extensions()
-        layout_text = cls._preserve_user_color_scheme(layout_text)
+        layout_text = cls._preserve_user_color_scheme(
+            layout_text,
+            force_shell_dark=config_path.stem in {"biggnome", "g-unity"},
+        )
         return cls.load_dconf_safely(
             layout_text,
             persist=True,
