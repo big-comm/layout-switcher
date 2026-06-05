@@ -57,6 +57,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._pool = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="cls")
         self._monitor = GSettingsMonitor()
         self._timeout_ids: list = []
+        # Coalescing timers for external-change refreshes (see _schedule_refresh).
+        self._refresh_sources: Dict[str, int] = {}
         self._pages: Dict[str, Gtk.Widget] = {}
         self._page_factories: Dict[str, Callable[[], Gtk.Widget]] = {}
         self._pending_updates: Dict = {}
@@ -111,6 +113,12 @@ class MainWindow(Adw.ApplicationWindow):
             except Exception:
                 pass
         self._timeout_ids.clear()
+        for src in self._refresh_sources.values():
+            try:
+                GLib.source_remove(src)
+            except Exception:
+                pass
+        self._refresh_sources.clear()
         self._monitor.disconnect_all()
         self._pool.shutdown(wait=False)
 
@@ -135,18 +143,43 @@ class MainWindow(Adw.ApplicationWindow):
         self._monitor.watch(
             "org.gnome.shell",
             "enabled-extensions",
-            lambda: GLib.idle_add(self._on_ext_changed),
+            lambda: self._schedule_refresh("ext", self._on_ext_changed),
         )
         self._monitor.watch(
             "org.gnome.desktop.interface",
             "gtk-theme",
-            lambda: GLib.idle_add(self._on_theme_changed),
+            lambda: self._schedule_refresh("theme", self._on_theme_changed),
         )
         self._monitor.watch(
             "org.gnome.desktop.interface",
             "icon-theme",
-            lambda: GLib.idle_add(self._on_theme_changed),
+            lambda: self._schedule_refresh("theme", self._on_theme_changed),
         )
+
+    def _schedule_refresh(self, key: str, fn: Callable, delay_ms: int = 300) -> None:
+        """
+        Coalesce a burst of external GSettings changes into a single refresh.
+
+        A layout apply rewrites ``enabled-extensions`` several times in quick
+        succession; without coalescing, each write fired a full extensions +
+        effects page rebuild (each spawning more subprocesses). This replaces
+        any pending timer for ``key`` so only the last change in a burst runs,
+        ~``delay_ms`` after it settles. Runs on the GTK main thread (the Gio
+        ``changed`` signal already fires there).
+        """
+        old = self._refresh_sources.pop(key, None)
+        if old:
+            try:
+                GLib.source_remove(old)
+            except Exception:
+                pass
+
+        def fire() -> bool:
+            self._refresh_sources.pop(key, None)
+            fn()
+            return False  # GLib.SOURCE_REMOVE
+
+        self._refresh_sources[key] = GLib.timeout_add(delay_ms, fire)
 
     def _on_ext_changed(self) -> None:
         """Atualiza páginas de extensões/efeitos quando estado muda externamente."""

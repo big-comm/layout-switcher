@@ -51,26 +51,27 @@ class ExtMgr:
     def enabled_list() -> List[str]:
         """
         Retorna lista de UUIDs de extensões habilitadas.
-        Corrigido para tratar @as [], listas vazias, espaços e aspas.
+
+        Faz o parse com ``ast.literal_eval`` (robusto a aspas, espaços e
+        listas vazias) em vez de fatiar a string à mão. O valor pode vir
+        prefixado pelo tipo GVariant (``@as ['a', 'b']``) ou já como lista
+        literal. O ``lstrip("@as")`` anterior removia *caracteres* do
+        conjunto {@,a,s}, não o prefixo — frágil para certos valores.
         """
-        val = gsettings_get("org.gnome.shell", "enabled-extensions") or ""
-        val = val.strip()
+        import ast
 
-        # Casos especiais: lista vazia em formato GVariant
-        if not val or val in ("@as []", "[]", "@as[]"):
+        val = (gsettings_get("org.gnome.shell", "enabled-extensions") or "").strip()
+        if val.startswith("@as"):
+            val = val[len("@as") :].strip()
+        if not val:
             return []
-
-        # Remove prefixo de tipo GVariant e colchetes
-        val = val.lstrip("@as").strip()
-        if val.startswith("[") and val.endswith("]"):
-            val = val[1:-1]
-
-        result = []
-        for token in val.split(","):
-            clean = token.strip().strip("'\"")
-            if clean:
-                result.append(clean)
-        return result
+        try:
+            parsed = ast.literal_eval(val)
+        except (ValueError, SyntaxError):
+            return []
+        if not isinstance(parsed, list):
+            return []
+        return [u for u in parsed if isinstance(u, str) and u]
 
     @staticmethod
     def is_enabled(uuid: str) -> bool:
@@ -331,10 +332,9 @@ class ExtMgr:
                         time.sleep(1 << attempt)
 
             if not data or len(data) < 100:
-                try:
-                    dest.rmdir()
-                except Exception:
-                    pass
+                # rmtree (não rmdir) porque uma extração parcial anterior pode
+                # ter deixado arquivos dentro de dest.
+                shutil.rmtree(str(dest), ignore_errors=True)
                 if last_err:
                     return False, f"download failed after retries: {last_err}"
                 return False, "empty or too-small download"
@@ -342,22 +342,30 @@ class ExtMgr:
             with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_f:
                 tmp_path = Path(tmp_f.name)
 
-            tmp_path.write_bytes(data)
+            try:
+                tmp_path.write_bytes(data)
 
-            with zipfile.ZipFile(str(tmp_path)) as zf:
-                # security: prevent path traversal (zip-slip).
-                # Resolve cada caminho final e exige que ele permaneça dentro de `dest`.
-                dest_resolved = dest.resolve()
-                for member in zf.namelist():
-                    target = (dest_resolved / member).resolve()
-                    try:
-                        target.relative_to(dest_resolved)
-                    except ValueError:
-                        # caminho escapa do destino — ignora
-                        continue
-                    zf.extract(member, str(dest))
+                with zipfile.ZipFile(str(tmp_path)) as zf:
+                    # security: prevent path traversal (zip-slip).
+                    # Resolve cada caminho final e exige que permaneça dentro de `dest`.
+                    dest_resolved = dest.resolve()
+                    for member in zf.namelist():
+                        target = (dest_resolved / member).resolve()
+                        try:
+                            target.relative_to(dest_resolved)
+                        except ValueError:
+                            # caminho escapa do destino — ignora
+                            continue
+                        zf.extract(member, str(dest))
+            except Exception:
+                # Zip corrompido/extração falha: não deixa um diretório de
+                # extensão pela metade que is_installed() reportaria como ok.
+                shutil.rmtree(str(dest), ignore_errors=True)
+                raise
+            finally:
+                # Sempre remove o .zip temporário, inclusive nos caminhos de erro.
+                tmp_path.unlink(missing_ok=True)
 
-            tmp_path.unlink(missing_ok=True)
             schema_ok, schema_msg = ExtMgr._compile_schemas(dest)
             if not schema_ok:
                 return False, f"schema compile failed: {schema_msg}"

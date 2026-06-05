@@ -403,9 +403,7 @@ class TestLayoutApplier:
     def test_preserve_user_color_scheme_uses_effective_gsettings(self, mock_run):
         """Preserve light/dark even when dconf has no explicit override."""
         data = (
-            "[org/gnome/desktop/interface]\n"
-            "color-scheme='prefer-dark'\n"
-            "gtk-theme='adw-gtk3-dark'\n"
+            "[org/gnome/desktop/interface]\ncolor-scheme='prefer-dark'\ngtk-theme='adw-gtk3-dark'\n"
         )
         mock_run.side_effect = [
             (True, ""),  # dconf read: default/unset
@@ -647,9 +645,7 @@ class TestLayoutApplier:
             "leave@ext",
         ]
         assert mock_disable.call_args.kwargs == {"sort": False}
-        mock_restart_dtp.assert_called_once_with(
-            ["stay@ext", "dash-to-panel@jderose9.github.com"]
-        )
+        mock_restart_dtp.assert_called_once_with(["stay@ext", "dash-to-panel@jderose9.github.com"])
         mock_sleep.assert_any_call(LayoutApplier._SETTLE_SEC)
 
     @patch("layout_applier.time.sleep")
@@ -677,10 +673,7 @@ class TestLayoutApplier:
         mock_sleep,
     ):
         """Reapplying a DTP layout must rebuild DTP panel actors."""
-        data = (
-            "[org/gnome/shell]\n"
-            "enabled-extensions=['dash-to-panel@jderose9.github.com']\n"
-        )
+        data = "[org/gnome/shell]\nenabled-extensions=['dash-to-panel@jderose9.github.com']\n"
 
         ok, _ = LayoutApplier.load_dconf_safely(
             data,
@@ -722,18 +715,13 @@ class TestLayoutApplier:
         mock_sleep,
     ):
         """DTP is rebuilt after its target settings are loaded."""
-        data = (
-            "[org/gnome/shell]\n"
-            "enabled-extensions=['dash-to-panel@jderose9.github.com']\n"
-        )
+        data = "[org/gnome/shell]\nenabled-extensions=['dash-to-panel@jderose9.github.com']\n"
 
         ok, _ = LayoutApplier.load_dconf_safely(data, before_uuids=[])
 
         assert ok is True
         mock_disable_batch.assert_not_called()
-        mock_restart_dtp.assert_called_once_with(
-            ["dash-to-panel@jderose9.github.com"]
-        )
+        mock_restart_dtp.assert_called_once_with(["dash-to-panel@jderose9.github.com"])
         mock_enable_after_load.assert_not_called()
 
     @patch("layout_applier.time.sleep")
@@ -827,11 +815,14 @@ class TestLayoutApplier:
         assert mock_disable.call_args.args[0] == ["leave@ext"]
         assert mock_disable.call_args.kwargs == {"sort": False}
         switch_data = mock_run.call_args_list[1].kwargs["stdin_text"]
-        assert f"enabled-extensions=['stay@ext']" in switch_data
-        assert f"'{user_theme}'" not in LayoutApplier._section_key_values(
-            switch_data,
-            "/org/gnome/shell",
-        )["enabled-extensions"]
+        assert "enabled-extensions=['stay@ext']" in switch_data
+        assert (
+            f"'{user_theme}'"
+            not in LayoutApplier._section_key_values(
+                switch_data,
+                "/org/gnome/shell",
+            )["enabled-extensions"]
+        )
         disabled = LayoutApplier._string_list(
             LayoutApplier._section_key_values(
                 switch_data,
@@ -922,6 +913,7 @@ class TestLayoutApplier:
         _reload,
         mock_restart_dtp,
         mock_enable_after_load,
+        _wait_live,
         _sleep,
     ):
         """New DTP starts first; ArcMenu starts after the DTP panel exists."""
@@ -1457,9 +1449,7 @@ class TestRewriteDtpKeysInText:
 class TestCuratedLayoutFiles:
     def test_desk_ux_dtp_position_and_size_are_explicit(self):
         """Desk UX must not depend on inherited DTP defaults."""
-        text = Path("usr/share/layout-switcher/layouts/desk-ux.txt").read_text(
-            encoding="utf-8"
-        )
+        text = Path("usr/share/layout-switcher/layouts/desk-ux.txt").read_text(encoding="utf-8")
         values = LayoutApplier._section_key_values(
             text,
             "/org/gnome/shell/extensions/dash-to-panel",
@@ -1484,9 +1474,7 @@ class TestShellReloader:
             "'state': <1.0>, 'enabled': <true>},)",
         )
 
-        assert ShellReloader.get_extension_state(
-            "dash-to-panel@jderose9.github.com"
-        ) == 1
+        assert ShellReloader.get_extension_state("dash-to-panel@jderose9.github.com") == 1
 
     @patch("shell_reloader.run_cmd", return_value=(True, ""))
     @patch("shell_reloader.is_wayland", return_value=True)
@@ -1540,3 +1528,55 @@ class TestShellReloader:
 
         assert ok is True
         mock_reload.assert_not_called()
+
+
+class TestHelperIntegration:
+    """The in-shell helper path (preferred) vs the legacy external fallback."""
+
+    def test_inject_helper_uuid_adds(self):
+        from helper_client import HELPER_UUID
+
+        data = "[org/gnome/shell]\nenabled-extensions=['kiwi@kemma']\n"
+        out = LayoutApplier._inject_helper_uuid(data)
+        assert HELPER_UUID in out
+
+    def test_inject_helper_uuid_idempotent(self):
+        from helper_client import HELPER_UUID
+
+        data = f"[org/gnome/shell]\nenabled-extensions=['{HELPER_UUID}']\n"
+        out = LayoutApplier._inject_helper_uuid(data)
+        assert out.count(HELPER_UUID) == 1
+
+    @patch("layout_applier.HelperClient.apply_layout", return_value=(True, "steps"))
+    @patch("layout_applier.HelperClient.is_available", return_value=True)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    def test_prefers_helper_when_available(self, _has, _persist, _run, _avail, mock_apply):
+        from helper_client import HELPER_UUID
+
+        data = "[org/gnome/shell]\nenabled-extensions=['kiwi@kemma']\n"
+        ok, _msg = LayoutApplier.load_dconf_safely(data, before_uuids=[])
+        assert ok is True
+        mock_apply.assert_called_once()
+        target = mock_apply.call_args.args[0]
+        assert "kiwi@kemma" in target
+        assert HELPER_UUID in target
+        # kiwi is appearance-owning → in the reload set
+        assert "kiwi@kemma" in mock_apply.call_args.kwargs["reload"]
+
+    @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
+    @patch("layout_applier.LayoutApplier._reset_orphan_keys")
+    @patch("layout_applier.HelperClient.apply_layout")
+    @patch("layout_applier.HelperClient.is_available", return_value=False)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    @patch("layout_applier.time.sleep")
+    def test_falls_back_to_legacy_when_unavailable(
+        self, _sleep, _has, _persist, _run, _avail, mock_apply, _reset, _disable
+    ):
+        data = "[org/gnome/shell]\nenabled-extensions=['kiwi@kemma']\n"
+        ok, _msg = LayoutApplier.load_dconf_safely(data, before_uuids=["leave@ext"])
+        assert ok is True
+        mock_apply.assert_not_called()

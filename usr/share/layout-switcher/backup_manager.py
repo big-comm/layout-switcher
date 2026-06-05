@@ -44,7 +44,11 @@ class BackupManager:
         if not ok or not data or len(data) < cls.MIN_BYTES:
             return False, f"dconf dump failed or empty: {data!r}"
 
-        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Microsegundos no carimbo evitam que dois backups criados no mesmo
+        # segundo colidam no mesmo nome de arquivo (o segundo atomic_write
+        # sobrescreveria o primeiro silenciosamente). _humanize_ts em
+        # ui/dialog_backups.py entende tanto este formato quanto o antigo.
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         dest = BACKUP_DIR / f"backup_{ts}.dconf"
 
         try:
@@ -156,16 +160,21 @@ class BackupManager:
 
     @classmethod
     def _prune(cls) -> None:
-        """Remove backups excedentes, mantendo apenas os N_KEEP mais recentes."""
+        """Mantém os N_KEEP backups válidos mais recentes; remove o resto.
+
+        Usa o mesmo filtro de validade do ``list_all`` para que arquivos
+        corrompidos/pequenos não contem para o limite N_KEEP — senão um
+        arquivo truncado poderia empurrar um backup válido para fora da
+        janela de retenção e fazer ``_prune`` apagar o backup bom. Arquivos
+        inválidos são sempre removidos.
+        """
         try:
-            all_files = sorted(
-                BACKUP_DIR.glob("backup_*.dconf"),
-                key=lambda p: p.stat().st_mtime,
-                reverse=True,
-            )
-            for old in all_files[cls.N_KEEP :]:
+            keep_names = {p.name for p in cls.list_all()[: cls.N_KEEP]}
+            for path in BACKUP_DIR.glob("backup_*.dconf"):
+                if path.name in keep_names:
+                    continue
                 try:
-                    old.unlink()
+                    path.unlink()
                 except Exception:
                     pass
         except Exception:

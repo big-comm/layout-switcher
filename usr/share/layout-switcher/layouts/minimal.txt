@@ -420,8 +420,8 @@ sleep-inactive-ac-type='nothing'
 app-picker-layout=[{'AudioVideo': <{'position': <0>}>, 'Office': <{'position': <1>}>, 'Utilities': <{'position': <2>}>, 'Settings': <{'position': <3>}>, 'Network': <{'position': <4>}>, 'Game': <{'position': <5>}>, 'WebApps': <{'position': <6>}>}]
 command-history=['ajustes', 'r']
 disable-user-extensions=false
-disabled-extensions=['ddterm@amezin.github.com', 'just-perfection-desktop@just-perfection', 'GPaste@gnome-shell-extensions.gnome.org', 'light-style@gnome-shell-extensions.gcampax.github.com', 'blur-my-shell@aunetx', 'dash-to-dock@micxgx.gmail.com', 'bignetscreen-helper@bigcommunity.org', 'drive-menu@gnome-shell-extensions.gcampax.github.com']
-enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'CoverflowAltTab@dmo60.de', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'kiwi@kemma']
+disabled-extensions=['ddterm@amezin.github.com', 'just-perfection-desktop@just-perfection', 'GPaste@gnome-shell-extensions.gnome.org', 'light-style@gnome-shell-extensions.gcampax.github.com', 'blur-my-shell@aunetx', 'dash-to-dock@micxgx.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com']
+enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'kiwi@kemma']
 favorite-apps=['org.gnome.Nautilus.desktop', 'brave-browser.desktop', 'org.gnome.TextEditor.desktop', 'org.communitybig.ashyterm.desktop']
 welcome-dialog-last-shown-version='43.2'
 

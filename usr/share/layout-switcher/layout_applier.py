@@ -80,6 +80,7 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+from helper_client import HELPER_UUID, HelperClient
 from shell_reloader import ShellReloader
 from utils import run_cmd
 
@@ -103,8 +104,7 @@ QT_THEME_WATCHER = "sync-gnome-theme-to-qt.path"
 # while present, the watcher skips its dconf→file dump, so we can
 # atomically write settings.gnome without it being clobbered.
 _SYNC_LOCK_PATH = (
-    Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
-    / "dconf-sync-gnome.lock"
+    Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}") / "dconf-sync-gnome.lock"
 )
 
 # dash-to-panel stores some settings as JSON dicts keyed by monitor ID
@@ -127,6 +127,40 @@ _DASH_TO_DOCK_UUID = "dash-to-dock@micxgx.gmail.com"
 _LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
 _USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
 _KIWI_UUID = "kiwi@kemma"
+# Appearance-owning extensions the in-shell helper force-reloads when they
+# stay enabled across a switch, so they re-read their config and re-theme
+# live (user-theme is intentionally absent — Main.loadTheme re-applies it).
+_HELPER_RELOAD_UUIDS = frozenset(
+    {
+        "dash-to-panel@jderose9.github.com",
+        "dash-to-dock@micxgx.gmail.com",
+        "arcmenu@arcmenu.com",
+        "kiwi@kemma",
+        "light-style@gnome-shell-extensions.gcampax.github.com",
+        "blur-my-shell@aunetx",
+    }
+)
+# Dock/panel owners whose actor lingers after a plain disable(): when they
+# LEAVE a layout the helper reloads-then-disables them so the dock/bar is
+# destroyed cleanly (no ghost). Passed as the helper's teardown candidate set.
+_HELPER_TEARDOWN_UUIDS = frozenset(
+    {
+        "dash-to-dock@micxgx.gmail.com",
+        "dash-to-panel@jderose9.github.com",
+    }
+)
+# System indicators that must not be toggled across layout switches: their
+# disable() leaves orphan timers firing into disposed objects (pamac-updates
+# re-notifies "updates available" nonstop until relogin). Kept enabled if
+# already live, so the helper never disables them.
+_HELPER_PERSIST_UUIDS = frozenset(
+    {
+        "pamac-updates@manjaro.org",
+        "appindicatorsupport@rgcjonas.gmail.com",
+        "gsconnect@andyholmes.github.io",
+        "drive-menu@gnome-shell-extensions.gcampax.github.com",
+    }
+)
 _LIVE_EXTENSION_STATES = {1, 8}
 _SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
 _INTERFACE_SECTION = "/org/gnome/desktop/interface"
@@ -255,6 +289,110 @@ class LayoutApplier:
             _SYNC_LOCK_PATH.unlink(missing_ok=True)
         except OSError as exc:
             log.debug("could not remove sync lock: %s", exc)
+
+    @staticmethod
+    def _renew_settings_freshness() -> None:
+        """
+        Bump ``settings.gnome``'s mtime so comm-gnome-config's watcher counts
+        its freshness window from apply *completion*, not from the early write
+        at the start of the apply (the live switch spends seconds after the
+        file is written). Without this the watcher's freshness guard has mostly
+        elapsed by the time the apply finishes and the next dconf change would
+        dump live residue over the clean layout file. Content is unchanged so
+        its hash marker still matches.
+        """
+        try:
+            os.utime(SETTINGS_GNOME, None)
+        except OSError as exc:
+            log.debug("could not renew settings.gnome mtime: %s", exc)
+
+    @classmethod
+    def _inject_helper_uuid(cls, data: str) -> str:
+        """
+        Ensure the in-shell helper extension UUID is in the layout's
+        ``enabled-extensions`` so it is loaded at every login (it owns no UI,
+        so keeping it enabled in every layout is safe) and so the app can
+        always reach it. No-op if already present.
+        """
+        shell_values = cls._section_key_values(data, "/org/gnome/shell")
+        enabled = cls._string_list(shell_values.get("enabled-extensions"))
+        if HELPER_UUID in enabled:
+            return data
+        enabled.append(HELPER_UUID)
+        return cls._replace_or_add_dconf_key(
+            data,
+            "/org/gnome/shell",
+            "enabled-extensions",
+            cls._quote_string_list(enabled),
+        )
+
+    @classmethod
+    def _apply_via_helper(cls, data: str) -> Tuple[bool, str]:
+        """
+        Apply ``data`` through the in-shell helper extension.
+
+        Loads the layout's dconf VALUES (everything except the shell
+        enabled/disabled-extensions switch keys) so each extension reads its
+        correct config when the helper enables/reloads it, then hands the
+        target enabled list + the appearance-owning reload set to the helper,
+        which performs the switch inside gnome-shell (no cross-process race,
+        live re-theme via Main.loadTheme).
+        """
+        settings_data, _switch = cls._split_shell_extension_switch_keys(data)
+        ok, msg = run_cmd(["dconf", "load", "/"], stdin_text=settings_data, timeout=20)
+        if not ok:
+            log.warning("dconf load (values) failed: %s", msg)
+            return False, f"dconf load failed: {msg}"
+
+        # dconf load is additive (a merge), so an extension keeps stale keys
+        # from the previous layout (e.g. dash-to-dock keeps g-unity's LEFT
+        # position when switching to biggnome's centered dock). Clear the
+        # extension keys not present in the target so each extension reads an
+        # exact config when the helper enables/reloads it.
+        cls._reset_orphan_keys(data)
+
+        shell_values = cls._section_key_values(data, "/org/gnome/shell")
+        target_enabled = cls._string_list(shell_values.get("enabled-extensions"))
+
+        # user-theme with an empty name throws on GNOME 50 ("Argument file may
+        # not be null") and lands in ERROR. Layouts that theme the Shell with
+        # kiwi (minimal, g-unity) ship user-theme enabled but nameless — treat
+        # it as disabled so it doesn't error and clobber the Shell style.
+        ut_values = cls._section_key_values(data, "/org/gnome/shell/extensions/user-theme")
+        ut_name = cls._gvariant_string(ut_values.get("name"))
+        if _USER_THEME_UUID in target_enabled and not ut_name:
+            target_enabled = [u for u in target_enabled if u != _USER_THEME_UUID]
+
+        # Keep system indicators (pamac-updates, tray, gsconnect, drive-menu)
+        # stable across switches. Toggling them off/on leaves orphan timers
+        # firing into disposed objects — pamac-updates re-notifies "updates
+        # available" forever until relogin. Anything currently enabled that is
+        # a known persistent indicator stays in the target, so the helper never
+        # disables it (and won't re-enable it either, since it's already live).
+        currently_enabled = set(cls._enabled_extensions())
+        for uuid in _HELPER_PERSIST_UUIDS:
+            if uuid in currently_enabled and uuid not in target_enabled:
+                target_enabled.append(uuid)
+
+        if HELPER_UUID not in target_enabled:
+            target_enabled = [*target_enabled, HELPER_UUID]
+
+        reload_uuids = [u for u in target_enabled if u in _HELPER_RELOAD_UUIDS]
+        # user-theme must reload to re-apply its named stylesheet (e.g. Big-Blue)
+        # when switching in from a layout that used kiwi / a different shell theme.
+        if _USER_THEME_UUID in target_enabled and ut_name:
+            reload_uuids.append(_USER_THEME_UUID)
+
+        ok, info = HelperClient.apply_layout(
+            target_enabled,
+            reload=reload_uuids,
+            teardown=list(_HELPER_TEARDOWN_UUIDS),
+        )
+        if not ok:
+            log.warning("helper apply failed: %s", info)
+            return False, info
+        log.info("helper apply ok: %s", info)
+        return True, info
 
     @staticmethod
     def _parse_target_enabled_extensions(text: str) -> Set[str]:
@@ -482,12 +620,8 @@ class LayoutApplier:
         color_scheme = LayoutApplier._gvariant_string(
             values.get((_INTERFACE_SECTION, "color-scheme"))
         )
-        gtk_theme = LayoutApplier._gvariant_string(
-            values.get((_INTERFACE_SECTION, "gtk-theme"))
-        )
-        icon_theme = LayoutApplier._gvariant_string(
-            values.get((_INTERFACE_SECTION, "icon-theme"))
-        )
+        gtk_theme = LayoutApplier._gvariant_string(values.get((_INTERFACE_SECTION, "gtk-theme")))
+        icon_theme = LayoutApplier._gvariant_string(values.get((_INTERFACE_SECTION, "icon-theme")))
 
         if color_scheme == "prefer-dark":
             return True
@@ -539,6 +673,7 @@ class LayoutApplier:
             "/org/gnome/shell/extensions/user-theme",
         )
         user_theme_name = cls._gvariant_string(user_theme_values.get("name"))
+
         def add_once(values: List[str], uuid: str) -> None:
             if uuid not in values:
                 values.append(uuid)
@@ -1070,7 +1205,9 @@ class LayoutApplier:
             return data
         shell_values = cls._section_key_values(data, "/org/gnome/shell")
         enabled = [u for u in cls._string_list(shell_values.get("enabled-extensions")) if u != uuid]
-        disabled = [u for u in cls._string_list(shell_values.get("disabled-extensions")) if u != uuid]
+        disabled = [
+            u for u in cls._string_list(shell_values.get("disabled-extensions")) if u != uuid
+        ]
         disabled.append(uuid)
         out = cls._replace_or_add_dconf_key(
             data,
@@ -1480,14 +1617,27 @@ class LayoutApplier:
                 log.debug("progress_cb raised: %s", exc)
 
         cls._sync_lock_acquire()
+        persisted = False
         try:
             cls._qt_theme_watcher("stop")
 
             if persist:
-                ok_persist, info = cls._persist_to_settings_file(data)
+                # settings.gnome carries the helper UUID so it loads at every
+                # login (the live orchestration keeps using the original text).
+                ok_persist, info = cls._persist_to_settings_file(cls._inject_helper_uuid(data))
                 if not ok_persist:
                     log.warning("could not persist settings.gnome: %s", info)
                     return False, f"settings.gnome write failed: {info}"
+                persisted = True
+
+            # Prefer the in-shell helper extension when present: it performs
+            # the switch from inside gnome-shell, avoiding the cross-process
+            # race that hangs the shell on heavy transitions and re-theming
+            # appearance-owning extensions live. The legacy external path
+            # below is the fallback when the helper isn't installed/enabled.
+            if HelperClient.is_available():
+                progress("Applying layout…")
+                return cls._apply_via_helper(data)
 
             # Disable LEAVING extensions (present in before but not in
             # target), with one exception: dash-to-panel is restarted when
@@ -1518,9 +1668,7 @@ class LayoutApplier:
             # LEAVING extensions are still disabled before the orphan reset,
             # because their entire settings branch may be removed.
             shell_values = cls._section_key_values(data, "/org/gnome/shell")
-            target_enabled_order = cls._string_list(
-                shell_values.get("enabled-extensions")
-            )
+            target_enabled_order = cls._string_list(shell_values.get("enabled-extensions"))
             target_enabled = set(target_enabled_order)
             if not target_enabled:
                 target_enabled = cls._parse_target_enabled_extensions(data)
@@ -1533,9 +1681,7 @@ class LayoutApplier:
             # GNOME's user-theme extension must only be enabled with a
             # real theme name. On GNOME 50, enabling it with name='' throws
             # "Argument file may not be null" and leaves Shell styling stale.
-            target_user_theme_live_enabled = (
-                target_uses_user_theme and bool(target_user_theme_name)
-            )
+            target_user_theme_live_enabled = target_uses_user_theme and bool(target_user_theme_name)
             live_target_enabled = set(target_enabled)
             if not target_user_theme_live_enabled:
                 live_target_enabled.discard(_USER_THEME_UUID)
@@ -1553,13 +1699,9 @@ class LayoutApplier:
             target_uses_arcmenu = _ARCMENU_UUID in target_enabled
             target_uses_light_style = _LIGHT_STYLE_UUID in target_enabled
             target_arcmenu_after_dtp = target_uses_dtp and target_uses_arcmenu
-            light_style_leaving = (
-                _LIGHT_STYLE_UUID in before_set and not target_uses_light_style
-            )
+            light_style_leaving = _LIGHT_STYLE_UUID in before_set and not target_uses_light_style
             leaving = before_set - live_target_enabled
-            fragile_live_leaving = {
-                uuid for uuid in leaving if uuid in _FRAGILE_LIVE_LEAVING
-            }
+            fragile_live_leaving = {uuid for uuid in leaving if uuid in _FRAGILE_LIVE_LEAVING}
             fragile_live_entering_order = [
                 uuid
                 for uuid in target_enabled_order
@@ -1572,8 +1714,7 @@ class LayoutApplier:
                 else {uuid for uuid in leaving if uuid not in _NO_DISABLE}
             )
             restart_target_dtp = (
-                _DASH_TO_PANEL_UUID in before_set
-                and _DASH_TO_PANEL_UUID in target_enabled
+                _DASH_TO_PANEL_UUID in before_set and _DASH_TO_PANEL_UUID in target_enabled
             )
             if restart_target_dtp:
                 # GNOME Shell rebases later extensions when any earlier
@@ -1642,10 +1783,7 @@ class LayoutApplier:
                 post_dtp_enabled.append(_ARCMENU_UUID)
             if light_style_leaving:
                 for uuid in target_enabled_order:
-                    if (
-                        uuid in _SHELL_MODE_DEPENDENT_ENTERING
-                        and uuid not in before_set
-                    ):
+                    if uuid in _SHELL_MODE_DEPENDENT_ENTERING and uuid not in before_set:
                         extension_switch_data = cls._remove_enabled_extension_from_switch_data(
                             extension_switch_data,
                             uuid,
@@ -1688,17 +1826,13 @@ class LayoutApplier:
             # actually gone.
             for uuid in target_enabled_order:
                 if uuid == _LIGHT_STYLE_UUID:
-                    shell_dbus_available = (
-                        cls._wait_extension_live(uuid) and shell_dbus_available
-                    )
+                    shell_dbus_available = cls._wait_extension_live(uuid) and shell_dbus_available
                     break
             for uuid in cls._leaving_extensions_in_disable_order(
                 before_uuids,
                 fragile_live_leaving,
             ):
-                shell_dbus_available = (
-                    cls._wait_extension_not_live(uuid) and shell_dbus_available
-                )
+                shell_dbus_available = cls._wait_extension_not_live(uuid) and shell_dbus_available
 
             # Let Shell finish disabling light-style before extensions that
             # sample panel colors during enable() (Kiwi/Dash-to-Dock) start.
@@ -1776,6 +1910,11 @@ class LayoutApplier:
 
             return True, msg
         finally:
+            # Renew the freshness window from apply completion (see
+            # _renew_settings_freshness) so the watcher won't dump live
+            # residue over the clean layout file.
+            if persisted:
+                cls._renew_settings_freshness()
             cls._qt_theme_watcher("start")
             cls._sync_lock_release()
 

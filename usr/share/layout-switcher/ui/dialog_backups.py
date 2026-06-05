@@ -27,14 +27,15 @@ from constants import BACKUP_DIR, tr
 
 
 def _humanize_ts(path: Path) -> str:
-    """Converte ``backup_YYYYMMDD_HHMMSS.dconf`` em string legivel."""
-    try:
-        stem = path.stem  # backup_20260421_143018
-        raw = stem.replace("backup_", "")
-        ts = datetime.datetime.strptime(raw, "%Y%m%d_%H%M%S")
-        return ts.strftime("%Y-%m-%d %H:%M:%S")
-    except Exception:
-        return path.name
+    """Converte ``backup_YYYYMMDD_HHMMSS[_ffffff].dconf`` em string legivel."""
+    raw = path.stem.replace("backup_", "")  # 20260421_143018[_123456]
+    # Formato novo (com microssegundos) primeiro, depois o antigo.
+    for fmt in ("%Y%m%d_%H%M%S_%f", "%Y%m%d_%H%M%S"):
+        try:
+            return datetime.datetime.strptime(raw, fmt).strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            continue
+    return path.name
 
 
 def _humanize_size(nbytes: int) -> str:
