@@ -520,13 +520,33 @@ class MainWindow(Adw.ApplicationWindow):
         self._loading_card.set_valign(Gtk.Align.CENTER)
         self._loading_card.set_can_target(False)
 
+        # Layout illustration: a Stack that slides from the current layout's
+        # preview to the target layout's preview, drawing the switch itself.
+        # Reuses the per-layout SVGs shown on the cards. Hidden for actions
+        # without a specific target (undo / restore).
+        self._loading_art = Gtk.Stack()
+        self._loading_art.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+        self._loading_art.set_transition_duration(480)
+        self._loading_art.set_size_request(168, 112)
+        self._loading_art.set_halign(Gtk.Align.CENTER)
+        self._loading_art.add_css_class("loading-art")
+        self._loading_art.set_can_target(False)
+        self._loading_art_a = Gtk.Picture()
+        self._loading_art_b = Gtk.Picture()
+        for pic in (self._loading_art_a, self._loading_art_b):
+            pic.set_content_fit(Gtk.ContentFit.CONTAIN)
+            pic.set_can_shrink(True)
+        self._loading_art.add_named(self._loading_art_a, "a")
+        self._loading_art.add_named(self._loading_art_b, "b")
+        self._loading_card.append(self._loading_art)
+
         spinner_cls = getattr(Adw, "Spinner", None)
         if spinner_cls is not None:
             spinner = spinner_cls()
         else:
             spinner = Gtk.Spinner()
             spinner.set_spinning(True)
-        spinner.set_size_request(56, 56)
+        spinner.set_size_request(40, 40)
         spinner.set_halign(Gtk.Align.CENTER)
         self._loading_card.append(spinner)
 
@@ -555,9 +575,37 @@ class MainWindow(Adw.ApplicationWindow):
         self._loading_backdrop.set_can_target(False)
         self._loading_card.set_can_target(False)
 
-    def begin_loading(self, text: str = "") -> int:
+    def _slide_loading_art_to_target(self) -> bool:
+        self._loading_art.set_visible_child_name("b")
+        return False  # GLib.SOURCE_REMOVE
+
+    def _set_loading_art(self, from_icon=None, to_icon=None) -> None:
+        """
+        Show the target layout's preview in the loading card, sliding in from
+        the current layout's preview (drawing the switch). Hidden for actions
+        without a specific target (undo / restore). ``from_icon``/``to_icon``
+        are filesystem paths (or None).
+        """
+        if not to_icon:
+            self._loading_art.set_visible(False)
+            return
+        self._loading_art.set_visible(True)
+        self._loading_art_b.set_filename(str(to_icon))
+        self._loading_art.set_transition_type(Gtk.StackTransitionType.NONE)
+        if from_icon:
+            self._loading_art_a.set_filename(str(from_icon))
+            self._loading_art.set_visible_child_name("a")
+            self._loading_art.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+            GLib.timeout_add(160, self._slide_loading_art_to_target)
+        else:
+            # No source layout: just present the target.
+            self._loading_art_a.set_filename(str(to_icon))
+            self._loading_art.set_visible_child_name("a")
+
+    def begin_loading(self, text: str = "", from_icon=None, to_icon=None) -> int:
         self._loading_token += 1
         self._active_loading_token = self._loading_token
+        self._set_loading_art(from_icon, to_icon)
         self.show_loading(text)
         return self._loading_token
 

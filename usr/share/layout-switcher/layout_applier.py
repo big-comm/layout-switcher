@@ -161,6 +161,22 @@ _HELPER_PERSIST_UUIDS = frozenset(
         "drive-menu@gnome-shell-extensions.gcampax.github.com",
     }
 )
+# Extensions that paint the GNOME *shell* stylesheet themselves (the panel,
+# menus). Main.loadTheme() rebuilds the global St theme and clobbers their
+# styling, so they must (re)apply AFTER it. The in-shell helper v3 already
+# sequences this correctly; against an older helper (loadTheme last) the app
+# reloads these once more after the apply so the bar isn't left un-themed
+# (e.g. minimal/g-unity losing kiwi's dark panel). user-theme is excluded — it
+# IS what loadTheme paints, so reloading it is handled separately.
+_HELPER_SHELL_THEME_UUIDS = frozenset(
+    {
+        "kiwi@kemma",
+        "light-style@gnome-shell-extensions.gcampax.github.com",
+    }
+)
+# First helper protocol version that loads the theme before re-enabling the
+# appearance extensions; at/above this the post-reload workaround is a no-op.
+_HELPER_THEME_ORDER_FIXED_VERSION = 3
 _LIVE_EXTENSION_STATES = {1, 8}
 _SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
 _INTERFACE_SECTION = "/org/gnome/desktop/interface"
@@ -391,6 +407,28 @@ class LayoutApplier:
         if not ok:
             log.warning("helper apply failed: %s", info)
             return False, info
+
+        # Self-heal: a target extension stuck in ERROR (state 3) from an earlier
+        # glitch won't recover from a plain enable — the layout would look
+        # broken (its feature missing). trulyReload clears the dead module.
+        states = ShellReloader.list_extensions_state()
+        for uuid in target_enabled:
+            if states.get(uuid) == 3:
+                log.info("self-heal: reloading ERROR extension %s", uuid)
+                HelperClient.reload_extension(uuid)
+
+        # Theme-order workaround for an old helper (v2): it calls Main.loadTheme()
+        # AFTER enabling the appearance extensions, so loadTheme wipes the panel
+        # styling kiwi/light-style applied (minimal/g-unity ended up with the
+        # bare default bar instead of kiwi's dark one). Reload those shell-theme
+        # owners once more so their styling lands on top. v3+ sequences loadTheme
+        # before the enable step, so this is skipped (no double reload / flicker).
+        if HelperClient.helper_version() < _HELPER_THEME_ORDER_FIXED_VERSION:
+            for uuid in target_enabled:
+                if uuid in _HELPER_SHELL_THEME_UUIDS:
+                    log.info("theme-order: re-asserting shell theme %s", uuid)
+                    HelperClient.reload_extension(uuid)
+
         log.info("helper apply ok: %s", info)
         return True, info
 
@@ -726,6 +764,18 @@ class LayoutApplier:
 
         prefer_dark = cls._prefers_dark({_COLOR_SCHEME_KEY: value})
         shell_dark = True if force_shell_dark else prefer_dark
+
+        # GNOME's Shell panel/menus FOLLOW color-scheme: 'prefer-light' whitens
+        # them. The always-dark layouts (biggnome/g-unity/minimal) must keep a
+        # dark Shell while their apps stay light — and that's exactly what
+        # 'default' gives: a dark Adwaita Shell with light libadwaita apps.
+        # 'prefer-light' is the only value that lightens the Shell, so when an
+        # always-dark layout is applied under a light app preference, persist
+        # 'default' instead. A dark preference stays 'prefer-dark' (Shell is
+        # already dark there). Without this the bar/menus turn white in light
+        # mode even with no shell theme and light-style off.
+        if force_shell_dark and not prefer_dark:
+            value = "'default'"
 
         section, key = _COLOR_SCHEME_KEY
         out = cls._replace_or_add_dconf_key(text, section, key, value)
@@ -1953,7 +2003,11 @@ class LayoutApplier:
         before = cls._enabled_extensions()
         layout_text = cls._preserve_user_color_scheme(
             layout_text,
-            force_shell_dark=config_path.stem in {"biggnome", "g-unity"},
+            # biggnome (Big-Blue) and the kiwi layouts (minimal, g-unity) keep a
+            # dark Shell panel in every color-scheme — only the GTK apps follow
+            # light/dark. Without this, light mode enables light-style and the
+            # top bar turns white.
+            force_shell_dark=config_path.stem in {"biggnome", "g-unity", "minimal"},
         )
         return cls.load_dconf_safely(
             layout_text,

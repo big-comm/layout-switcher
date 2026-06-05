@@ -32,7 +32,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const BUS_PATH = '/org/bigcommunity/LayoutSwitcherHelper';
-const HELPER_VERSION = 2;
+const HELPER_VERSION = 4;
 
 // GNOME Shell ExtensionState: ENABLED=1, ENABLING=8 → "live".
 const LIVE_STATES = new Set([1, 8]);
@@ -131,6 +131,18 @@ export default class LayoutSwitcherHelper extends Extension {
     // Async D-Bus method (GJS convention: <name>Async(params, invocation)).
     ApplyLayoutAsync(params, invocation) {
         const [payload] = params;
+        // Serialize: an ApplyLayout drives many enable/disable/reload steps on
+        // the Shell main loop. A second ApplyLayout arriving before the first
+        // finishes (rapid switching, a wedged caller) interleaves extension
+        // manager mutations and can spin the main loop to a hang. One switch
+        // runs at a time — reject overlapping calls instead of racing them.
+        if (this._applying) {
+            invocation.return_value(new GLib.Variant('(s)', [
+                JSON.stringify({ok: false, steps: [], error: 'busy: a layout switch is already in progress'}),
+            ]));
+            return;
+        }
+        this._applying = true;
         this._applyLayout(payload)
             .then(result => {
                 invocation.return_value(new GLib.Variant('(s)', [result]));
@@ -140,11 +152,23 @@ export default class LayoutSwitcherHelper extends Extension {
                 invocation.return_value(new GLib.Variant('(s)', [
                     JSON.stringify({ok: false, steps: [], error: String(err)}),
                 ]));
+            })
+            .finally(() => {
+                this._applying = false;
             });
     }
 
     ReloadExtensionAsync(params, invocation) {
         const [uuid] = params;
+        // A reload mutates the extension manager too; don't run it concurrently
+        // with an in-flight ApplyLayout (post-apply self-heal/theme re-assert
+        // calls land right after, but the apply promise has already settled).
+        if (this._applying) {
+            invocation.return_value(new GLib.Variant('(s)', [
+                JSON.stringify({ok: false, uuid, error: 'busy'}),
+            ]));
+            return;
+        }
         const ok = this._reloadOne(Main.extensionManager, uuid);
         invocation.return_value(new GLib.Variant('(s)', [
             JSON.stringify({ok, uuid}),
@@ -213,7 +237,26 @@ export default class LayoutSwitcherHelper extends Extension {
             }
         }
 
-        // 3. Enable every target extension not currently live, in target order.
+        // 3. Reload the base shell stylesheet *before* re-enabling the
+        //    appearance extensions. loadTheme() rebuilds the global St theme
+        //    from disk (default, or user-theme's named stylesheet if it's
+        //    live), which CLOBBERS any panel styling an extension applied on
+        //    enable. Extensions that paint the shell themselves (kiwi,
+        //    light-style) must therefore enable *after* this, so their theming
+        //    lands on top and survives. (Ordering bug fixed in v3: previously
+        //    loadTheme ran last and wiped kiwi's panel — minimal/g-unity bar.)
+        if (req.theme_reload !== false) {
+            try {
+                Main.loadTheme();
+                steps.push('loadTheme');
+            } catch (e) {
+                steps.push(`loadTheme ERR ${e}`);
+            }
+            await sleep(stepMs);
+        }
+
+        // 4. Enable every target extension not currently live, in target order,
+        //    so each applies its appearance on top of the freshly-loaded theme.
         const liveNow = this._liveUuids(mgr);
         for (const uuid of order) {
             if (liveNow.has(uuid))
@@ -225,16 +268,6 @@ export default class LayoutSwitcherHelper extends Extension {
                 steps.push(`enable ${uuid} ERR ${e}`);
             }
             await sleep(stepMs);
-        }
-
-        // 4. Reload the shell stylesheet so the panel/menus re-style live.
-        if (req.theme_reload !== false) {
-            try {
-                Main.loadTheme();
-                steps.push('loadTheme');
-            } catch (e) {
-                steps.push(`loadTheme ERR ${e}`);
-            }
         }
 
         logHelper(`ApplyLayout done: ${steps.join(' | ')}`);

@@ -91,6 +91,16 @@ class LayoutsPage(Gtk.Box):
         """Stem do arquivo de layout (ex.: 'biggnome.txt' -> 'biggnome')."""
         return Path(cfg).stem
 
+    @staticmethod
+    def _icon_path_for(layout_name: Optional[str]):
+        """Caminho do SVG de preview de um layout pelo nome, ou None."""
+        if not layout_name:
+            return None
+        for lname, _lcfg, icon_file, *_rest in LAYOUTS:
+            if lname == layout_name:
+                return find_file(icon_file, [ICONS_DIR])
+        return None
+
     def rebuild_grid(self) -> None:
         child = self._flow.get_first_child()
         while child:
@@ -274,9 +284,12 @@ class LayoutsPage(Gtk.Box):
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
         root = self.get_root()
         initial_label = f"{tr('Applying')} {name}…"
+        # Preview SVGs so the loading screen draws the switch (current → new).
+        to_icon = self._icon_path_for(name)
+        from_icon = self._icon_path_for(self._active_layout) if self._active_layout else None
         loading_token = None
         if hasattr(root, "begin_loading"):
-            loading_token = root.begin_loading(initial_label)
+            loading_token = root.begin_loading(initial_label, from_icon=from_icon, to_icon=to_icon)
         elif hasattr(root, "show_loading"):
             root.show_loading(initial_label)
         layout_id = self._layout_id(cfg)

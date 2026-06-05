@@ -84,6 +84,33 @@ class HelperClient:
         return bool(out and "layout-switcher" in out)
 
     @classmethod
+    def helper_version(cls, timeout_ms: int = 6000) -> int:
+        """
+        Protocol version reported by the loaded helper (Ping's ``version``), or
+        0 if unavailable/unparseable. The app uses this to tell whether the live
+        helper already sequences loadTheme before re-enabling the appearance
+        extensions (v3+) or still needs the external post-reload workaround (v2).
+        """
+        out = cls._call("Ping", None, timeout_ms)
+        if not out:
+            return 0
+        try:
+            return int(json.loads(out).get("version", 0))
+        except (ValueError, TypeError, json.JSONDecodeError):
+            return 0
+
+    @classmethod
+    def reload_extension(cls, uuid: str, timeout_ms: int = 20000) -> bool:
+        """
+        Ask the helper to reload one extension in-shell (trulyReload). Recovers
+        an extension stuck in ERROR — a plain enable does not clear that state.
+        """
+        from gi.repository import GLib
+
+        out = cls._call("ReloadExtension", GLib.Variant("(s)", (uuid,)), timeout_ms)
+        return out is not None
+
+    @classmethod
     def apply_layout(
         cls,
         enabled: Iterable[str],

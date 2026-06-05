@@ -153,9 +153,9 @@ APP_CSS = """
     background-color: alpha(#111318, 0.88);
     color: white;
     border-radius: 14px;
-    padding: 34px 52px;
-    min-width: 360px;
-    min-height: 150px;
+    padding: 22px 34px;
+    min-width: 300px;
+    min-height: 120px;
     box-shadow: 0 18px 46px alpha(black, 0.42),
                 0 0 0 1px alpha(white, 0.10);
     opacity: 0;
@@ -163,6 +163,16 @@ APP_CSS = """
 }
 .loading-card.loading-show {
     opacity: 1;
+}
+.loading-art {
+    margin-bottom: 2px;
+    padding: 9px 12px;
+    border-radius: 11px;
+    background-image: linear-gradient(160deg,
+                      alpha(#4a86e8, 0.16),
+                      alpha(#2a3550, 0.04));
+    box-shadow: inset 0 0 0 1px alpha(#6aa0ff, 0.24),
+                0 0 24px alpha(#4a86e8, 0.18);
 }
 .loading-card label {
     font-weight: 600;
