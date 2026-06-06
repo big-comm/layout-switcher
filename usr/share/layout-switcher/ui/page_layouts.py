@@ -17,7 +17,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gtk
+from gi.repository import Adw, Gdk, GLib, Gtk, Pango
 
 from backup_manager import BackupManager
 from constants import DISABLED_LAYOUTS, ICONS_DIR, LAYOUTS, tr
@@ -70,6 +70,7 @@ class LayoutsPage(Gtk.Box):
         sc.set_vexpand(True)
 
         self._flow = Gtk.FlowBox()
+        self._flow.add_css_class("layout-grid")
         self._flow.set_selection_mode(Gtk.SelectionMode.NONE)
         self._flow.set_max_children_per_line(4)
         self._flow.set_min_children_per_line(2)
@@ -178,8 +179,23 @@ class LayoutsPage(Gtk.Box):
         if is_on:
             lbl.add_css_class("layout-name-active")
         lbl.set_halign(Gtk.Align.CENTER)
-        lbl.set_margin_bottom(4)
+        lbl.set_margin_bottom(1)
         card.append(lbl)
+
+        # Short description caption under the name — richer cards, à la the
+        # noise-reduction app's sections. Full text still shows on hover.
+        if desc:
+            desc_lbl = Gtk.Label(label=desc)
+            desc_lbl.add_css_class("layout-desc")
+            desc_lbl.set_halign(Gtk.Align.CENTER)
+            desc_lbl.set_justify(Gtk.Justification.CENTER)
+            desc_lbl.set_wrap(True)
+            desc_lbl.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+            desc_lbl.set_lines(2)
+            desc_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            desc_lbl.set_max_width_chars(24)
+            desc_lbl.set_margin_bottom(2)
+            card.append(desc_lbl)
 
         # Description appears only on hover as an elegant popover.
         # Disabled layouts get a "Coming soon" tooltip instead.
@@ -350,7 +366,11 @@ class LayoutsPage(Gtk.Box):
                 msg = str(exc).strip() or exc.__class__.__name__
                 GLib.idle_add(self._done, name, False, msg, loading_token)
 
-        self._pool.submit(task)
+        # Let the loading overlay's entrance + art slide play smoothly FIRST.
+        # The heavy apply makes gnome-shell (the Wayland compositor) busy, which
+        # stutters the animation if the work starts immediately. A short delay
+        # lets the entrance settle, then the work runs off the main thread.
+        GLib.timeout_add(400, lambda: (self._pool.submit(task), GLib.SOURCE_REMOVE)[1])
 
     def _done(
         self,

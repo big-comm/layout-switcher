@@ -14,36 +14,35 @@ msgstr ""
 
 #: usr/share/layout-switcher/constants.py:136
 msgid "Desktop Cube"
-msgstr ""
+msgstr "Desktop Cube"
 
 #: usr/share/layout-switcher/constants.py:137
 msgid "Rotate workspaces on a 3D cube"
-msgstr ""
+msgstr "Roter arbeidsområder på en 3D-kube"
 
 #: usr/share/layout-switcher/constants.py:147
 msgid "Magic Lamp"
-msgstr ""
+msgstr "Magic Lamp"
 
 #: usr/share/layout-switcher/constants.py:148
 msgid "Genie effect when minimizing windows"
-msgstr ""
+msgstr "Genie-effekt ved minimering av vinduer"
 
 #: usr/share/layout-switcher/constants.py:158
 msgid "Compiz Windows"
-msgstr ""
+msgstr "Compiz Windows"
 
 #: usr/share/layout-switcher/constants.py:159
 msgid "Wobbly windows and extra animations"
-msgstr ""
+msgstr "Vinglefulle vinduer og ekstra animasjoner"
 
 #: usr/share/layout-switcher/constants.py:169
 msgid "Desktop Icons NG"
-msgstr ""
+msgstr "Desktop Icons NG"
 
 #: usr/share/layout-switcher/constants.py:170
-#, fuzzy
 msgid "Files and folders on your desktop"
-msgstr "Visuelle effekter for GNOME-skrivebordet ditt"
+msgstr "Filer og mapper på skrivebordet ditt"
 
 #: usr/share/layout-switcher/constants.py:196
 msgid "Default Big Gnome layout"
@@ -184,66 +183,64 @@ msgstr "Navn"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:93
 msgid "Search extensions on extensions.gnome.org"
-msgstr ""
+msgstr "Søk etter utvidelser på extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:101
 msgid "Sort by"
-msgstr ""
+msgstr "Sorter etter"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:112
 #, python-brace-format
 msgid "Only compatible with GNOME {ver}"
-msgstr ""
+msgstr "Kun kompatibel med GNOME {ver}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:139
-#, fuzzy
 msgid "Browse extensions"
-msgstr "Systemutvidelse"
+msgstr "Bla gjennom utvidelser"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:140
 msgid "Search above or hit Enter to load popular extensions."
-msgstr ""
+msgstr "Søk ovenfor eller trykk Enter for å laste populære utvidelser."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:143
 msgid "Load popular"
-msgstr ""
+msgstr "Last populære"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:159
-#, fuzzy
 msgid "Loading…"
-msgstr "Laster skrifttyper…"
+msgstr "Laster…"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:166
 msgid "No results"
-msgstr ""
+msgstr "Ingen resultater"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:167
 msgid "Try a different search or sort."
-msgstr ""
+msgstr "Prøv et annet søk eller en annen sortering."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:173
 msgid "Could not reach extensions.gnome.org"
-msgstr ""
+msgstr "Kunne ikke nå extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:174
 #: usr/share/layout-switcher/ui/ext_detail_view.py:111
 msgid "Check your network connection and try again."
-msgstr ""
+msgstr "Sjekk nettverkstilkoblingen din og prøv igjen."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:177
 #: usr/share/layout-switcher/ui/ext_detail_view.py:114
 msgid "Retry"
-msgstr ""
+msgstr "Prøv igjen"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:216
 #: usr/share/layout-switcher/ui/page_fonts.py:334
 msgid "Previous page"
-msgstr ""
+msgstr "Forrige side"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:227
 #: usr/share/layout-switcher/ui/page_fonts.py:346
 msgid "Next page"
-msgstr ""
+msgstr "Neste side"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:238
 #: usr/share/layout-switcher/ui/page_themes.py:130
@@ -253,7 +250,7 @@ msgstr "Skall"
 #: usr/share/layout-switcher/ui/ext_browse_view.py:284
 #, python-brace-format
 msgid "Page {p} of {t}"
-msgstr ""
+msgstr "Side {p} av {t}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:345
 #: usr/share/layout-switcher/ui/ext_detail_view.py:147
@@ -265,12 +262,11 @@ msgstr "av {author}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:358
 msgid "Details"
-msgstr ""
+msgstr "Detaljer"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:361
-#, fuzzy
 msgid "View extension details"
-msgstr "Laster skrifttyper…"
+msgstr "Vis utvidelsesdetaljer"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:369
 #: usr/share/layout-switcher/ui/page_extensions.py:65
@@ -297,9 +293,10 @@ msgstr "Installer"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:431
 #: usr/share/layout-switcher/ui/page_effects.py:296
 #: usr/share/layout-switcher/ui/page_extensions.py:405
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} installed and enabled. Restart the session to use it."
-msgstr "Installer og aktiver User Themes-utvidelsen for å bruke skalltemaer."
+msgstr ""
+"{name} er installert og aktivert. Start økten på nytt for å bruke den."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:420
 #: usr/share/layout-switcher/ui/page_effects.py:302
@@ -308,46 +305,45 @@ msgid "Install failed"
 msgstr "Installasjon mislyktes"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:103
-#, fuzzy
 msgid "Loading extension details…"
-msgstr "Laster skrifttyper…"
+msgstr "Laster utvidelsesdetaljer…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:110
 msgid "Could not load details"
-msgstr ""
+msgstr "Kunne ikke laste inn detaljer"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:206
 #, python-brace-format
 msgid "{n} ratings"
-msgstr ""
+msgstr "{n} vurderinger"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:209
 msgid "downloads"
-msgstr ""
+msgstr "nedlastinger"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:212
 msgid "compatibility"
-msgstr ""
+msgstr "kompatibilitet"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:254
 msgid "Description"
-msgstr ""
+msgstr "Beskrivelse"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:269
 msgid "Recent comments"
-msgstr ""
+msgstr "Nylige kommentarer"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:282
 msgid "View all comments on extensions.gnome.org"
-msgstr ""
+msgstr "Se alle kommentarer på extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:343
 msgid "Links"
-msgstr ""
+msgstr "Lenker"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:350
 msgid "Homepage"
-msgstr ""
+msgstr "Hjemmeside"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:354
 #: usr/share/layout-switcher/ui/page_effects.py:236
@@ -358,33 +354,31 @@ msgstr "Vis på GNOME Extensions"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:359
 #, python-brace-format
 msgid "License: {lic}"
-msgstr ""
+msgstr "Lisens: {lic}"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:387
 #: usr/share/layout-switcher/ui/page_extensions.py:568
 #: usr/share/layout-switcher/ui/page_extensions.py:655
 #: usr/share/layout-switcher/ui/page_extensions.py:666
-#, fuzzy
 msgid "Update"
-msgstr "Oppdatering mislyktes"
+msgstr "Oppdater"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:392
 msgid "Open prefs"
-msgstr ""
+msgstr "Åpne innstillinger"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:409
 msgid "Working…"
-msgstr ""
+msgstr "Jobber…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:428
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} updated"
-msgstr "installert"
+msgstr "{name} oppdatert"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:437
-#, fuzzy
 msgid "Operation failed"
-msgstr "Oppdatering mislyktes"
+msgstr "Operasjonen mislyktes"
 
 #: usr/share/layout-switcher/ui/page_effects.py:44
 msgid "Visual effects for your GNOME desktop"
@@ -396,19 +390,19 @@ msgid "System extension"
 msgstr "Systemutvidelse"
 
 #: usr/share/layout-switcher/ui/page_effects.py:124
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (enabled)"
-msgstr "installert"
+msgstr "{name} (aktivert)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:126
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (disabled)"
-msgstr "installert"
+msgstr "{name} (deaktivert)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:128
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (not installed)"
-msgstr "installert"
+msgstr "{name} (ikke installert)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:176
 #: usr/share/layout-switcher/ui/page_extensions.py:277
@@ -519,12 +513,11 @@ msgstr "Anbefalt"
 #: usr/share/layout-switcher/ui/page_extensions.py:64
 #: usr/share/layout-switcher/ui/page_extensions.py:113
 msgid "Browse"
-msgstr ""
+msgstr "Bla gjennom"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:219
-#, fuzzy
 msgid "Update available"
-msgstr "Oppdatering mislyktes"
+msgstr "Oppdatering tilgjengelig"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:381
 msgid "Install extension?"
@@ -536,9 +529,8 @@ msgstr "Fjerne utvidelse?"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:490
 #: usr/share/layout-switcher/ui/page_extensions.py:568
-#, fuzzy
 msgid "Update all"
-msgstr "Oppdatering mislyktes"
+msgstr "Oppdater alle"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:498
 msgid "Open GNOME Extensions"
@@ -553,9 +545,8 @@ msgid "installed"
 msgstr "installert"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:564
-#, fuzzy
 msgid "update available"
-msgstr "temaer tilgjengelig"
+msgstr "oppdatering tilgjengelig"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:576
 msgid "Enabled"
@@ -568,18 +559,19 @@ msgstr "Deaktivert"
 #: usr/share/layout-switcher/ui/page_extensions.py:660
 #, python-brace-format
 msgid "Update from v{old} to v{new}"
-msgstr ""
+msgstr "Oppdater fra v{old} til v{new}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:724
 msgid ""
 "This extension cannot be removed here because it was installed by the "
 "system."
 msgstr ""
+"Denne utvidelsen kan ikke fjernes her fordi den ble installert av systemet."
 
 #: usr/share/layout-switcher/ui/page_extensions.py:772
 #, python-brace-format
 msgid "{name} updated to v{ver}"
-msgstr ""
+msgstr "{name} oppdatert til v{ver}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:777
 #: usr/share/layout-switcher/ui/page_fonts.py:147
@@ -589,14 +581,14 @@ msgid "Update failed"
 msgstr "Oppdatering mislyktes"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:801
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n} extensions"
-msgstr "Systemutvidelse"
+msgstr "Oppdaterte {n} utvidelser"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:806
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n}/{t}; failed: {f}"
-msgstr "Oppdatering mislyktes"
+msgstr "Oppdatert {n}/{t}; mislyktes: {f}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:817
 #: usr/share/layout-switcher/ui/page_extensions.py:835
@@ -624,24 +616,20 @@ msgid "All extensions enabled"
 msgstr "Alle utvidelser aktivert"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:76
-#, fuzzy
 msgid "Preferred fonts"
-msgstr "Oppdater skrifttypelisten"
+msgstr "Foretrukne skrifter"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:80
-#, fuzzy
 msgid "Interface text"
-msgstr "Grensesnitt"
+msgstr "Grensesnitttekst"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:86
-#, fuzzy
 msgid "Document text"
-msgstr "Dokument"
+msgstr "Dokumenttekst"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:92
-#, fuzzy
 msgid "Monospace text"
-msgstr "Monospace"
+msgstr "Monospace-tekst"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:109
 #: usr/share/layout-switcher/ui/page_fonts.py:601
@@ -679,85 +667,80 @@ msgstr "Ingen"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:173
 msgid "Smoothing"
-msgstr ""
+msgstr "Utjevning"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:183
 msgid "Subpixel (for LCD screens)"
-msgstr ""
+msgstr "Subpiksel (for LCD-skjermer)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:184
 msgid "Standard (grayscale)"
-msgstr ""
+msgstr "Standard (gråtone)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:228
 msgid "Size"
-msgstr ""
+msgstr "Størrelse"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:231
 #: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Scale factor"
-msgstr ""
+msgstr "Skaleringsfaktor"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:239
 msgid "Decrease"
-msgstr ""
+msgstr "Reduser"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:246
 msgid "Increase"
-msgstr ""
+msgstr "Øk"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:287
-#, fuzzy
 msgid "Google Fonts"
-msgstr "Bla gjennom Google Fonts"
+msgstr "Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:297
-#, fuzzy
 msgid "Search Google Fonts…"
-msgstr "Søk etter skrifttyper…"
+msgstr "Søk i Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:308
 #: usr/share/layout-switcher/ui/page_fonts.py:363
-#, fuzzy
 msgid "Loading Google Fonts…"
-msgstr "Laster skrifttyper…"
+msgstr "Laster Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:312
-#, fuzzy
 msgid "Refresh Google Fonts list"
-msgstr "Oppdater skrifttypelisten"
+msgstr "Oppdater Google Fonts-listen"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:424
 #, python-brace-format
 msgid "Page {page} of {pages}"
-msgstr ""
+msgstr "Side {page} av {pages}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:431
 msgid "Internet connection is required to load the Google Fonts list."
-msgstr ""
+msgstr "Internettilkobling er nødvendig for å laste Google Fonts-listen."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:435
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} fonts found"
-msgstr "Øyeblikksbilde ikke funnet"
+msgstr "{n} skrifter funnet"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:440
 #, python-brace-format
 msgid "Showing top {shown} of {total} Google Fonts"
-msgstr ""
+msgstr "Viser topp {shown} av {total} Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:449
-#, fuzzy
 msgid "No fonts found"
-msgstr "Ingen temaer funnet"
+msgstr "Ingen skrifter funnet"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:502
 msgid "Sans serif"
-msgstr ""
+msgstr "Seriffløs"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:503
 msgid "Serif"
-msgstr ""
+msgstr "Seriff"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:504
 msgid "Monospace"
@@ -765,50 +748,48 @@ msgstr "Monospace"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:505
 msgid "Display"
-msgstr ""
+msgstr "Display"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:506
-#, fuzzy
 msgid "Handwriting"
-msgstr "Hinting"
+msgstr "Håndskrift"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:507
 msgid "Exact Google Fonts family name"
-msgstr ""
+msgstr "Eksakt Google Fonts-familienavn"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:531
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{family} installed"
-msgstr "installert"
+msgstr "{family} installert"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:537
 msgid "Internet connection is required to install Google Fonts."
-msgstr ""
+msgstr "Internettilkobling er nødvendig for å installere Google Fonts."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:538
 msgid "Font not found on Google Fonts."
-msgstr ""
+msgstr "Skrifttype ikke funnet på Google Fonts."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:539
 msgid "Font download failed."
-msgstr ""
+msgstr "Nedlasting av skrifttype mislyktes."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:540
 msgid "The font download is too large."
-msgstr ""
+msgstr "Skriftnedlastingen er for stor."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:541
 msgid "Could not install the font."
-msgstr ""
+msgstr "Kunne ikke installere skrifttypen."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:542
 msgid "Enter a font family name."
-msgstr ""
+msgstr "Skriv inn et skriftfamilienavn."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:544
-#, fuzzy
 msgid "Font installation failed."
-msgstr "Installasjon mislyktes"
+msgstr "Skriftinstallasjon mislyktes."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:552
 msgid "Reset to system defaults"
@@ -819,13 +800,13 @@ msgid "Reset all font settings?"
 msgstr "Tilbakestill alle skriftinnstillinger?"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:563
-#, fuzzy
 msgid ""
 "Interface, document and monospace fonts will return to system defaults. "
 "Rendering and scale settings will reset too."
 msgstr ""
-"Grensesnitt-, dokument-, monospace- og vindustittel-skrifter vil gå tilbake "
-"til systemstandarder. Hinting og antialiasing tilbakestilles også."
+"Grensesnitt-, dokument- og monospace-skrifter vil bli tilbakestilt til "
+"systemstandard. Gjengivelses- og skaleringsinnstillinger vil også bli "
+"tilbakestilt."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:568
 msgid "Reset"
@@ -972,15 +953,15 @@ msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Installer temaer i ~/.themes eller /usr/share/themes"
 
 #: usr/share/layout-switcher/ui/page_themes.py:218
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} themes available"
-msgstr "temaer tilgjengelig"
+msgstr "{n} temaer tilgjengelig"
 
 #: usr/share/layout-switcher/ui/page_themes.py:304
 #: usr/share/layout-switcher/ui/page_themes.py:358
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} theme"
-msgstr "installert"
+msgstr "{name} tema"
 
 #: usr/share/layout-switcher/ui/page_themes.py:420
 msgid "User Themes required"
@@ -1020,12 +1001,11 @@ msgstr "Hovedmeny"
 
 #: usr/share/layout-switcher/ui/window.py:208
 msgid "Check for updates"
-msgstr ""
+msgstr "Se etter oppdateringer"
 
 #: usr/share/layout-switcher/ui/window.py:209
-#, fuzzy
 msgid "Auto-update extensions"
-msgstr "Systemutvidelse"
+msgstr "Auto-oppdater utvidelser"
 
 #: usr/share/layout-switcher/ui/window.py:211
 msgid "Backups…"
@@ -1076,29 +1056,26 @@ msgid "Applying…"
 msgstr "Bruker…"
 
 #: usr/share/layout-switcher/ui/window.py:585
-#, fuzzy
 msgid "All extensions up to date"
-msgstr "Alle utvidelser deaktivert"
+msgstr "Alle utvidelser er oppdatert"
 
 #: usr/share/layout-switcher/ui/window.py:600
 #, python-brace-format
 msgid "Auto-updated {n} extensions"
-msgstr ""
+msgstr "Auto-oppdaterte {n} utvidelser"
 
 #: usr/share/layout-switcher/ui/window.py:605
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} update(s) available"
-msgstr "temaer tilgjengelig"
+msgstr "{n} oppdatering(er) tilgjengelig"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update enabled"
-msgstr "Oppdatering mislyktes"
+msgstr "Auto-oppdatering aktivert"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update disabled"
-msgstr "Oppdatering mislyktes"
+msgstr "Auto-oppdatering deaktivert"
 
 #~ msgid "System fonts"
 #~ msgstr "Systemfonter"

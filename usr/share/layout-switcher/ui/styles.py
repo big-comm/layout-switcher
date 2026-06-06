@@ -23,38 +23,67 @@ APP_CSS = """
 
 /* ── Layout cards ────────────────────────────────────────────────────── */
 .layout-card {
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    border-radius: 10px;
-    padding: 4px;
-    transition: background-color 140ms ease;
+    background-color: alpha(@card_bg_color, 0.50);
+    border: 1px solid alpha(@card_fg_color, 0.10);
+    border-radius: 15px;
+    padding: 10px 10px 13px;
+    transition: background-color 160ms ease,
+                border-color 160ms ease,
+                box-shadow 200ms ease;
+    box-shadow: 0 1px 2px alpha(black, 0.05);
 }
-.layout-card:hover                   { background-color: alpha(@accent_bg_color, 0.08); }
+.layout-card:hover {
+    background-color: alpha(@card_bg_color, 0.92);
+    border-color: alpha(@accent_color, 0.42);
+    box-shadow: 0 8px 22px alpha(black, 0.16);
+}
+.layout-card.layout-on {
+    border-color: @accent_color;
+    background-color: alpha(@accent_bg_color, 0.10);
+    box-shadow: 0 0 0 1px @accent_color,
+                0 8px 24px alpha(@accent_color, 0.20);
+}
 
-/* Preview (SVG wrapper) — glow neon no layout ativo */
+/* Preview (SVG wrapper) — só arredonda. A seleção vive no card, então o
+   preview NÃO ganha contorno próprio (evita o contorno duplo: um interno
+   no preview + um externo na borda do card). */
 .layout-preview {
-    border-radius: 8px;
-    transition: box-shadow 180ms ease;
+    border-radius: 10px;
 }
-.layout-card:hover .layout-preview {
-    box-shadow: 0 0 0 1px alpha(@accent_color, 0.25);
+
+/* Neutraliza a seleção/contorno nativo do FlowBoxChild para não somar com
+   a borda do card — a única seleção visível é a do .layout-card. */
+.layout-grid > flowboxchild {
+    outline: none;
+    background: none;
+    box-shadow: none;
+    border-radius: 15px;
 }
-.layout-card.layout-on .layout-preview {
-    box-shadow: 0 0 0 2px @accent_color,
-                0 0 14px alpha(@accent_color, 0.55),
-                0 0 28px alpha(@accent_color, 0.28);
+.layout-grid > flowboxchild:hover,
+.layout-grid > flowboxchild:focus,
+.layout-grid > flowboxchild:focus-visible,
+.layout-grid > flowboxchild:selected {
+    background: none;
+    box-shadow: none;
+    outline: none;
 }
 
 /* Disabled layout (work-in-progress, not yet clickable) */
 .layout-disabled                     { opacity: 0.42; }
-.layout-disabled:hover               { background-color: transparent; }
+.layout-disabled:hover {
+    background-color: alpha(@card_bg_color, 0.50);
+    border-color: alpha(@card_fg_color, 0.10);
+    box-shadow: 0 1px 2px alpha(black, 0.05);
+}
 .layout-disabled:hover .layout-preview { box-shadow: none; }
 
-/* Nome do layout — cor accent + bold quando ativo */
-.layout-name                         { font-weight: 600; }
+/* Nome + descrição do layout */
+.layout-name                         { font-weight: 700; }
 .layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0; }
+.layout-desc {
+    font-size: 11px;
+    opacity: 0.58;
+}
 
 /* Badge "Modified" theme-aware (libadwaita adapta @warning_bg/fg_color) */
 .layout-modified-badge {

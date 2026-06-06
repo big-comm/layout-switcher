@@ -14,36 +14,35 @@ msgstr ""
 
 #: usr/share/layout-switcher/constants.py:136
 msgid "Desktop Cube"
-msgstr ""
+msgstr "Desktop Cube"
 
 #: usr/share/layout-switcher/constants.py:137
 msgid "Rotate workspaces on a 3D cube"
-msgstr ""
+msgstr "Обертання робочих просторів на 3D-кубі"
 
 #: usr/share/layout-switcher/constants.py:147
 msgid "Magic Lamp"
-msgstr ""
+msgstr "Magic Lamp"
 
 #: usr/share/layout-switcher/constants.py:148
 msgid "Genie effect when minimizing windows"
-msgstr ""
+msgstr "Ефект джина при згортанні вікон"
 
 #: usr/share/layout-switcher/constants.py:158
 msgid "Compiz Windows"
-msgstr ""
+msgstr "Compiz Windows"
 
 #: usr/share/layout-switcher/constants.py:159
 msgid "Wobbly windows and extra animations"
-msgstr ""
+msgstr "Хиткі вікна та додаткові анімації"
 
 #: usr/share/layout-switcher/constants.py:169
 msgid "Desktop Icons NG"
-msgstr ""
+msgstr "Desktop Icons NG"
 
 #: usr/share/layout-switcher/constants.py:170
-#, fuzzy
 msgid "Files and folders on your desktop"
-msgstr "Візуальні ефекти для вашого робочого столу GNOME"
+msgstr "Файли та папки на вашому робочому столі"
 
 #: usr/share/layout-switcher/constants.py:196
 msgid "Default Big Gnome layout"
@@ -181,66 +180,65 @@ msgstr "Назва"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:93
 msgid "Search extensions on extensions.gnome.org"
-msgstr ""
+msgstr "Пошук розширень на extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:101
 msgid "Sort by"
-msgstr ""
+msgstr "Сортувати за"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:112
 #, python-brace-format
 msgid "Only compatible with GNOME {ver}"
-msgstr ""
+msgstr "Сумісно лише з GNOME {ver}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:139
-#, fuzzy
 msgid "Browse extensions"
-msgstr "Системне розширення"
+msgstr "Огляд розширень"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:140
 msgid "Search above or hit Enter to load popular extensions."
 msgstr ""
+"Шукайте вище або натисніть Enter, щоб завантажити популярні розширення."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:143
 msgid "Load popular"
-msgstr ""
+msgstr "Завантажити популярні"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:159
-#, fuzzy
 msgid "Loading…"
-msgstr "Завантаження шрифтів…"
+msgstr "Завантаження…"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:166
 msgid "No results"
-msgstr ""
+msgstr "Немає результатів"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:167
 msgid "Try a different search or sort."
-msgstr ""
+msgstr "Спробуйте інший пошук або сортування."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:173
 msgid "Could not reach extensions.gnome.org"
-msgstr ""
+msgstr "Не вдалося зв'язатися з extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:174
 #: usr/share/layout-switcher/ui/ext_detail_view.py:111
 msgid "Check your network connection and try again."
-msgstr ""
+msgstr "Перевірте підключення до мережі та спробуйте знову."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:177
 #: usr/share/layout-switcher/ui/ext_detail_view.py:114
 msgid "Retry"
-msgstr ""
+msgstr "Повторити"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:216
 #: usr/share/layout-switcher/ui/page_fonts.py:334
 msgid "Previous page"
-msgstr ""
+msgstr "Попередня сторінка"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:227
 #: usr/share/layout-switcher/ui/page_fonts.py:346
 msgid "Next page"
-msgstr ""
+msgstr "Наступна сторінка"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:238
 #: usr/share/layout-switcher/ui/page_themes.py:130
@@ -250,7 +248,7 @@ msgstr "Оболонка"
 #: usr/share/layout-switcher/ui/ext_browse_view.py:284
 #, python-brace-format
 msgid "Page {p} of {t}"
-msgstr ""
+msgstr "Сторінка {p} з {t}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:345
 #: usr/share/layout-switcher/ui/ext_detail_view.py:147
@@ -262,12 +260,11 @@ msgstr "від {author}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:358
 msgid "Details"
-msgstr ""
+msgstr "Деталі"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:361
-#, fuzzy
 msgid "View extension details"
-msgstr "Завантаження шрифтів…"
+msgstr "Переглянути деталі розширення"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:369
 #: usr/share/layout-switcher/ui/page_extensions.py:65
@@ -294,11 +291,11 @@ msgstr "Встановити"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:431
 #: usr/share/layout-switcher/ui/page_effects.py:296
 #: usr/share/layout-switcher/ui/page_extensions.py:405
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} installed and enabled. Restart the session to use it."
 msgstr ""
-"Встановіть і увімкніть розширення User Themes, щоб застосувати теми "
-"оболонки."
+"{name} встановлено та увімкнено. Перезапустіть сеанс, щоб використовувати "
+"його."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:420
 #: usr/share/layout-switcher/ui/page_effects.py:302
@@ -307,46 +304,45 @@ msgid "Install failed"
 msgstr "Не вдалося встановити"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:103
-#, fuzzy
 msgid "Loading extension details…"
-msgstr "Завантаження шрифтів…"
+msgstr "Завантаження деталей розширення…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:110
 msgid "Could not load details"
-msgstr ""
+msgstr "Не вдалося завантажити деталі"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:206
 #, python-brace-format
 msgid "{n} ratings"
-msgstr ""
+msgstr "{n} оцінок"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:209
 msgid "downloads"
-msgstr ""
+msgstr "завантажень"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:212
 msgid "compatibility"
-msgstr ""
+msgstr "сумісність"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:254
 msgid "Description"
-msgstr ""
+msgstr "Опис"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:269
 msgid "Recent comments"
-msgstr ""
+msgstr "Останні коментарі"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:282
 msgid "View all comments on extensions.gnome.org"
-msgstr ""
+msgstr "Переглянути всі коментарі на extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:343
 msgid "Links"
-msgstr ""
+msgstr "Посилання"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:350
 msgid "Homepage"
-msgstr ""
+msgstr "Домашня сторінка"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:354
 #: usr/share/layout-switcher/ui/page_effects.py:236
@@ -357,33 +353,31 @@ msgstr "Переглянути на GNOME Extensions"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:359
 #, python-brace-format
 msgid "License: {lic}"
-msgstr ""
+msgstr "Ліцензія: {lic}"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:387
 #: usr/share/layout-switcher/ui/page_extensions.py:568
 #: usr/share/layout-switcher/ui/page_extensions.py:655
 #: usr/share/layout-switcher/ui/page_extensions.py:666
-#, fuzzy
 msgid "Update"
-msgstr "Оновлення не вдалося"
+msgstr "Оновити"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:392
 msgid "Open prefs"
-msgstr ""
+msgstr "Відкрити налаштування"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:409
 msgid "Working…"
-msgstr ""
+msgstr "Виконується…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:428
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} updated"
-msgstr "встановлено"
+msgstr "{name} оновлено"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:437
-#, fuzzy
 msgid "Operation failed"
-msgstr "Оновлення не вдалося"
+msgstr "Операцію не виконано"
 
 #: usr/share/layout-switcher/ui/page_effects.py:44
 msgid "Visual effects for your GNOME desktop"
@@ -395,19 +389,19 @@ msgid "System extension"
 msgstr "Системне розширення"
 
 #: usr/share/layout-switcher/ui/page_effects.py:124
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (enabled)"
-msgstr "встановлено"
+msgstr "{name} (увімкнено)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:126
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (disabled)"
-msgstr "встановлено"
+msgstr "{name} (вимкнено)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:128
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (not installed)"
-msgstr "встановлено"
+msgstr "{name} (не встановлено)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:176
 #: usr/share/layout-switcher/ui/page_extensions.py:277
@@ -518,12 +512,11 @@ msgstr "Рекомендовані"
 #: usr/share/layout-switcher/ui/page_extensions.py:64
 #: usr/share/layout-switcher/ui/page_extensions.py:113
 msgid "Browse"
-msgstr ""
+msgstr "Огляд"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:219
-#, fuzzy
 msgid "Update available"
-msgstr "Оновлення не вдалося"
+msgstr "Доступне оновлення"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:381
 msgid "Install extension?"
@@ -535,9 +528,8 @@ msgstr "Видалити розширення?"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:490
 #: usr/share/layout-switcher/ui/page_extensions.py:568
-#, fuzzy
 msgid "Update all"
-msgstr "Оновлення не вдалося"
+msgstr "Оновити все"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:498
 msgid "Open GNOME Extensions"
@@ -552,9 +544,8 @@ msgid "installed"
 msgstr "встановлено"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:564
-#, fuzzy
 msgid "update available"
-msgstr "доступні теми"
+msgstr "доступне оновлення"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:576
 msgid "Enabled"
@@ -567,18 +558,19 @@ msgstr "Вимкнено"
 #: usr/share/layout-switcher/ui/page_extensions.py:660
 #, python-brace-format
 msgid "Update from v{old} to v{new}"
-msgstr ""
+msgstr "Оновлення з v{old} до v{new}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:724
 msgid ""
 "This extension cannot be removed here because it was installed by the "
 "system."
 msgstr ""
+"Це розширення не можна видалити тут, оскільки воно встановлене системою."
 
 #: usr/share/layout-switcher/ui/page_extensions.py:772
 #, python-brace-format
 msgid "{name} updated to v{ver}"
-msgstr ""
+msgstr "{name} оновлено до v{ver}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:777
 #: usr/share/layout-switcher/ui/page_fonts.py:147
@@ -588,14 +580,14 @@ msgid "Update failed"
 msgstr "Оновлення не вдалося"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:801
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n} extensions"
-msgstr "Системне розширення"
+msgstr "Оновлено розширення {n}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:806
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n}/{t}; failed: {f}"
-msgstr "Оновлення не вдалося"
+msgstr "Оновлено {n}/{t}; не вдалося: {f}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:817
 #: usr/share/layout-switcher/ui/page_extensions.py:835
@@ -623,24 +615,20 @@ msgid "All extensions enabled"
 msgstr "Всі розширення увімкнено"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:76
-#, fuzzy
 msgid "Preferred fonts"
-msgstr "Оновити список шрифтів"
+msgstr "Бажані шрифти"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:80
-#, fuzzy
 msgid "Interface text"
-msgstr "Інтерфейс"
+msgstr "Текст інтерфейсу"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:86
-#, fuzzy
 msgid "Document text"
-msgstr "Документ"
+msgstr "Текст документа"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:92
-#, fuzzy
 msgid "Monospace text"
-msgstr "Моноширинний"
+msgstr "Моноширинний текст"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:109
 #: usr/share/layout-switcher/ui/page_fonts.py:601
@@ -678,85 +666,81 @@ msgstr "Відсутні"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:173
 msgid "Smoothing"
-msgstr ""
+msgstr "Згладжування"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:183
 msgid "Subpixel (for LCD screens)"
-msgstr ""
+msgstr "Субпіксельне (для РК-екранів)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:184
 msgid "Standard (grayscale)"
-msgstr ""
+msgstr "Стандартне (відтінки сірого)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:228
 msgid "Size"
-msgstr ""
+msgstr "Розмір"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:231
 #: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Scale factor"
-msgstr ""
+msgstr "Коефіцієнт масштабування"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:239
 msgid "Decrease"
-msgstr ""
+msgstr "Зменшити"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:246
 msgid "Increase"
-msgstr ""
+msgstr "Збільшити"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:287
-#, fuzzy
 msgid "Google Fonts"
-msgstr "Переглянути Google Fonts"
+msgstr "Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:297
-#, fuzzy
 msgid "Search Google Fonts…"
-msgstr "Пошук шрифтів…"
+msgstr "Пошук Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:308
 #: usr/share/layout-switcher/ui/page_fonts.py:363
-#, fuzzy
 msgid "Loading Google Fonts…"
-msgstr "Завантаження шрифтів…"
+msgstr "Завантаження Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:312
-#, fuzzy
 msgid "Refresh Google Fonts list"
-msgstr "Оновити список шрифтів"
+msgstr "Оновити список Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:424
 #, python-brace-format
 msgid "Page {page} of {pages}"
-msgstr ""
+msgstr "Сторінка {page} з {pages}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:431
 msgid "Internet connection is required to load the Google Fonts list."
 msgstr ""
+"Для завантаження списку Google Fonts потрібне підключення до Інтернету."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:435
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} fonts found"
-msgstr "Знімок не знайдено"
+msgstr "Знайдено шрифтів: {n}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:440
 #, python-brace-format
 msgid "Showing top {shown} of {total} Google Fonts"
-msgstr ""
+msgstr "Показано {shown} з {total} Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:449
-#, fuzzy
 msgid "No fonts found"
-msgstr "Теми не знайдено"
+msgstr "Шрифтів не знайдено"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:502
 msgid "Sans serif"
-msgstr ""
+msgstr "Без засічок"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:503
 msgid "Serif"
-msgstr ""
+msgstr "Із засічками"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:504
 msgid "Monospace"
@@ -764,50 +748,48 @@ msgstr "Моноширинний"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:505
 msgid "Display"
-msgstr ""
+msgstr "Декоративні"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:506
-#, fuzzy
 msgid "Handwriting"
-msgstr "Підказки"
+msgstr "Рукописний"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:507
 msgid "Exact Google Fonts family name"
-msgstr ""
+msgstr "Точна назва сімейства Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:531
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{family} installed"
-msgstr "встановлено"
+msgstr "{family} встановлено"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:537
 msgid "Internet connection is required to install Google Fonts."
-msgstr ""
+msgstr "Для встановлення Google Fonts потрібне підключення до Інтернету."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:538
 msgid "Font not found on Google Fonts."
-msgstr ""
+msgstr "Шрифт не знайдено в Google Fonts."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:539
 msgid "Font download failed."
-msgstr ""
+msgstr "Не вдалося завантажити шрифт."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:540
 msgid "The font download is too large."
-msgstr ""
+msgstr "Завантажуваний файл шрифту завеликий."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:541
 msgid "Could not install the font."
-msgstr ""
+msgstr "Не вдалося встановити шрифт."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:542
 msgid "Enter a font family name."
-msgstr ""
+msgstr "Введіть назву сімейства шрифтів."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:544
-#, fuzzy
 msgid "Font installation failed."
-msgstr "Не вдалося встановити"
+msgstr "Не вдалося встановити шрифт."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:552
 msgid "Reset to system defaults"
@@ -818,14 +800,13 @@ msgid "Reset all font settings?"
 msgstr "Скинути всі налаштування шрифтів?"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:563
-#, fuzzy
 msgid ""
 "Interface, document and monospace fonts will return to system defaults. "
 "Rendering and scale settings will reset too."
 msgstr ""
-"Шрифти інтерфейсу, документів, моноширинні та заголовків вікон будуть "
-"повернені до системних налаштувань. Підказки та згладжування також "
-"скинуться."
+"Шрифти інтерфейсу, документа та моноширинний повернуться до системних "
+"значень за замовчуванням. Налаштування рендерингу та масштабу також буде "
+"скинуто."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:568
 msgid "Reset"
@@ -972,15 +953,15 @@ msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Встановіть теми в ~/.themes або /usr/share/themes"
 
 #: usr/share/layout-switcher/ui/page_themes.py:218
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} themes available"
-msgstr "доступні теми"
+msgstr "Доступно тем: {n}"
 
 #: usr/share/layout-switcher/ui/page_themes.py:304
 #: usr/share/layout-switcher/ui/page_themes.py:358
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} theme"
-msgstr "встановлено"
+msgstr "{name} тема"
 
 #: usr/share/layout-switcher/ui/page_themes.py:420
 msgid "User Themes required"
@@ -1022,12 +1003,11 @@ msgstr "Головне меню"
 
 #: usr/share/layout-switcher/ui/window.py:208
 msgid "Check for updates"
-msgstr ""
+msgstr "Перевірити наявність оновлень"
 
 #: usr/share/layout-switcher/ui/window.py:209
-#, fuzzy
 msgid "Auto-update extensions"
-msgstr "Системне розширення"
+msgstr "Автоматично оновлювати розширення"
 
 #: usr/share/layout-switcher/ui/window.py:211
 msgid "Backups…"
@@ -1078,29 +1058,26 @@ msgid "Applying…"
 msgstr "Застосування…"
 
 #: usr/share/layout-switcher/ui/window.py:585
-#, fuzzy
 msgid "All extensions up to date"
-msgstr "Всі розширення вимкнено"
+msgstr "Усі розширення оновлено"
 
 #: usr/share/layout-switcher/ui/window.py:600
 #, python-brace-format
 msgid "Auto-updated {n} extensions"
-msgstr ""
+msgstr "Автоматично оновлено {n} розширень"
 
 #: usr/share/layout-switcher/ui/window.py:605
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} update(s) available"
-msgstr "доступні теми"
+msgstr "Доступно оновлень: {n}"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update enabled"
-msgstr "Оновлення не вдалося"
+msgstr "Автооновлення увімкнено"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update disabled"
-msgstr "Оновлення не вдалося"
+msgstr "Автооновлення вимкнено"
 
 #~ msgid "System fonts"
 #~ msgstr "Системні шрифти"

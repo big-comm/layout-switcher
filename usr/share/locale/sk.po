@@ -14,36 +14,35 @@ msgstr ""
 
 #: usr/share/layout-switcher/constants.py:136
 msgid "Desktop Cube"
-msgstr ""
+msgstr "Desktop Cube"
 
 #: usr/share/layout-switcher/constants.py:137
 msgid "Rotate workspaces on a 3D cube"
-msgstr ""
+msgstr "Otáčať pracovné plochy v 3D kocke"
 
 #: usr/share/layout-switcher/constants.py:147
 msgid "Magic Lamp"
-msgstr ""
+msgstr "Magic Lamp"
 
 #: usr/share/layout-switcher/constants.py:148
 msgid "Genie effect when minimizing windows"
-msgstr ""
+msgstr "Efekt džina pri minimalizovaní okien"
 
 #: usr/share/layout-switcher/constants.py:158
 msgid "Compiz Windows"
-msgstr ""
+msgstr "Compiz Windows"
 
 #: usr/share/layout-switcher/constants.py:159
 msgid "Wobbly windows and extra animations"
-msgstr ""
+msgstr "Vlnité okná a ďalšie animácie"
 
 #: usr/share/layout-switcher/constants.py:169
 msgid "Desktop Icons NG"
-msgstr ""
+msgstr "Desktop Icons NG"
 
 #: usr/share/layout-switcher/constants.py:170
-#, fuzzy
 msgid "Files and folders on your desktop"
-msgstr "Vizuálne efekty pre váš desktop GNOME"
+msgstr "Súbory a priečinky na vašej pracovnej ploche"
 
 #: usr/share/layout-switcher/constants.py:196
 msgid "Default Big Gnome layout"
@@ -180,66 +179,65 @@ msgstr "Názov"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:93
 msgid "Search extensions on extensions.gnome.org"
-msgstr ""
+msgstr "Hľadať rozšírenia na extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:101
 msgid "Sort by"
-msgstr ""
+msgstr "Zoradiť podľa"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:112
 #, python-brace-format
 msgid "Only compatible with GNOME {ver}"
-msgstr ""
+msgstr "Len kompatibilné s GNOME {ver}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:139
-#, fuzzy
 msgid "Browse extensions"
-msgstr "Systémové rozšírenie"
+msgstr "Prehliadať rozšírenia"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:140
 msgid "Search above or hit Enter to load popular extensions."
 msgstr ""
+"Vyhľadajte vyššie alebo stlačte Enter pre načítanie populárnych rozšírení."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:143
 msgid "Load popular"
-msgstr ""
+msgstr "Načítať populárne"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:159
-#, fuzzy
 msgid "Loading…"
-msgstr "Načítavam písma…"
+msgstr "Načítava sa…"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:166
 msgid "No results"
-msgstr ""
+msgstr "Žiadne výsledky"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:167
 msgid "Try a different search or sort."
-msgstr ""
+msgstr "Skúste iné vyhľadávanie alebo zoradenie."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:173
 msgid "Could not reach extensions.gnome.org"
-msgstr ""
+msgstr "Nepodarilo sa pripojiť k extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:174
 #: usr/share/layout-switcher/ui/ext_detail_view.py:111
 msgid "Check your network connection and try again."
-msgstr ""
+msgstr "Skontrolujte sieťové pripojenie a skúste znova."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:177
 #: usr/share/layout-switcher/ui/ext_detail_view.py:114
 msgid "Retry"
-msgstr ""
+msgstr "Znova"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:216
 #: usr/share/layout-switcher/ui/page_fonts.py:334
 msgid "Previous page"
-msgstr ""
+msgstr "Predchádzajúca strana"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:227
 #: usr/share/layout-switcher/ui/page_fonts.py:346
 msgid "Next page"
-msgstr ""
+msgstr "Nasledujúca strana"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:238
 #: usr/share/layout-switcher/ui/page_themes.py:130
@@ -249,7 +247,7 @@ msgstr "Shell"
 #: usr/share/layout-switcher/ui/ext_browse_view.py:284
 #, python-brace-format
 msgid "Page {p} of {t}"
-msgstr ""
+msgstr "Strana {p} z {t}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:345
 #: usr/share/layout-switcher/ui/ext_detail_view.py:147
@@ -261,12 +259,11 @@ msgstr "od {author}"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:358
 msgid "Details"
-msgstr ""
+msgstr "Podrobnosti"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:361
-#, fuzzy
 msgid "View extension details"
-msgstr "Načítavam písma…"
+msgstr "Zobraziť podrobnosti rozšírenia"
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:369
 #: usr/share/layout-switcher/ui/page_extensions.py:65
@@ -293,9 +290,11 @@ msgstr "Inštalovať"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:431
 #: usr/share/layout-switcher/ui/page_effects.py:296
 #: usr/share/layout-switcher/ui/page_extensions.py:405
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} installed and enabled. Restart the session to use it."
-msgstr "Nainštalujte a povoľte rozšírenie User Themes na použitie shell tém."
+msgstr ""
+"{name} je nainštalované a povolené. Reštartujte reláciu, aby ste ho mohli "
+"používať."
 
 #: usr/share/layout-switcher/ui/ext_browse_view.py:420
 #: usr/share/layout-switcher/ui/page_effects.py:302
@@ -304,46 +303,45 @@ msgid "Install failed"
 msgstr "Inštalácia zlyhala"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:103
-#, fuzzy
 msgid "Loading extension details…"
-msgstr "Načítavam písma…"
+msgstr "Načítavajú sa podrobnosti rozšírenia…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:110
 msgid "Could not load details"
-msgstr ""
+msgstr "Nepodarilo sa načítať podrobnosti"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:206
 #, python-brace-format
 msgid "{n} ratings"
-msgstr ""
+msgstr "{n} hodnotení"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:209
 msgid "downloads"
-msgstr ""
+msgstr "stiahnutí"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:212
 msgid "compatibility"
-msgstr ""
+msgstr "kompatibilita"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:254
 msgid "Description"
-msgstr ""
+msgstr "Popis"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:269
 msgid "Recent comments"
-msgstr ""
+msgstr "Nedávne komentáre"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:282
 msgid "View all comments on extensions.gnome.org"
-msgstr ""
+msgstr "Zobraziť všetky komentáre na extensions.gnome.org"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:343
 msgid "Links"
-msgstr ""
+msgstr "Odkazy"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:350
 msgid "Homepage"
-msgstr ""
+msgstr "Domovská stránka"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:354
 #: usr/share/layout-switcher/ui/page_effects.py:236
@@ -354,33 +352,31 @@ msgstr "Zobraziť na GNOME Extensions"
 #: usr/share/layout-switcher/ui/ext_detail_view.py:359
 #, python-brace-format
 msgid "License: {lic}"
-msgstr ""
+msgstr "Licencia: {lic}"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:387
 #: usr/share/layout-switcher/ui/page_extensions.py:568
 #: usr/share/layout-switcher/ui/page_extensions.py:655
 #: usr/share/layout-switcher/ui/page_extensions.py:666
-#, fuzzy
 msgid "Update"
-msgstr "Aktualizácia zlyhala"
+msgstr "Aktualizovať"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:392
 msgid "Open prefs"
-msgstr ""
+msgstr "Otvoriť nastavenia"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:409
 msgid "Working…"
-msgstr ""
+msgstr "Pracujem…"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:428
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} updated"
-msgstr "nainštalované"
+msgstr "{name} aktualizované"
 
 #: usr/share/layout-switcher/ui/ext_detail_view.py:437
-#, fuzzy
 msgid "Operation failed"
-msgstr "Aktualizácia zlyhala"
+msgstr "Operácia zlyhala"
 
 #: usr/share/layout-switcher/ui/page_effects.py:44
 msgid "Visual effects for your GNOME desktop"
@@ -392,19 +388,19 @@ msgid "System extension"
 msgstr "Systémové rozšírenie"
 
 #: usr/share/layout-switcher/ui/page_effects.py:124
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (enabled)"
-msgstr "nainštalované"
+msgstr "{name} (povolené)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:126
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (disabled)"
-msgstr "nainštalované"
+msgstr "{name} (zakázané)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:128
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} (not installed)"
-msgstr "nainštalované"
+msgstr "{name} (nenainštalované)"
 
 #: usr/share/layout-switcher/ui/page_effects.py:176
 #: usr/share/layout-switcher/ui/page_extensions.py:277
@@ -515,12 +511,11 @@ msgstr "Odporúčané"
 #: usr/share/layout-switcher/ui/page_extensions.py:64
 #: usr/share/layout-switcher/ui/page_extensions.py:113
 msgid "Browse"
-msgstr ""
+msgstr "Prehľadávať"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:219
-#, fuzzy
 msgid "Update available"
-msgstr "Aktualizácia zlyhala"
+msgstr "Aktualizácia k dispozícii"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:381
 msgid "Install extension?"
@@ -532,9 +527,8 @@ msgstr "Odstrániť rozšírenie?"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:490
 #: usr/share/layout-switcher/ui/page_extensions.py:568
-#, fuzzy
 msgid "Update all"
-msgstr "Aktualizácia zlyhala"
+msgstr "Aktualizovať všetko"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:498
 msgid "Open GNOME Extensions"
@@ -549,9 +543,8 @@ msgid "installed"
 msgstr "nainštalované"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:564
-#, fuzzy
 msgid "update available"
-msgstr "dostupné témy"
+msgstr "aktualizácia k dispozícii"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:576
 msgid "Enabled"
@@ -564,18 +557,19 @@ msgstr "Zakázané"
 #: usr/share/layout-switcher/ui/page_extensions.py:660
 #, python-brace-format
 msgid "Update from v{old} to v{new}"
-msgstr ""
+msgstr "Aktualizovať z v{old} na v{new}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:724
 msgid ""
 "This extension cannot be removed here because it was installed by the "
 "system."
 msgstr ""
+"Toto rozšírenie tu nemožno odstrániť, pretože bolo nainštalované systémom."
 
 #: usr/share/layout-switcher/ui/page_extensions.py:772
 #, python-brace-format
 msgid "{name} updated to v{ver}"
-msgstr ""
+msgstr "{name} aktualizované na v{ver}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:777
 #: usr/share/layout-switcher/ui/page_fonts.py:147
@@ -585,14 +579,14 @@ msgid "Update failed"
 msgstr "Aktualizácia zlyhala"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:801
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n} extensions"
-msgstr "Systémové rozšírenie"
+msgstr "Aktualizované rozšírenia {n}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:806
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Updated {n}/{t}; failed: {f}"
-msgstr "Aktualizácia zlyhala"
+msgstr "Aktualizované {n}/{t}; zlyhalo: {f}"
 
 #: usr/share/layout-switcher/ui/page_extensions.py:817
 #: usr/share/layout-switcher/ui/page_extensions.py:835
@@ -620,24 +614,20 @@ msgid "All extensions enabled"
 msgstr "Všetky rozšírenia sú povolené"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:76
-#, fuzzy
 msgid "Preferred fonts"
-msgstr "Obnoviť zoznam písiem"
+msgstr "Preferované písma"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:80
-#, fuzzy
 msgid "Interface text"
-msgstr "Rozhranie"
+msgstr "Text rozhrania"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:86
-#, fuzzy
 msgid "Document text"
-msgstr "Dokument"
+msgstr "Text dokumentu"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:92
-#, fuzzy
 msgid "Monospace text"
-msgstr "Monospace"
+msgstr "Neproporcionálny text"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:109
 #: usr/share/layout-switcher/ui/page_fonts.py:601
@@ -675,85 +665,80 @@ msgstr "Žiadny"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:173
 msgid "Smoothing"
-msgstr ""
+msgstr "Vyhladzovanie"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:183
 msgid "Subpixel (for LCD screens)"
-msgstr ""
+msgstr "Subpixel (pre LCD obrazovky)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:184
 msgid "Standard (grayscale)"
-msgstr ""
+msgstr "Štandardné (odtiene sivej)"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:228
 msgid "Size"
-msgstr ""
+msgstr "Veľkosť"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:231
 #: usr/share/layout-switcher/ui/page_fonts.py:251
 msgid "Scale factor"
-msgstr ""
+msgstr "Faktor mierky"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:239
 msgid "Decrease"
-msgstr ""
+msgstr "Znížiť"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:246
 msgid "Increase"
-msgstr ""
+msgstr "Zvýšiť"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:287
-#, fuzzy
 msgid "Google Fonts"
-msgstr "Prezerať Google Fonts"
+msgstr "Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:297
-#, fuzzy
 msgid "Search Google Fonts…"
-msgstr "Hľadať písma…"
+msgstr "Hľadať v Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:308
 #: usr/share/layout-switcher/ui/page_fonts.py:363
-#, fuzzy
 msgid "Loading Google Fonts…"
-msgstr "Načítavam písma…"
+msgstr "Načítavam Google Fonts…"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:312
-#, fuzzy
 msgid "Refresh Google Fonts list"
-msgstr "Obnoviť zoznam písiem"
+msgstr "Obnoviť zoznam Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:424
 #, python-brace-format
 msgid "Page {page} of {pages}"
-msgstr ""
+msgstr "Strana {page} z {pages}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:431
 msgid "Internet connection is required to load the Google Fonts list."
-msgstr ""
+msgstr "Na načítanie zoznamu Google Fonts je potrebné internetové pripojenie."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:435
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} fonts found"
-msgstr "Snímka nenájdená"
+msgstr "Nájdené písma: {n}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:440
 #, python-brace-format
 msgid "Showing top {shown} of {total} Google Fonts"
-msgstr ""
+msgstr "Zobrazuje sa prvých {shown} z {total} Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:449
-#, fuzzy
 msgid "No fonts found"
-msgstr "Žiadne témy nenájdené"
+msgstr "Nenašli sa žiadne písma"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:502
 msgid "Sans serif"
-msgstr ""
+msgstr "Bezpätkové"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:503
 msgid "Serif"
-msgstr ""
+msgstr "Pätkové"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:504
 msgid "Monospace"
@@ -761,50 +746,48 @@ msgstr "Monospace"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:505
 msgid "Display"
-msgstr ""
+msgstr "Dekoračné"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:506
-#, fuzzy
 msgid "Handwriting"
-msgstr "Hinting"
+msgstr "Rukopisné"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:507
 msgid "Exact Google Fonts family name"
-msgstr ""
+msgstr "Presný názov rodiny písma Google Fonts"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:531
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{family} installed"
-msgstr "nainštalované"
+msgstr "Nainštalované: {family}"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:537
 msgid "Internet connection is required to install Google Fonts."
-msgstr ""
+msgstr "Na inštaláciu Google Fonts je potrebné internetové pripojenie."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:538
 msgid "Font not found on Google Fonts."
-msgstr ""
+msgstr "Písmo sa nenašlo v Google Fonts."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:539
 msgid "Font download failed."
-msgstr ""
+msgstr "Sťahovanie písma zlyhalo."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:540
 msgid "The font download is too large."
-msgstr ""
+msgstr "Sťahovaný súbor písma je príliš veľký."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:541
 msgid "Could not install the font."
-msgstr ""
+msgstr "Písmo sa nepodarilo nainštalovať."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:542
 msgid "Enter a font family name."
-msgstr ""
+msgstr "Zadajte názov rodiny písma."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:544
-#, fuzzy
 msgid "Font installation failed."
-msgstr "Inštalácia zlyhala"
+msgstr "Inštalácia písma zlyhala."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:552
 msgid "Reset to system defaults"
@@ -815,13 +798,12 @@ msgid "Reset all font settings?"
 msgstr "Obnoviť všetky nastavenia písma?"
 
 #: usr/share/layout-switcher/ui/page_fonts.py:563
-#, fuzzy
 msgid ""
 "Interface, document and monospace fonts will return to system defaults. "
 "Rendering and scale settings will reset too."
 msgstr ""
-"Písma rozhrania, dokumentov, monospace a názvov okien sa vrátia na systémové"
-" predvolené hodnoty. Bude tiež obnovené hintovanie a antialiasing."
+"Písma rozhrania, dokumentu a neproporcionálne písma sa vrátia na systémové "
+"predvolené hodnoty. Obnovia sa aj nastavenia vykresľovania a mierky."
 
 #: usr/share/layout-switcher/ui/page_fonts.py:568
 msgid "Reset"
@@ -968,15 +950,15 @@ msgid "Install themes to ~/.themes or /usr/share/themes"
 msgstr "Inštalujte témy do ~/.themes alebo /usr/share/themes"
 
 #: usr/share/layout-switcher/ui/page_themes.py:218
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} themes available"
-msgstr "dostupné témy"
+msgstr "{n} dostupných tém"
 
 #: usr/share/layout-switcher/ui/page_themes.py:304
 #: usr/share/layout-switcher/ui/page_themes.py:358
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} theme"
-msgstr "nainštalované"
+msgstr "{name} téma"
 
 #: usr/share/layout-switcher/ui/page_themes.py:420
 msgid "User Themes required"
@@ -1016,12 +998,11 @@ msgstr "Hlavná ponuka"
 
 #: usr/share/layout-switcher/ui/window.py:208
 msgid "Check for updates"
-msgstr ""
+msgstr "Skontrolovať aktualizácie"
 
 #: usr/share/layout-switcher/ui/window.py:209
-#, fuzzy
 msgid "Auto-update extensions"
-msgstr "Systémové rozšírenie"
+msgstr "Automaticky aktualizovať rozšírenia"
 
 #: usr/share/layout-switcher/ui/window.py:211
 msgid "Backups…"
@@ -1073,29 +1054,26 @@ msgid "Applying…"
 msgstr "Aplikuje sa…"
 
 #: usr/share/layout-switcher/ui/window.py:585
-#, fuzzy
 msgid "All extensions up to date"
-msgstr "Všetky rozšírenia sú zakázané"
+msgstr "Všetky rozšírenia sú aktuálne"
 
 #: usr/share/layout-switcher/ui/window.py:600
 #, python-brace-format
 msgid "Auto-updated {n} extensions"
-msgstr ""
+msgstr "Automaticky aktualizované {n} rozšírenia"
 
 #: usr/share/layout-switcher/ui/window.py:605
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{n} update(s) available"
-msgstr "dostupné témy"
+msgstr "{n} dostupná aktualizácia/aktualizácie"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update enabled"
-msgstr "Aktualizácia zlyhala"
+msgstr "Automatická aktualizácia zapnutá"
 
 #: usr/share/layout-switcher/ui/window.py:612
-#, fuzzy
 msgid "Auto-update disabled"
-msgstr "Aktualizácia zlyhala"
+msgstr "Automatická aktualizácia vypnutá"
 
 #~ msgid "System fonts"
 #~ msgstr "Systémové písma"

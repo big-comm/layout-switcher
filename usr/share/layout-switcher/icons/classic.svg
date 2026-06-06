@@ -1,1 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" width="600" height="408.8" data-name="Layer 1" viewBox="0 0 300 204.4"><defs id="defs1264"><style id="style1262">.cls-4{stroke-miterlimit:10;stroke-width:2px;fill:#4374ba;stroke:#fff}</style></defs><path id="rect1268-7" d="M299.329 191.735v6.465c0 2.98-2.4 5.38-5.38 5.38H6.709c-2.98 0-5.38-2.4-5.38-5.38v-6.465z" style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;fill:#4474ba;stroke:none;stroke-width:2px;stroke-miterlimit:10"/><rect id="rect1266" width="298" height="202.19" x="1" y="1" rx="5" style="fill:none;stroke:#4374ba;stroke-width:2px;stroke-miterlimit:10"/><rect id="rect1270" width="8.262" height="8.262" x="3.19" y="193.332" rx="4.131" style="letter-spacing:-.03em;fill:#fff;stroke:none;stroke-width:2px;stroke-miterlimit:10"/><path id="polygon1272" d="M49.911 198.09h-33.52Z" class="cls-4" style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10"/><path id="polygon1274" d="M95.701 198.09h-33.52Z" class="cls-4" style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10"/><path id="polygon1276" d="M293.521 198.17h-51.52z" class="cls-4" style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10"/><text id="text1308" x="209.045" y="111.02" style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.01em;fill:#4374ba;stroke:none;stroke-width:2px;stroke-miterlimit:10">Classic</text></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   width="600"
+   height="408.8"
+   data-name="Layer 1"
+   viewBox="0 0 300 204.4"
+   version="1.1"
+   sodipodi:docname="classic.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.1100471"
+     inkscape:cx="236.02601"
+     inkscape:cy="266.65534"
+     inkscape:window-width="1920"
+     inkscape:window-height="1125"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" />
+  <defs
+     id="defs1264">
+    <style
+       id="style1262">.cls-4{stroke-miterlimit:10;stroke-width:2px;fill:#4374ba;stroke:#fff}</style>
+  </defs>
+  <path
+     id="rect1268-7"
+     d="M299.329 191.735v6.465c0 2.98-2.4 5.38-5.38 5.38H6.709c-2.98 0-5.38-2.4-5.38-5.38v-6.465z"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;fill:#4474ba;stroke:none;stroke-width:2px;stroke-miterlimit:10" />
+  <rect
+     id="rect1266"
+     width="298"
+     height="202.19"
+     x="1"
+     y="1"
+     rx="5"
+     style="fill:none;stroke:#4374ba;stroke-width:2px;stroke-miterlimit:10" />
+  <rect
+     id="rect1270"
+     width="8.262"
+     height="8.262"
+     x="3.19"
+     y="193.332"
+     rx="4.131"
+     style="letter-spacing:-.03em;fill:#fff;stroke:none;stroke-width:2px;stroke-miterlimit:10" />
+  <path
+     id="polygon1272"
+     d="M49.911 198.09h-33.52Z"
+     class="cls-4"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10" />
+  <path
+     id="polygon1274"
+     d="M95.701 198.09h-33.52Z"
+     class="cls-4"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10" />
+  <path
+     id="polygon1276"
+     d="M293.521 198.17h-51.52z"
+     class="cls-4"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.02em;fill:#4374ba;stroke:#fff;stroke-width:2px;stroke-miterlimit:10" />
+  <text
+     id="text1308"
+     x="209.045"
+     y="111.02"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold,Lato;letter-spacing:-.01em;fill:#4374ba;stroke:none;stroke-width:2px;stroke-miterlimit:10">Classic</text>
+  <rect
+     id="rect1278"
+     width="15.77"
+     height="15.77"
+     x="11.928376"
+     y="11.412358"
+     class="cls-2"
+     rx="4"
+     style="font-weight:700;font-size:24px;font-family:Lato-Bold, Lato;fill:#4474ba;stroke:#4374ba;stroke-width:2px;stroke-miterlimit:10" />
+  <path
+     id="polygon1280"
+     d="m 27.699381,33.101358 h -15.33 z"
+     class="cls-1"
+     style="fill:none;stroke:#4374ba;stroke-width:2px;stroke-miterlimit:10" />
+</svg>

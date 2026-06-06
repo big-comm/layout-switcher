@@ -32,7 +32,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const BUS_PATH = '/org/bigcommunity/LayoutSwitcherHelper';
-const HELPER_VERSION = 4;
+const HELPER_VERSION = 6;
 
 // GNOME Shell ExtensionState: ENABLED=1, ENABLING=8 → "live".
 const LIVE_STATES = new Set([1, 8]);

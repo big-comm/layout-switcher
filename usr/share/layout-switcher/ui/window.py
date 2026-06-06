@@ -526,7 +526,7 @@ class MainWindow(Adw.ApplicationWindow):
         # without a specific target (undo / restore).
         self._loading_art = Gtk.Stack()
         self._loading_art.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-        self._loading_art.set_transition_duration(480)
+        self._loading_art.set_transition_duration(340)
         self._loading_art.set_size_request(168, 112)
         self._loading_art.set_halign(Gtk.Align.CENTER)
         self._loading_art.add_css_class("loading-art")
