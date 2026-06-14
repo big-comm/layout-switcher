@@ -28,6 +28,7 @@
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -56,6 +57,38 @@ const IFACE = `
 
 function logHelper(msg) {
     console.log(`[layout-switcher-helper] ${msg}`);
+}
+
+// getStyleVariant() in the Shell returns '' for any sessionMode.colorScheme not
+// in this set, which then breaks default-stylesheet resolution.
+const VALID_COLOR_SCHEMES = new Set([
+    'prefer-dark', 'prefer-light', 'force-dark', 'force-light',
+]);
+
+// The stock `light-style` extension mutates Main.sessionMode.colorScheme (it
+// sets 'prefer-light' on enable and restores a saved value on disable). Toggled
+// during a layout switch, that saved value can be lost, leaving
+// sessionMode.colorScheme `undefined`. getStyleVariant() then returns '' and the
+// Shell's _getDefaultStylesheet() finds no base 'gnome-shell.css' in the
+// BigCommunity theme gresource (it only ships -dark/-light/-high-contrast), so
+// Main._defaultCssStylesheet becomes null and the next loadTheme() throws
+// "Argument file may not be null" — the shell renders unstyled (white panel).
+// Restore a valid scheme and re-resolve the default stylesheet (the color-scheme
+// notify drives Main._loadDefaultStylesheet) before we call loadTheme().
+// Returns true when it had to repair an invalid scheme.
+//
+// NOTE: we ALWAYS re-resolve (notify), not only when the scheme is invalid.
+// light-style can null Main._defaultCssStylesheet via a transient invalid scheme
+// during its disable() and then have the scheme end up valid again with no
+// further notify to recompute the stylesheet — so checking the current scheme is
+// not enough; we must drive Main._loadDefaultStylesheet() unconditionally so
+// _defaultCssStylesheet is non-null before loadTheme() reads it.
+function ensureValidColorScheme() {
+    const repaired = !VALID_COLOR_SCHEMES.has(Main.sessionMode.colorScheme);
+    if (repaired)
+        Main.sessionMode.colorScheme = 'prefer-dark';
+    St.Settings.get().notify('color-scheme');
+    return repaired;
 }
 
 // Resolve after `ms` on the main loop — lets each extension's enable()/disable()
@@ -245,6 +278,13 @@ export default class LayoutSwitcherHelper extends Extension {
         //    light-style) must therefore enable *after* this, so their theming
         //    lands on top and survives. (Ordering bug fixed in v3: previously
         //    loadTheme ran last and wiped kiwi's panel — minimal/g-unity bar.)
+        // Repair a colorScheme left invalid by light-style's enable/disable
+        // churn *before* loadTheme() reads it — otherwise getStyleVariant()=''
+        // → null default stylesheet → "Argument file may not be null" → the
+        // shell renders unstyled (white panel). See ensureValidColorScheme.
+        if (ensureValidColorScheme())
+            steps.push('fix colorScheme');
+
         if (req.theme_reload !== false) {
             try {
                 Main.loadTheme();

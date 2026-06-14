@@ -1,0 +1,15 @@
+# Re-apply layout-switcher's blur-my-shell recursion fix whenever the
+# blur-my-shell extension is installed or upgraded (a plain upgrade would
+# otherwise ship the unpatched overview.js back). The patch script is
+# idempotent and shape-guarded, so running it on every blur-my-shell
+# transaction is safe.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/share/gnome-shell/extensions/blur-my-shell@aunetx/components/overview.js
+
+[Action]
+Description = Re-applying layout-switcher's blur-my-shell recursion fix...
+When = PostTransaction
+Exec = /usr/share/layout-switcher/patches/patch-blur-my-shell.sh
