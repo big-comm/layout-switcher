@@ -77,13 +77,9 @@ APP_CSS = """
 }
 .layout-disabled:hover .layout-preview { box-shadow: none; }
 
-/* Nome + descrição do layout */
+/* Nome do layout (descrição agora aparece só no hover) */
 .layout-name                         { font-weight: 700; }
 .layout-name-active                  { color: @accent_color; font-weight: 800; letter-spacing: 0; }
-.layout-desc {
-    font-size: 11px;
-    opacity: 0.58;
-}
 
 /* Badge "Modified" theme-aware (libadwaita adapta @warning_bg/fg_color) */
 .layout-modified-badge {

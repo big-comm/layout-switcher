@@ -17,7 +17,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gtk, Pango
+from gi.repository import Adw, Gdk, GLib, Gtk
 
 from backup_manager import BackupManager
 from constants import DISABLED_LAYOUTS, ICONS_DIR, LAYOUTS, tr
@@ -182,21 +182,8 @@ class LayoutsPage(Gtk.Box):
         lbl.set_margin_bottom(1)
         card.append(lbl)
 
-        # Short description caption under the name — richer cards, à la the
-        # noise-reduction app's sections. Full text still shows on hover.
-        if desc:
-            desc_lbl = Gtk.Label(label=desc)
-            desc_lbl.add_css_class("layout-desc")
-            desc_lbl.set_halign(Gtk.Align.CENTER)
-            desc_lbl.set_justify(Gtk.Justification.CENTER)
-            desc_lbl.set_wrap(True)
-            desc_lbl.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-            desc_lbl.set_lines(2)
-            desc_lbl.set_ellipsize(Pango.EllipsizeMode.END)
-            desc_lbl.set_max_width_chars(24)
-            desc_lbl.set_margin_bottom(2)
-            card.append(desc_lbl)
-
+        # No visible description caption under the name — the full text shows
+        # only on hover (see the tooltip below) to keep the cards clean.
         # Description appears only on hover as an elegant popover.
         # Disabled layouts get a "Coming soon" tooltip instead.
         if is_disabled:
