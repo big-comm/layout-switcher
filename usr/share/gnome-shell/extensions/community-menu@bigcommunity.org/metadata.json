@@ -1,0 +1,11 @@
+{
+  "extension-id": "community-menu",
+  "uuid": "community-menu@bigcommunity.org",
+  "gettext-domain": "community-menu",
+  "settings-schema": "org.gnome.shell.extensions.community-menu",
+  "name": "Community Menu",
+  "description": "Applications menu for BigCommunity desktop layouts.",
+  "shell-version": ["50"],
+  "url": "https://github.com/BigCommunity/layout-switcher",
+  "version": 2
+}

@@ -100,6 +100,105 @@ class HelperClient:
             return 0
 
     @classmethod
+    def ping_info(cls, timeout_ms: int = 6000) -> dict:
+        """Parsed Ping reply ({helper, version, busy}) or {} when unavailable."""
+        out = cls._call("Ping", None, timeout_ms)
+        if not out:
+            return {}
+        try:
+            return json.loads(out)
+        except (ValueError, json.JSONDecodeError):
+            return {}
+
+    @classmethod
+    def begin_switch(
+        cls,
+        persist: Iterable[str],
+        label: str = "",
+        label_from: str = "",
+        icon_from: str = "",
+        icon_to: str = "",
+        timeout_ms: int = 90000,
+    ) -> Tuple[bool, str]:
+        """
+        Clean-room protocol (helper v7), phase 1: raise the transition curtain
+        (showing ``label``) and tear down every managed extension, each awaited.
+        ``persist`` lists extensions to keep alive through the switch (system
+        indicators). On success nothing is listening to the layout-owned dconf
+        branches — the caller may reset+load them like a login does, then call
+        :meth:`complete_switch`. The helper arms an auto-rollback timer in case
+        the caller dies in between.
+        """
+        from gi.repository import GLib
+
+        payload = json.dumps(
+            {
+                "persist": [u for u in persist if u],
+                "label": label or "",
+                "label_from": label_from or "",
+                # Preview SVGs for the curtain's from→to transition art.
+                "icon_from": icon_from or "",
+                "icon_to": icon_to or "",
+            }
+        )
+        out = cls._call("BeginSwitch", GLib.Variant("(s)", (payload,)), timeout_ms)
+        if out is None:
+            return False, "helper BeginSwitch call failed"
+        try:
+            result = json.loads(out)
+        except (ValueError, json.JSONDecodeError):
+            return False, f"helper BeginSwitch bad reply: {out}"
+        if not result.get("ok", False):
+            return False, result.get("error", "helper reported failure")
+        return True, ", ".join(result.get("steps", []))
+
+    @classmethod
+    def complete_switch(
+        cls,
+        enabled: Iterable[str],
+        theme_reload: bool = True,
+        timeout_ms: int = 120000,
+    ) -> Tuple[bool, str]:
+        """
+        Clean-room protocol (helper v7), phase 2: with the final dconf state on
+        disk, rebuild — repair colorScheme, ``Main.loadTheme()``, enable
+        ``enabled`` in order (each awaited), recompute the panel style, flash
+        the checkmark and drop the curtain.
+        """
+        from gi.repository import GLib
+
+        payload = json.dumps(
+            {
+                "enabled": [u for u in enabled if u],
+                "theme_reload": bool(theme_reload),
+            }
+        )
+        out = cls._call("CompleteSwitch", GLib.Variant("(s)", (payload,)), timeout_ms)
+        if out is None:
+            return False, "helper CompleteSwitch call failed"
+        try:
+            result = json.loads(out)
+        except (ValueError, json.JSONDecodeError):
+            return False, f"helper CompleteSwitch bad reply: {out}"
+        if not result.get("ok", False):
+            return False, result.get("error", "helper reported failure")
+        return True, ", ".join(result.get("steps", []))
+
+    @classmethod
+    def abort_switch(cls, timeout_ms: int = 60000) -> bool:
+        """
+        Roll a begun-but-failed switch back to the pre-switch extension set
+        (drops the curtain too). Safe to call when no switch is in progress.
+        """
+        out = cls._call("AbortSwitch", None, timeout_ms)
+        if out is None:
+            return False
+        try:
+            return bool(json.loads(out).get("ok", False))
+        except (ValueError, json.JSONDecodeError):
+            return False
+
+    @classmethod
     def reload_extension(cls, uuid: str, timeout_ms: int = 20000) -> bool:
         """
         Ask the helper to reload one extension in-shell (trulyReload). Recovers

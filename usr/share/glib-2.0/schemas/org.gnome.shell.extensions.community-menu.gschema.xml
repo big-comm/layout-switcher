@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Derived from org.gnome.shell.extensions.zorin-menu.gschema.xml.
+  Copyright (C) 2016-2025 Zorin OS Technologies Ltd.
+  Modified by Community Big, 2026-07-10: renamed for Community Menu.
+  SPDX-License-Identifier: GPL-2.0-or-later
+-->
+<schemalist gettext-domain="community-menu">
+  <enum id="org.gnome.shell.extensions.community-menu.layouts">
+    <value value="0" nick="ALL"/>
+    <value value="1" nick="APPS_ONLY"/>
+    <value value="2" nick="SYSTEM_ONLY"/>
+    <value value="3" nick="APP_GRID"/>
+    <value value="4" nick="MINT"/>
+  </enum>
+  <schema path="/org/gnome/shell/extensions/community-menu/"
+          id="org.gnome.shell.extensions.community-menu">
+    <key name="layout" enum="org.gnome.shell.extensions.community-menu.layouts">
+      <default>'ALL'</default>
+      <summary>Layout</summary>
+      <description>The layout of the Community Menu popup.</description>
+    </key>
+  </schema>
+</schemalist>

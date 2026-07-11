@@ -40,6 +40,8 @@ class TestLayoutApplier:
         # 1 mutter gdbus probe + 5 dconf reads (dtp fallback) + 1 read
         # enabled-extensions (before) + stop watcher + dconf dump scan +
         # load + 1 read enabled-extensions (after) + start watcher = 12.
+        # (The light-mode icon/label adjusts early-return: this layout text
+        # carries no icon-theme / dash-to-panel label keys.)
         assert mock_run.call_count == 12
         calls = [c.args[0] for c in mock_run.call_args_list]
         # 1: gdbus probe to mutter for monitor IDs
@@ -363,6 +365,69 @@ class TestLayoutApplier:
         assert light_style in disabled
         assert user_theme in disabled
 
+    @patch.object(LayoutApplier, "_current_color_scheme_value", return_value="'prefer-dark'")
+    def test_classic_dark_uses_dark_papient_variant(self, _mock_scheme):
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "icon-theme='bigicons-papient-light'\n"
+        )
+
+        out = LayoutApplier._adjust_icon_theme_for_scheme(data)
+
+        assert "icon-theme='bigicons-papient-dark'" in out
+
+    @patch.object(LayoutApplier, "_current_color_scheme_value", return_value="'default'")
+    def test_classic_light_uses_light_papient_variant(self, _mock_scheme):
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "icon-theme='bigicons-papient-dark'\n"
+        )
+
+        out = LayoutApplier._adjust_icon_theme_for_scheme(data, light_variant=True)
+
+        assert "icon-theme='bigicons-papient-light'" in out
+
+    @patch.object(LayoutApplier, "_current_color_scheme_value", return_value="'default'")
+    def test_other_light_layout_uses_unsuffixed_papient_variant(self, _mock_scheme):
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "icon-theme='bigicons-papient-dark'\n"
+        )
+
+        out = LayoutApplier._adjust_icon_theme_for_scheme(data)
+
+        assert "icon-theme='bigicons-papient'" in out
+
+    def test_desk_ux_light_keeps_orchis_shell(self):
+        light_style = "light-style@gnome-shell-extensions.gcampax.github.com"
+        user_theme = "user-theme@gnome-shell-extensions.gcampax.github.com"
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "icon-theme='bigicons-papient-dark'\n"
+            "\n"
+            "[org/gnome/shell]\n"
+            f"disabled-extensions=['{user_theme}']\n"
+            f"enabled-extensions=['{light_style}', 'stay@ext']\n"
+            "\n"
+            "[org/gnome/shell/extensions/user-theme]\n"
+            "name='Big-Blue'\n"
+        )
+
+        out = LayoutApplier._rewrite_shell_theme_mode(
+            data,
+            prefer_dark=False,
+            desk_ux_shell=True,
+        )
+        shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
+        enabled = LayoutApplier._string_list(shell["enabled-extensions"])
+        disabled = LayoutApplier._string_list(shell["disabled-extensions"])
+
+        assert "name='Big-Blue-Light'" in out
+        assert user_theme in enabled
+        assert light_style not in enabled
+        assert light_style in disabled
+        assert user_theme not in disabled
+
     @patch("layout_applier.run_cmd")
     def test_preserve_user_light_color_scheme(self, mock_run):
         """Original layouts keep user light mode but restore factory themes."""
@@ -390,7 +455,6 @@ class TestLayoutApplier:
         assert "color-scheme='prefer-light'" in out
         assert "gtk-theme='adw-gtk3-dark'" in out
         assert "icon-theme='bigicons-papient-dark'" in out
-        assert "name='Big-Blue'" in out
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
         disabled = LayoutApplier._string_list(shell["disabled-extensions"])
@@ -398,6 +462,7 @@ class TestLayoutApplier:
         assert user_theme not in enabled
         assert user_theme in disabled
         assert light_style not in disabled
+        assert "name='Big-Blue'" in out
 
     @patch("layout_applier.run_cmd")
     def test_preserve_user_color_scheme_uses_effective_gsettings(self, mock_run):
@@ -450,7 +515,10 @@ class TestLayoutApplier:
             force_shell_dark=True,
         )
 
-        assert "color-scheme='prefer-light'" in out
+        # A light user preference on an always-dark layout persists as
+        # 'default' — the only color-scheme that keeps the Shell dark while
+        # libadwaita apps stay light ('prefer-light' would whiten the bar).
+        assert "color-scheme='default'" in out
         assert "gtk-theme='adw-gtk3-dark'" in out
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
@@ -487,6 +555,7 @@ class TestLayoutApplier:
         assert light_style not in enabled
         assert light_style in disabled
         assert user_theme not in disabled
+        assert "name='Big-Blue'" in out
 
     @patch("layout_applier.run_cmd")
     def test_biggnome_keeps_named_shell_theme_with_light_user_scheme(self, mock_run):
@@ -512,7 +581,9 @@ class TestLayoutApplier:
             force_shell_dark=True,
         )
 
-        assert "color-scheme='prefer-light'" in out
+        # Light preference on an always-dark layout persists as 'default'
+        # (dark Shell + light apps); 'prefer-light' would whiten the bar.
+        assert "color-scheme='default'" in out
         shell = LayoutApplier._section_key_values(out, "/org/gnome/shell")
         enabled = LayoutApplier._string_list(shell["enabled-extensions"])
         disabled = LayoutApplier._string_list(shell["disabled-extensions"])
@@ -1533,6 +1604,18 @@ class TestShellReloader:
 class TestHelperIntegration:
     """The in-shell helper path (preferred) vs the legacy external fallback."""
 
+    def test_managed_subdirs_include_legacy_arcmenu_for_cleanup(self, tmp_path):
+        data = (
+            "[org/gnome/shell/extensions/community-menu]\n"
+            "layout='APPS_ONLY'\n"
+        )
+        (tmp_path / "classic.txt").write_text(data)
+
+        subdirs = LayoutApplier._managed_extension_subdirs(data, tmp_path)
+
+        assert "community-menu" in subdirs
+        assert "arcmenu" in subdirs
+
     def test_inject_helper_uuid_adds(self):
         from helper_client import HELPER_UUID
 
@@ -1548,11 +1631,11 @@ class TestHelperIntegration:
         assert out.count(HELPER_UUID) == 1
 
     @patch("layout_applier.HelperClient.apply_layout", return_value=(True, "steps"))
-    @patch("layout_applier.HelperClient.is_available", return_value=True)
+    @patch("layout_applier.HelperClient.helper_version", return_value=6)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
     @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
-    def test_prefers_helper_when_available(self, _has, _persist, _run, _avail, mock_apply):
+    def test_prefers_helper_when_available(self, _has, _persist, _run, _ver, mock_apply):
         from helper_client import HELPER_UUID
 
         data = "[org/gnome/shell]\nenabled-extensions=['kiwi@kemma']\n"
@@ -1565,10 +1648,25 @@ class TestHelperIntegration:
         # kiwi is appearance-owning → in the reload set
         assert "kiwi@kemma" in mock_apply.call_args.kwargs["reload"]
 
+    @patch("layout_applier.LayoutApplier._apply_via_helper_v7", return_value=(True, "ok"))
+    @patch("layout_applier.HelperClient.helper_version", return_value=7)
+    @patch("layout_applier.run_cmd", return_value=(True, ""))
+    @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
+    @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)
+    def test_prefers_cleanroom_on_v7_helper(self, _has, _persist, _run, _ver, mock_v7):
+        """A v7+ helper routes the apply through the clean-room protocol."""
+        data = "[org/gnome/shell]\nenabled-extensions=['kiwi@kemma']\n"
+        ok, _msg = LayoutApplier.load_dconf_safely(
+            data, before_uuids=[], layout_label="G-Unity"
+        )
+        assert ok is True
+        mock_v7.assert_called_once()
+        assert mock_v7.call_args.kwargs["layout_label"] == "G-Unity"
+
     @patch("layout_applier.LayoutApplier._disable_extensions_in_order", return_value=True)
     @patch("layout_applier.LayoutApplier._reset_orphan_keys")
     @patch("layout_applier.HelperClient.apply_layout")
-    @patch("layout_applier.HelperClient.is_available", return_value=False)
+    @patch("layout_applier.HelperClient.helper_version", return_value=0)
     @patch("layout_applier.run_cmd", return_value=(True, ""))
     @patch("layout_applier.LayoutApplier._persist_to_settings_file", return_value=(True, "/x"))
     @patch("layout_applier.LayoutApplier._has_user_unit", return_value=False)

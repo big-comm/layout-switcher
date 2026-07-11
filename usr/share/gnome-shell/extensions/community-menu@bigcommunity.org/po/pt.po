@@ -1,0 +1,187 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: community-menu 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:10-0300\n"
+"PO-Revision-Date: 2025-11-10 18:42+0000\n"
+"Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>\n"
+"Language-Team: Portuguese <https://translations.zorin.com/projects/zorin-menu/zorin-menu/pt/>\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.18.1\n"
+"X-Project-Style: gnome\n"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/appsbackend.js:48
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:200
+msgid "All Apps"
+msgstr "Todos os Programas"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/menu.js:184
+msgid "Community Menu"
+msgstr ""
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:32
+msgid "List of open windows across all workspaces"
+msgstr "Lista de janelas abertas em todas as áreas de trabalho"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:33
+msgid "Open Windows"
+msgstr "Janelas abertas"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:47
+#, javascript-format
+msgid "'%s' on Workspace %d"
+msgstr "'%s' na área de trabalho %d"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:827
+msgid "Searching…"
+msgstr "A procurar…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:830
+msgid "No results."
+msgstr "Nenhum resultado."
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:957
+#, javascript-format
+msgid "+ %d more"
+msgid_plural "+ %d more"
+msgstr[0] "+ %d mais"
+msgstr[1] "+ %d mais"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:109
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/placeMenuItem.js:57
+msgid "Home"
+msgstr "Pasta pessoal"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:158
+msgid "Software"
+msgstr "Programas"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:162
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:175
+msgid "Settings"
+msgstr "Definições"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:198
+msgid "Categories"
+msgstr "Categorias"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:461
+msgid "Applications"
+msgstr "Aplicações"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:660
+msgid "Shortcuts"
+msgstr "Atalhos"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:23
+msgid "Copy"
+msgstr "Copiar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:28
+msgid "Paste"
+msgstr "Colar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:80
+msgid "Show Text"
+msgstr "Mostrar texto"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:82
+msgid "Hide Text"
+msgstr "Ocultar texto"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:28
+msgid "Back"
+msgstr "Voltar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/searchEntry.js:28
+msgid "Type to search"
+msgstr "Escreva para pesquisar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:49
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:79
+msgid "Add to Desktop"
+msgstr "Adicionar à Área de Trabalho"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:78
+msgid "Remove from Desktop"
+msgstr "Remover da Área de Trabalho"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:165
+msgid "System Monitor"
+msgstr "Monitor do Sistema"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:170
+msgid "Files"
+msgstr "Ficheiros"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:184
+msgid "Edit Menu"
+msgstr "Editar Menu"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:189
+msgid "Search Settings"
+msgstr "Definições de Pesquisa"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:222
+msgid "Power Off / Log Out"
+msgstr "Desligar / Encerrar Sessão"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:224
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:94
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:210
+msgid "Suspend"
+msgstr "Suspender"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:228
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:106
+msgid "Restart…"
+msgstr "Reiniciar…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:232
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:118
+msgid "Power Off…"
+msgstr "Desligar…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:238
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:182
+msgid "Lock"
+msgstr "Bloquear"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:242
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:194
+msgid "Switch User…"
+msgstr "Mudar de utilizador…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:206
+msgid "Log Out…"
+msgstr "Terminar sessão…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:286
+msgid "Dash to Panel Settings"
+msgstr "Definições do Dash to Panel"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:68
+msgid "Power"
+msgstr "Energia"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:173
+msgid "Power Off"
+msgstr "Desligar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:192
+msgid "Restart"
+msgstr "Reiniciar"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:228
+msgid "Log Out"
+msgstr "Terminar sessão"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:171
+msgid "Account Settings"
+msgstr "Definições de conta"

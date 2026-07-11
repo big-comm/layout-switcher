@@ -1,0 +1,186 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: community-menu 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:10-0300\n"
+"PO-Revision-Date: 2025-10-15 14:02+0000\n"
+"Last-Translator: Balázs Úr <balazs@urbalazs.hu>\n"
+"Language-Team: Hungarian <https://translations.zorin.com/projects/zorin-menu/zorin-menu/hu/>\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.18.1\n"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/appsbackend.js:48
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:200
+msgid "All Apps"
+msgstr "Összes alkalmazás"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/menu.js:184
+msgid "Community Menu"
+msgstr ""
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:32
+msgid "List of open windows across all workspaces"
+msgstr "Az összes munkaterületen lévő nyitott ablakok listája"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:33
+msgid "Open Windows"
+msgstr "Nyitott ablakok"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:47
+#, javascript-format
+msgid "'%s' on Workspace %d"
+msgstr "„%s” a(z) %d. munkaterületen"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:827
+msgid "Searching…"
+msgstr "Keresés…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:830
+msgid "No results."
+msgstr "Nincs találat."
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:957
+#, javascript-format
+msgid "+ %d more"
+msgid_plural "+ %d more"
+msgstr[0] "+ még %d további"
+msgstr[1] "+ még %d további"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:109
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/placeMenuItem.js:57
+msgid "Home"
+msgstr "Saját mappa"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:158
+msgid "Software"
+msgstr "Szoftverek"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:162
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:175
+msgid "Settings"
+msgstr "Beállítások"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:198
+msgid "Categories"
+msgstr "Kategóriák"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:461
+msgid "Applications"
+msgstr "Alkalmazások"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:660
+msgid "Shortcuts"
+msgstr "Parancsikonok"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:23
+msgid "Copy"
+msgstr "Másolás"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:28
+msgid "Paste"
+msgstr "Beillesztés"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:80
+msgid "Show Text"
+msgstr "Szöveg megjelenítése"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:82
+msgid "Hide Text"
+msgstr "Szöveg elrejtése"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:28
+msgid "Back"
+msgstr "Vissza"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/searchEntry.js:28
+msgid "Type to search"
+msgstr "Gépeljen a kereséshez"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:49
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:79
+msgid "Add to Desktop"
+msgstr "Hozzáadás az asztalhoz"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:78
+msgid "Remove from Desktop"
+msgstr "Eltávolítás az asztalról"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:165
+msgid "System Monitor"
+msgstr "Rendszerfigyelő"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:170
+msgid "Files"
+msgstr "Fájlok"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:184
+msgid "Edit Menu"
+msgstr "Menü szerkesztése"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:189
+msgid "Search Settings"
+msgstr "Keresési beállítások"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:222
+msgid "Power Off / Log Out"
+msgstr "Kikapcsolás vagy kijelentkezés"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:224
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:94
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:210
+msgid "Suspend"
+msgstr "Felfüggesztés"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:228
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:106
+msgid "Restart…"
+msgstr "Újraindítás…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:232
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:118
+msgid "Power Off…"
+msgstr "Kikapcsolás…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:238
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:182
+msgid "Lock"
+msgstr "Zárolás"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:242
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:194
+msgid "Switch User…"
+msgstr "Felhasználóváltás…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:206
+msgid "Log Out…"
+msgstr "Kijelentkezés…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:286
+msgid "Dash to Panel Settings"
+msgstr "Dash to Panel beállításai"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:68
+msgid "Power"
+msgstr "Főkapcsoló"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:173
+msgid "Power Off"
+msgstr "Kikapcsolás"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:192
+msgid "Restart"
+msgstr "Újraindítás"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:228
+msgid "Log Out"
+msgstr "Kijelentkezés"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:171
+msgid "Account Settings"
+msgstr "Fiókbeállítások"

@@ -100,11 +100,13 @@ APP_CSS = """
 
 /* Check de ativo — circulo accent no canto superior-direito do preview */
 .layout-active-check {
-    background-color: @accent_color;
-    color: @accent_fg_color;
+    /* Green "done" check — matches the checkmark the in-shell transition
+       curtain flashes when the switch completes. */
+    background-color: @success_color;
+    color: white;
     border-radius: 50%;
     padding: 3px;
-    box-shadow: 0 0 8px alpha(@accent_color, 0.55);
+    box-shadow: 0 0 8px alpha(@success_color, 0.55);
 }
 
 /* ── Extension cards em destaque ─────────────────────────────────────── */

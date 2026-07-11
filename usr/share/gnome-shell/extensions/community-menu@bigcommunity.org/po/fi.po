@@ -1,0 +1,189 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: community-menu 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:10-0300\n"
+"PO-Revision-Date: 2025-10-16 14:06+0000\n"
+"Last-Translator: Ricky Tigg <ricky.tigg@gmail.com>\n"
+"Language-Team: Finnish <https://translations.zorin.com/projects/zorin-menu/zorin-menu/fi/>\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.18.1\n"
+"X-DamnedLies-Scope: partial\n"
+"X-Project-Style: gnome\n"
+"X-POT-Import-Date: 2012-03-05 15:06:10+0000\n"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/appsbackend.js:48
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:200
+msgid "All Apps"
+msgstr "Kaikki ohjelmat"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/menu.js:184
+msgid "Community Menu"
+msgstr ""
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:32
+msgid "List of open windows across all workspaces"
+msgstr "Lista kaikista avoimista ikkunoista kaikilta työpöydiltä"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:33
+msgid "Open Windows"
+msgstr "Avoimet ikkunat"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:47
+#, javascript-format
+msgid "'%s' on Workspace %d"
+msgstr "'%s' Työpöydällä %d"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:827
+msgid "Searching…"
+msgstr "Etsitään…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:830
+msgid "No results."
+msgstr "Ei tuloksia."
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:957
+#, javascript-format
+msgid "+ %d more"
+msgid_plural "+ %d more"
+msgstr[0] "+ %d lisää"
+msgstr[1] "+ %d lisää"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:109
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/placeMenuItem.js:57
+msgid "Home"
+msgstr "Koti"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:158
+msgid "Software"
+msgstr "Ohjelmistot"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:162
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:175
+msgid "Settings"
+msgstr "Asetukset"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:198
+msgid "Categories"
+msgstr "Luokat"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:461
+msgid "Applications"
+msgstr "Sovellukset"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:660
+msgid "Shortcuts"
+msgstr "Pikavalinnat"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:23
+msgid "Copy"
+msgstr "Kopioi"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:28
+msgid "Paste"
+msgstr "Liitä"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:80
+msgid "Show Text"
+msgstr "Näytä teksti"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:82
+msgid "Hide Text"
+msgstr "Piilota teksti"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:28
+msgid "Back"
+msgstr "Takaisin"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/searchEntry.js:28
+msgid "Type to search"
+msgstr "Kirjoita hakeaksesi"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:49
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:79
+msgid "Add to Desktop"
+msgstr "Lisää työpöydälle"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:78
+msgid "Remove from Desktop"
+msgstr "Poista työpöydältä"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:165
+msgid "System Monitor"
+msgstr "Järjestelmän valvonta"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:170
+msgid "Files"
+msgstr "Tiedostot"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:184
+msgid "Edit Menu"
+msgstr "Muokkaa valikkoa"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:189
+msgid "Search Settings"
+msgstr "Haun asetukset"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:222
+msgid "Power Off / Log Out"
+msgstr "Virran katkaisu / Kirjaudu ulos"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:224
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:94
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:210
+msgid "Suspend"
+msgstr "Valmiustila"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:228
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:106
+msgid "Restart…"
+msgstr "Käynnistä uudelleen…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:232
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:118
+msgid "Power Off…"
+msgstr "Sammuta…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:238
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:182
+msgid "Lock"
+msgstr "Lukitse"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:242
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:194
+msgid "Switch User…"
+msgstr "Vaihda käyttäjää…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:206
+msgid "Log Out…"
+msgstr "Kirjaudu ulos…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:286
+msgid "Dash to Panel Settings"
+msgstr "Dash to Panel -asetukset"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:68
+msgid "Power"
+msgstr "Virta"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:173
+msgid "Power Off"
+msgstr "Sammuta"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:192
+msgid "Restart"
+msgstr "Käynnistä uudelleen"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:228
+msgid "Log Out"
+msgstr "Kirjaudu ulos"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:171
+msgid "Account Settings"
+msgstr "Tilin asetukset"

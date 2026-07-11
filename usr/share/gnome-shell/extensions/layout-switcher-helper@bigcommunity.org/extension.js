@@ -18,31 +18,104 @@
 // `Main.extensionManager` directly, sequenced on the Shell's main loop, and
 // re-applying the shell stylesheet via `Main.loadTheme()`.
 //
+// CLEAN-ROOM PROTOCOL (v7)
+// ------------------------
+// A login always renders a layout perfectly because it is an ABSOLUTE state:
+// `dconf reset` + `load`, then every extension builds from scratch, in order,
+// with nothing listening while the state is written. The incremental protocol
+// (v6 ApplyLayout) instead performed surgery on a live desktop — partial
+// toggles raced the Shell's async extension machinery (lost disables → ghost
+// docks, "rebase" re-toggles with no state signals, Notify storms into live
+// extensions) and every layout pair was a special case.
+//
+// v7 reproduces the login path inside the session, under a fullscreen
+// transition curtain:
+//   BeginSwitch    curtain up → disable ALL managed extensions (reverse load
+//                  order, each awaited) → arm an auto-rollback timer
+//   (caller)       dconf reset of layout-owned branches + full layout load —
+//                  nothing is listening, so no Notify storm and no residue
+//   CompleteSwitch repair colorScheme → loadTheme → enable the target set in
+//                  layout order (each awaited) → panel style recompute →
+//                  checkmark → curtain down
+//   AbortSwitch    restore the pre-switch extension set (caller failed)
+// Mass-toggling every extension is the Shell's own most-tested path — it is
+// exactly what happens on every screen lock/unlock.
+//
 // D-BUS INTERFACE  (exported on the shell's bus name org.gnome.Shell)
 //   dest:  org.gnome.Shell
 //   path:  /org/bigcommunity/LayoutSwitcherHelper
 //   iface: org.bigcommunity.LayoutSwitcherHelper
-//   Ping()                  -> s   JSON {helper, version}
-//   ApplyLayout(payload: s) -> s   see _applyLayout for the schema
-//   ReloadExtension(uuid: s)-> s   reload one extension (re-read appearance)
+//   Ping()                    -> s   JSON {helper, version, busy}
+//   BeginSwitch(payload: s)   -> s   see _beginSwitch for the schema
+//   CompleteSwitch(payload: s)-> s   see _completeSwitch for the schema
+//   AbortSwitch()             -> s   rollback to the pre-switch set
+//   ApplyLayout(payload: s)   -> s   legacy v6 incremental switch
+//   ReloadExtension(uuid: s)  -> s   reload one extension (re-read appearance)
 
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {Spinner} from 'resource:///org/gnome/shell/ui/animation.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const BUS_PATH = '/org/bigcommunity/LayoutSwitcherHelper';
-const HELPER_VERSION = 6;
+const HELPER_VERSION = 7;
 
-// GNOME Shell ExtensionState: ENABLED=1, ENABLING=8 → "live".
+// Shell-theme owners toggled by the live color-scheme follower.
+const USER_THEME_UUID = 'user-theme@gnome-shell-extensions.gcampax.github.com';
+const LIGHT_STYLE_UUID = 'light-style@gnome-shell-extensions.gcampax.github.com';
+const DTP_UUID = 'dash-to-panel@jderose9.github.com';
+const KIWI_UUID = 'kiwi@kemma';
+const COMMUNITY_MENU_UUID = 'community-menu@bigcommunity.org';
+const ORCHIS_SHELL_DARK = 'Big-Blue';
+const ORCHIS_SHELL_LIGHT = 'Big-Blue-Light';
+const CLASSIC_MENU_LAYOUT = 1; // APPS_ONLY
+const DESK_UX_MENU_LAYOUT = 3; // APP_GRID
+const HYBRID_MENU_LAYOUT = 4; // MINT
+const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_LAYOUT]);
+// Build marker within a protocol version — lets a deploy verify over Ping
+// that the RUNNING module is the freshly-installed code (the Shell caches
+// ES modules; only a reload/relogin picks a new file up).
+const HELPER_BUILD = 22;
+
+// GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
+// DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
 const LIVE_STATES = new Set([1, 8]);
+const STATE_ACTIVE = 1;
+const STATE_ERROR = 3;
+const STATE_DEACTIVATING = 7;
+
+// Per-extension settle budget while awaiting a state transition. Heavy
+// extensions (dash-to-panel) can take well over the old fixed 150 ms; a
+// bounded poll means we move on exactly when the extension is ready.
+const STATE_WAIT_MS = 4000;
+const STATE_POLL_MS = 50;
+
+// If the caller dies between BeginSwitch and CompleteSwitch, restore the
+// previous extension set so the user is never left on a bare desktop.
+const ROLLBACK_TIMEOUT_S = 60;
+
+const CURTAIN_FADE_MS = 250;
+const CURTAIN_CHECK_MS = 650;
 
 const IFACE = `
 <node>
   <interface name="org.bigcommunity.LayoutSwitcherHelper">
     <method name="Ping">
       <arg type="s" direction="out" name="info"/>
+    </method>
+    <method name="BeginSwitch">
+      <arg type="s" direction="in" name="payload"/>
+      <arg type="s" direction="out" name="result"/>
+    </method>
+    <method name="CompleteSwitch">
+      <arg type="s" direction="in" name="payload"/>
+      <arg type="s" direction="out" name="result"/>
+    </method>
+    <method name="AbortSwitch">
+      <arg type="s" direction="out" name="result"/>
     </method>
     <method name="ApplyLayout">
       <arg type="s" direction="in" name="payload"/>
@@ -91,38 +164,185 @@ function ensureValidColorScheme() {
     return repaired;
 }
 
-// Resolve after `ms` on the main loop — lets each extension's enable()/disable()
-// body and any idle callbacks it queued drain before the next step.
-function sleep(ms) {
-    return new Promise(resolve => {
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, Math.max(0, ms | 0), () => {
-            resolve();
-            return GLib.SOURCE_REMOVE;
-        });
-    });
-}
-
 export default class LayoutSwitcherHelper extends Extension {
     enable() {
-        this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this);
-        this._dbus.export(Gio.DBus.session, BUS_PATH);
-        logHelper(`exported D-Bus interface (v${HELPER_VERSION})`);
+        this._pendingSources ??= new Set();
+        if (this._bounceCheck) {
+            // Re-enabled synchronously after a Shell "rebase" disable (the
+            // Shell bounces every later-loaded extension whenever one loaded
+            // before it is disabled — including by our own teardown). The
+            // in-flight switch survives: timers were kept alive, the D-Bus
+            // export was deliberately never touched, and the deferred cancel
+            // is dropped here. A bounce is a complete no-op.
+            GLib.Source.remove(this._bounceCheck);
+            this._bounceCheck = 0;
+            logHelper('survived a rebase bounce mid-switch');
+            return;
+        }
+        this._cancelled = false;
+        this._export();
+        // Live appearance follower. Classic uses GNOME's native Shell in both
+        // modes; the other Community layouts use Big-Blue in dark mode and
+        // GNOME's light-style in light mode. Papient variants follow the app
+        // color scheme in all six layouts.
+        if (!this._ifaceSettings) {
+            try {
+                this._ifaceSettings = new Gio.Settings({
+                    schema_id: 'org.gnome.desktop.interface',
+                });
+                this._schemeSignal = this._ifaceSettings.connect(
+                    'changed::color-scheme', () => this._onColorSchemeChanged());
+                // At login the helper loads before panels/menus. Reconcile
+                // once after the target extension set has finished loading.
+                this._sleep(1000).then(() => this._onColorSchemeChanged());
+            } catch (e) {
+                logHelper(`color-scheme follower unavailable: ${e}`);
+                this._ifaceSettings = null;
+            }
+        }
     }
 
     disable() {
-        if (this._dbus) {
-            this._dbus.unexport();
-            this._dbus = null;
+        if (this._switching || this._applying) {
+            // Two ways to land here mid-switch: (a) a rebase bounce — the
+            // matching enable() follows synchronously on the same stack;
+            // (b) a real disable (screen lock, user toggle). KEEP the D-Bus
+            // object exported (consecutive bounces must not interleave
+            // unexport/export pairs — re-exporting over a live export
+            // throws and kills the extension) and defer the hard cancel by
+            // one main-loop iteration: a bounce's enable() drops it, a real
+            // disable lets it run.
+            if (!this._bounceCheck) {
+                this._bounceCheck = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    this._bounceCheck = 0;
+                    logHelper('real disable mid-switch — cancelling');
+                    this._hardCancel();
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+            return;
         }
+        this._hardCancel();
         logHelper('unexported');
     }
 
+    _export() {
+        if (this._dbus)
+            return;
+        const dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this);
+        try {
+            dbus.export(Gio.DBus.session, BUS_PATH);
+            this._dbus = dbus;
+            logHelper(`exported D-Bus interface (v${HELPER_VERSION} build ${HELPER_BUILD})`);
+        } catch (e) {
+            logHelper(`export failed: ${e}`);
+        }
+    }
+
+    _unexport() {
+        if (!this._dbus)
+            return;
+        try {
+            this._dbus.unexport();
+        } catch (e) {
+            logHelper(`unexport failed: ${e}`);
+        }
+        this._dbus = null;
+    }
+
+    // Stop every pending timer so no step of an in-flight switch fires into a
+    // session-mode transition, and never leave the curtain up.
+    _hardCancel() {
+        this._unexport();
+        if (this._schemeDebounce) {
+            GLib.Source.remove(this._schemeDebounce);
+            this._schemeDebounce = 0;
+        }
+        if (this._ifaceSettings) {
+            if (this._schemeSignal)
+                this._ifaceSettings.disconnect(this._schemeSignal);
+            this._schemeSignal = 0;
+            this._ifaceSettings = null;
+        }
+        this._cancelled = true;
+        if (this._bounceCheck) {
+            GLib.Source.remove(this._bounceCheck);
+            this._bounceCheck = 0;
+        }
+        if (this._pendingSources) {
+            for (const id of this._pendingSources)
+                GLib.Source.remove(id);
+            this._pendingSources.clear();
+        }
+        this._cancelRollbackTimer();
+        this._destroyCurtain();
+        this._switching = false;
+        this._applying = false;
+    }
+
     Ping() {
-        return JSON.stringify({helper: 'layout-switcher', version: HELPER_VERSION});
+        return JSON.stringify({
+            helper: 'layout-switcher',
+            version: HELPER_VERSION,
+            build: HELPER_BUILD,
+            busy: Boolean(this._switching || this._applying),
+        });
     }
 
     _selfUuid() {
         return this.metadata?.uuid ?? 'layout-switcher-helper@bigcommunity.org';
+    }
+
+    _busy() {
+        return Boolean(this._switching || this._applying);
+    }
+
+    _returnJson(invocation, obj) {
+        invocation.return_value(new GLib.Variant('(s)', [JSON.stringify(obj)]));
+    }
+
+    // Resolve after `ms` on the main loop — lets each extension's
+    // enable()/disable() body and any idle callbacks it queued drain before
+    // the next step. Sources are tracked so disable() can cancel them; a
+    // cancelled sleep never resolves (the caller chain is abandoned, which is
+    // exactly what we want mid-lock).
+    _sleep(ms) {
+        return new Promise(resolve => {
+            const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, Math.max(0, ms | 0), () => {
+                this._pendingSources?.delete(id);
+                resolve();
+                return GLib.SOURCE_REMOVE;
+            });
+            this._pendingSources?.add(id);
+        });
+    }
+
+    // Await an extension state transition instead of trusting a fixed delay.
+    // Polls until `predicate(state)` (state is undefined when the uuid is not
+    // in the manager map) or the timeout elapses. Returns true on success.
+    async _waitState(mgr, uuid, predicate, timeoutMs = STATE_WAIT_MS) {
+        const deadline = GLib.get_monotonic_time() + timeoutMs * 1000;
+        for (;;) {
+            if (this._cancelled)
+                return false;
+            const state = mgr.lookup(uuid)?.state;
+            if (predicate(state))
+                return true;
+            if (GLib.get_monotonic_time() >= deadline)
+                return false;
+            await this._sleep(STATE_POLL_MS);
+        }
+    }
+
+    _isDown(state) {
+        return state === undefined ||
+            (!LIVE_STATES.has(state) && state !== STATE_DEACTIVATING);
+    }
+
+    _isSettledUp(state) {
+        // ERROR counts as settled: waiting longer won't fix it, and the
+        // caller's self-heal pass handles it.
+        return state === STATE_ACTIVE || state === STATE_ERROR;
     }
 
     _liveUuids(mgr) {
@@ -138,22 +358,762 @@ export default class LayoutSwitcherHelper extends Extension {
         return live;
     }
 
+    // Live uuids in the Shell's real enable order (`_extensionOrder`), so a
+    // reverse walk disables later-loaded extensions first. Disabling in that
+    // order keeps every `_callExtensionDisable` "rebase" slice empty — the
+    // Shell never has to bounce other extensions through silent
+    // stateObj.disable()/enable() cycles (the source of duplicated actors and
+    // dead cross-extension hooks in the incremental protocol).
+    _orderedLive(mgr) {
+        const live = this._liveUuids(mgr);
+        const order = Array.isArray(mgr._extensionOrder) ? mgr._extensionOrder : [];
+        const ordered = order.filter(u => live.has(u));
+        for (const uuid of live) {
+            if (!ordered.includes(uuid))
+                ordered.push(uuid);
+        }
+        return ordered;
+    }
+
+    // GNOME Shell disables an extension by bouncing every live extension that
+    // follows it in `_extensionOrder`. Put a single target last before turning
+    // it off so that rebase slice is empty. This protects long-lived status
+    // indicators whose disable() leaves callbacks behind (notably pamac).
+    _moveExtensionLast(mgr, uuid) {
+        const order = mgr._extensionOrder;
+        if (!Array.isArray(order))
+            return false;
+        const idx = order.indexOf(uuid);
+        if (idx < 0)
+            return false;
+        if (idx !== order.length - 1) {
+            order.splice(idx, 1);
+            order.push(uuid);
+        }
+        return true;
+    }
+
+    // ── Live color-scheme follower ──────────────────────────────────────────
+
+    _onColorSchemeChanged() {
+        // Debounce: GNOME Settings can emit several changes in a burst, and
+        // the layout apply's own dconf load fires this too (skipped below —
+        // the apply already sequences the correct shell theme).
+        if (this._schemeDebounce)
+            GLib.Source.remove(this._schemeDebounce);
+        this._schemeDebounce = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 400, () => {
+            this._schemeDebounce = 0;
+            this._followColorScheme()
+                .catch(e => logHelper(`color-scheme follow failed: ${e}`));
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    async _followColorScheme() {
+        if (this._busy() || this._cancelled || !this._ifaceSettings)
+            return;
+        const mgr = Main.extensionManager;
+        const live = this._liveUuids(mgr);
+        const dark =
+            this._ifaceSettings.get_string('color-scheme') === 'prefer-dark';
+        const isLive = uuid => LIVE_STATES.has(mgr.lookup(uuid)?.state);
+        this._applying = true;   // serialize against layout switches
+        try {
+            // Classic/Hybrid use an explicit -light icon design. The other
+            // four layouts use the unsuffixed design in light mode.
+            let explicitLightIcons = false;
+            let communityLayout = -1;
+            try {
+                const communitySettings = new Gio.Settings({
+                    schema_id: 'org.gnome.shell.extensions.community-menu',
+                });
+                communityLayout = communitySettings.get_enum('layout');
+                explicitLightIcons = COMMUNITY_LIGHT_ICON_LAYOUTS.has(
+                    communityLayout);
+            } catch (e) {
+                logHelper(`community layout read failed: ${e}`);
+            }
+            try {
+                const icon = this._ifaceSettings.get_string('icon-theme');
+                const variants = new Set([
+                    'bigicons-papient',
+                    'bigicons-papient-dark',
+                    'bigicons-papient-light',
+                ]);
+                const target = dark
+                    ? 'bigicons-papient-dark'
+                    : (explicitLightIcons
+                        ? 'bigicons-papient-light'
+                        : 'bigicons-papient');
+                if (variants.has(icon) && icon !== target)
+                    this._ifaceSettings.set_string('icon-theme', target);
+            } catch (e) {
+                logHelper(`icon-theme follow failed: ${e}`);
+            }
+
+            // BigGnome and the Kiwi layouts keep an always-dark Shell. Their
+            // app/icon preference above still follows light/dark.
+            if (live.has(KIWI_UUID) || !live.has(DTP_UUID) ||
+                !live.has(COMMUNITY_MENU_UUID))
+                return;
+
+            const nativeShell = communityLayout === CLASSIC_MENU_LAYOUT ||
+                communityLayout === HYBRID_MENU_LAYOUT;
+            const deskUxOrchisShell = communityLayout === DESK_UX_MENU_LAYOUT;
+            const wantOn = deskUxOrchisShell
+                ? USER_THEME_UUID
+                : (dark ? USER_THEME_UUID : LIGHT_STYLE_UUID);
+            const wantOff = deskUxOrchisShell
+                ? LIGHT_STYLE_UUID
+                : (dark ? LIGHT_STYLE_UUID : USER_THEME_UUID);
+            const shellMode = nativeShell
+                ? 'native'
+                : (deskUxOrchisShell
+                    ? (dark ? ORCHIS_SHELL_DARK : ORCHIS_SHELL_LIGHT)
+                    : (dark ? ORCHIS_SHELL_DARK : 'light-style'));
+            logHelper(`color-scheme follow: ${dark ? 'dark' : 'light'} (${shellMode})`);
+
+            const userThemeSettings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.user-theme',
+            });
+            const shellThemeName = nativeShell
+                ? ''
+                : (deskUxOrchisShell
+                    ? (dark ? ORCHIS_SHELL_DARK : ORCHIS_SHELL_LIGHT)
+                    : (dark ? ORCHIS_SHELL_DARK : userThemeSettings.get_string('name')));
+            if (userThemeSettings.get_string('name') !== shellThemeName)
+                userThemeSettings.set_string('name', shellThemeName);
+
+            const turnOff = nativeShell && dark
+                ? [LIGHT_STYLE_UUID, USER_THEME_UUID]
+                : [wantOff];
+            for (const uuid of turnOff) {
+                if (!isLive(uuid))
+                    continue;
+                this._moveExtensionLast(mgr, uuid);
+                mgr.disableExtension(uuid);
+                await this._waitState(mgr, uuid, s => this._isDown(s));
+            }
+            if (nativeShell && dark)
+                Main.sessionMode.colorScheme = 'prefer-dark';
+            ensureValidColorScheme();
+            try {
+                if (nativeShell)
+                    Main.setThemeStylesheet(null);
+                Main.loadTheme();
+            } catch (e) {
+                logHelper(`loadTheme ERR ${e}`);
+            }
+            await this._sleep(50);
+
+            if (!(nativeShell && dark) && !isLive(wantOn)) {
+                mgr.enableExtension(wantOn);
+                await this._waitState(
+                    mgr, wantOn, s => this._isSettledUp(s));
+                if (mgr.lookup(wantOn)?.state === STATE_ERROR)
+                    logHelper(`${wantOn} errored while following color scheme`);
+            }
+            // Window-title label colors (unfocused + minimized): DTP's
+            // 'inherit' resolves to white regardless of the light shell
+            // theme — black in light mode, back to inherit in dark. Only the
+            // inherit↔black pair is swapped (custom designs untouched).
+            try {
+                // Distro packages install the schema into the GLOBAL compiled
+                // source (/usr/share/glib-2.0/schemas); only user-installed
+                // copies carry a compiled schema in the extension dir.
+                const defaultSource = Gio.SettingsSchemaSource.get_default();
+                let schema = defaultSource?.lookup(
+                    'org.gnome.shell.extensions.dash-to-panel', true);
+                if (!schema) {
+                    const dtpExt = mgr.lookup(DTP_UUID);
+                    if (dtpExt?.path) {
+                        const source = Gio.SettingsSchemaSource.new_from_directory(
+                            `${dtpExt.path}/schemas`, defaultSource, false);
+                        schema = source?.lookup(
+                            'org.gnome.shell.extensions.dash-to-panel', true);
+                    }
+                }
+                {
+                    if (schema) {
+                        const dtpSettings = new Gio.Settings({settings_schema: schema});
+                        // focused label sits on the blue highlight → white;
+                        // unfocused/minimized sit on the light bar → black.
+                        const lightColors = {
+                            'group-apps-label-font-color': '#ffffff',
+                            'group-apps-label-font-color-minimized': '#000000',
+                        };
+                        for (const [key, lightColor] of Object.entries(lightColors)) {
+                            const cur = dtpSettings.get_string(key);
+                            if (dark && cur === lightColor)
+                                dtpSettings.set_string(key, 'inherit');
+                            else if (!dark && cur === 'inherit')
+                                dtpSettings.set_string(key, lightColor);
+                        }
+                    }
+                }
+            } catch (e) {
+                logHelper(`dtp label-color follow failed: ${e}`);
+            }
+            // dash-to-panel bakes label/foreground colors from the theme at
+            // construction time — rebuild it so window-title labels re-read
+            // the new theme (white-on-light labels otherwise).
+            if (isLive(DTP_UUID)) {
+                this._moveExtensionLast(mgr, DTP_UUID);
+                mgr.disableExtension(DTP_UUID);
+                await this._waitState(mgr, DTP_UUID, s => this._isDown(s));
+                mgr.enableExtension(DTP_UUID);
+                await this._waitState(mgr, DTP_UUID, s => this._isSettledUp(s));
+            }
+            // Cross-frame style recompute so the panel picks the new theme.
+            Main.panel.add_style_class_name('ls-style-recompute');
+            await this._sleep(60);
+            Main.panel.remove_style_class_name('ls-style-recompute');
+        } finally {
+            this._applying = false;
+        }
+    }
+
+    // ── Transition curtain ──────────────────────────────────────────────────
+
+    _createCurtain(label, labelFrom, iconFrom, iconTo) {
+        const curtain = new St.BoxLayout({
+            style_class: 'layout-switcher-curtain',
+            style: 'background-color: #101014;',
+            vertical: true,
+            reactive: true,   // swallow clicks while the desktop mutates
+            opacity: 0,
+        });
+        curtain.set_position(0, 0);
+        curtain.set_size(global.stage.width, global.stage.height);
+
+        const box = new St.BoxLayout({
+            vertical: true,
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'spacing: 36px;',
+        });
+
+        // The "one environment to the other" art: the previous layout's
+        // preview dims while the target's slides into place.
+        const validPath = path => {
+            try {
+                if (path && GLib.file_test(path, GLib.FileTest.EXISTS))
+                    return path;
+            } catch (e) {
+                logHelper(`curtain icon failed: ${e}`);
+            }
+            return null;
+        };
+        // The preview SVGs are wide (~1.7:1). St.Icon forces a SQUARE box and
+        // squishes them laterally — render through the texture cache with a
+        // fixed width and free height so the aspect ratio is preserved.
+        const makePreview = path => {
+            try {
+                const cache = St.TextureCache.get_default();
+                if (typeof cache.load_file_async === 'function') {
+                    const scale =
+                        St.ThemeContext.get_for_stage(global.stage).scale_factor;
+                    const actor = cache.load_file_async(
+                        Gio.File.new_for_path(path), 230, -1, scale, 1);
+                    return new St.Bin({
+                        child: actor,
+                        x_align: Clutter.ActorAlign.CENTER,
+                    });
+                }
+            } catch (e) {
+                logHelper(`curtain preview failed: ${e}`);
+            }
+            // Fallback: square icon box (letterboxes the art).
+            return new St.Icon({
+                gicon: new Gio.FileIcon({file: Gio.File.new_for_path(path)}),
+                icon_size: 150,
+                x_align: Clutter.ActorAlign.CENTER,
+            });
+        };
+        const fromPath = validPath(iconFrom);
+        const toPath = validPath(iconTo);
+        // Layout previews as proper cards (translucent backing so the dark
+        // line-art SVGs actually read on the near-black curtain), each with
+        // its name; the target card gets an accent border + neon glow.
+        const makeCard = (path, name, highlight) => {
+            const card = new St.BoxLayout({
+                vertical: true,
+                style: highlight
+                    ? 'background-color: rgba(255, 255, 255, 0.07); ' +
+                      'border-radius: 18px; padding: 22px 26px; spacing: 14px; ' +
+                      'border: 1px solid rgba(53, 132, 228, 0.85); ' +
+                      'box-shadow: 0 0 26px 3px rgba(53, 132, 228, 0.35);'
+                    : 'background-color: rgba(255, 255, 255, 0.04); ' +
+                      'border-radius: 18px; padding: 22px 26px; spacing: 14px; ' +
+                      'border: 1px solid rgba(255, 255, 255, 0.08);',
+            });
+            card.add_child(makePreview(path));
+            if (name) {
+                card.add_child(new St.Label({
+                    text: name,
+                    style: highlight
+                        ? 'font-size: 16px; font-weight: bold; color: #ffffff;'
+                        : 'font-size: 16px; color: #9a9996;',
+                    x_align: Clutter.ActorAlign.CENTER,
+                }));
+            }
+            return card;
+        };
+        if (toPath) {
+            const row = new St.BoxLayout({
+                x_align: Clutter.ActorAlign.CENTER,
+                style: 'spacing: 30px;',
+            });
+            if (fromPath) {
+                const fromCard = makeCard(fromPath, labelFrom, false);
+                row.add_child(fromCard);
+                row.add_child(new St.Icon({
+                    icon_name: 'go-next-symbolic',
+                    icon_size: 26,
+                    style: 'color: #777777;',
+                    y_align: Clutter.ActorAlign.CENTER,
+                }));
+                fromCard.ease({
+                    opacity: 150,
+                    duration: 700,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                });
+            }
+            const toCard = makeCard(toPath, label, true);
+            toCard.opacity = 0;
+            toCard.translation_x = 48;
+            row.add_child(toCard);
+            toCard.ease({
+                opacity: 255,
+                translation_x: 0,
+                duration: 700,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+            box.add_child(row);
+        } else if (label) {
+            box.add_child(new St.Label({
+                text: label,
+                style: 'font-size: 24px; font-weight: bold; color: #eeeeec;',
+                x_align: Clutter.ActorAlign.CENTER,
+            }));
+        }
+        let spinner = null;
+        try {
+            spinner = new Spinner(36, {animate: true});
+            spinner.play();
+        } catch (e) {
+            logHelper(`spinner unavailable: ${e}`);
+        }
+        if (spinner) {
+            const spinnerBin = new St.Bin({
+                child: spinner,
+                x_align: Clutter.ActorAlign.CENTER,
+            });
+            box.add_child(spinnerBin);
+            curtain._lsSpinner = spinnerBin;
+        }
+        curtain.add_child(box);
+        curtain._lsStatusBox = box;
+        return curtain;
+    }
+
+    _curtainUp(req) {
+        if (this._curtain)
+            return;
+        try {
+            const curtain = this._createCurtain(
+                req.label || '', req.label_from || '',
+                req.icon_from || '', req.icon_to || '');
+            Main.layoutManager.uiGroup.add_child(curtain);
+            this._curtain = curtain;
+            curtain.ease({
+                opacity: 255,
+                duration: CURTAIN_FADE_MS,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+        } catch (e) {
+            // Purely cosmetic — a failed curtain must never block the switch.
+            logHelper(`curtain up failed: ${e}`);
+            this._curtain = null;
+        }
+    }
+
+    // Swap the spinner for a neon-glow green checkmark: the in-shell "done"
+    // signal the user sees right before the curtain lifts.
+    _curtainCheckmark() {
+        const curtain = this._curtain;
+        if (!curtain)
+            return;
+        try {
+            if (curtain._lsSpinner) {
+                curtain._lsSpinner.destroy();
+                curtain._lsSpinner = null;
+            }
+            const badge = new St.Bin({
+                child: new St.Icon({
+                    icon_name: 'object-select-symbolic',
+                    icon_size: 42,
+                    style: 'color: #2ec27e;',
+                }),
+                style: 'background-color: rgba(38, 162, 105, 0.16); ' +
+                       'border: 1px solid rgba(46, 194, 126, 0.55); ' +
+                       'border-radius: 999px; padding: 18px; ' +
+                       'box-shadow: 0 0 32px 8px rgba(46, 194, 126, 0.55);',
+                x_align: Clutter.ActorAlign.CENTER,
+            });
+            badge.set_pivot_point(0.5, 0.5);
+            badge.set_scale(0.5, 0.5);
+            curtain._lsStatusBox?.add_child(badge);
+            badge.ease({
+                scale_x: 1,
+                scale_y: 1,
+                duration: 300,
+                mode: Clutter.AnimationMode.EASE_OUT_BACK,
+            });
+        } catch (e) {
+            logHelper(`curtain checkmark failed: ${e}`);
+        }
+    }
+
+    _curtainDown() {
+        const curtain = this._curtain;
+        this._curtain = null;
+        if (!curtain)
+            return;
+        try {
+            curtain.ease({
+                opacity: 0,
+                duration: CURTAIN_FADE_MS,
+                mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                onComplete: () => curtain.destroy(),
+            });
+        } catch (e) {
+            curtain.destroy();
+        }
+    }
+
+    _destroyCurtain() {
+        if (this._curtain) {
+            this._curtain.destroy();
+            this._curtain = null;
+        }
+    }
+
+    // Force a style recompute on the panel without opening the Overview.
+    // Same-tick add/remove is coalesced by St into a no-op for the panel
+    // BACKGROUND, so this is only the cheap best-effort used by the legacy
+    // (curtainless) path — the clean-room path uses _panelRepaint().
+    _panelStyleRecompute() {
+        try {
+            Main.panel.add_style_class_name('ls-style-recompute');
+            Main.panel.remove_style_class_name('ls-style-recompute');
+        } catch (e) {
+            logHelper(`panel recompute failed: ${e}`);
+        }
+    }
+
+    // Make the panel re-resolve its themed background for real. A style-class
+    // toggle and even loadTheme() do not repaint Big-Blue's transparent
+    // `#panel` rule; the one reliable trigger found is an Overview
+    // round-trip (the old "overview pulse" workaround, removed for flashing —
+    // under the curtain it is invisible, so it returns here flash-free).
+    async _panelRepaint() {
+        try {
+            Main.panel.add_style_class_name('ls-style-recompute');
+            await this._sleep(60);
+            Main.panel.remove_style_class_name('ls-style-recompute');
+            await this._sleep(60);
+        } catch (e) {
+            logHelper(`panel recompute failed: ${e}`);
+        }
+        try {
+            Main.overview.show();
+            await this._sleep(300);
+            Main.overview.hide();
+            await this._sleep(250);
+        } catch (e) {
+            logHelper(`overview pulse failed: ${e}`);
+        }
+    }
+
+    // ── Rollback safety net ─────────────────────────────────────────────────
+
+    _armRollbackTimer(seconds) {
+        this._cancelRollbackTimer();
+        this._rollbackTimer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, seconds, () => {
+            this._rollbackTimer = 0;
+            if (this._switching) {
+                logHelper('CompleteSwitch never arrived — rolling back');
+                this._rollback().catch(e => logHelper(`rollback failed: ${e}`));
+            }
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _cancelRollbackTimer() {
+        if (this._rollbackTimer) {
+            GLib.Source.remove(this._rollbackTimer);
+            this._rollbackTimer = 0;
+        }
+    }
+
+    async _rollback() {
+        const mgr = Main.extensionManager;
+        const prev = this._prevEnabled ?? [];
+        for (const uuid of prev) {
+            if (this._cancelled)
+                break;
+            try {
+                if (!LIVE_STATES.has(mgr.lookup(uuid)?.state)) {
+                    mgr.enableExtension(uuid);
+                    await this._waitState(mgr, uuid, s => this._isSettledUp(s));
+                }
+            } catch (e) {
+                logHelper(`rollback enable ${uuid} failed: ${e}`);
+            }
+        }
+        await this._panelRepaint();
+        this._curtainDown();
+        this._switching = false;
+        logHelper(`rollback done (${prev.length} extensions restored)`);
+    }
+
+    // ── Clean-room protocol (v7) ────────────────────────────────────────────
+
+    // payload (JSON):
+    //   persist: [uuid…]  informative: system indicators the caller re-adds
+    //                     to the CompleteSwitch target (the teardown cycles
+    //                     them too — one clean toggle beats the Shell's
+    //                     repeated rebase toggles, which break pamac-updates)
+    //   label:   str      layout display name shown on the curtain
+    //   icon_from/icon_to: str  preview SVG paths for the curtain art
+    // result (JSON): { ok, steps:[…], disabled:[…], error }
+    BeginSwitchAsync(params, invocation) {
+        const [payload] = params;
+        if (this._busy()) {
+            this._returnJson(invocation, {
+                ok: false, steps: [], disabled: [],
+                error: 'busy: a layout switch is already in progress',
+            });
+            return;
+        }
+        this._switching = true;
+        this._beginSwitch(payload)
+            .then(result => this._returnJson(invocation, result))
+            .catch(err => {
+                logHelper(`BeginSwitch fatal: ${err}`);
+                this._switching = false;
+                this._destroyCurtain();
+                this._returnJson(invocation, {
+                    ok: false, steps: [], disabled: [], error: String(err),
+                });
+            });
+    }
+
+    async _beginSwitch(payload) {
+        const steps = [];
+        const req = JSON.parse(payload || '{}');
+        const self = this._selfUuid();
+        const mgr = Main.extensionManager;
+
+        this._curtainUp(req);
+        // Let the curtain reach full opacity before the desktop mutates.
+        await this._sleep(CURTAIN_FADE_MS + 30);
+
+        // Hoist ourselves to the FRONT of the Shell's extension order. The
+        // Shell's "rebase" cascade re-toggles every live extension loaded
+        // AFTER the one being disabled — asynchronously, with awaits in
+        // between — and a single broken third-party disable() (pamac-updates
+        // throws on a double toggle) aborts it mid-way, leaving extensions
+        // (including us) dead. With the helper first and the teardown below
+        // walking strict reverse order, every rebase slice is empty: nobody
+        // gets bounced, ever.
+        if (Array.isArray(mgr._extensionOrder)) {
+            const idx = mgr._extensionOrder.indexOf(self);
+            if (idx > 0) {
+                mgr._extensionOrder.splice(idx, 1);
+                mgr._extensionOrder.unshift(self);
+                steps.push('hoist self');
+            }
+        }
+
+        // Snapshot for AbortSwitch / the auto-rollback timer (enable order),
+        // and arm the safety net BEFORE mutating anything — a fatal failure
+        // anywhere in the teardown still auto-restores the previous set.
+        this._prevEnabled = this._orderedLive(mgr);
+        this._armRollbackTimer(ROLLBACK_TIMEOUT_S);
+
+        // Tear down EVERY live extension except ourselves — including the
+        // persist indicators (req.persist is honoured by the CALLER keeping
+        // them in the CompleteSwitch target list). Skipping them here looks
+        // gentler but is strictly worse: they sit late in the load order, so
+        // each managed disable would rebase-toggle them repeatedly and
+        // pamac-updates' broken disable() aborts the Shell's rebase loop.
+        // One clean disable + one clean enable per switch instead. Strict
+        // reverse order keeps every rebase slice empty. After this loop
+        // nothing is listening to the layout-owned dconf branches — the
+        // caller can reset+load them like a login does.
+        const teardown = this._prevEnabled.filter(u => u !== self).reverse();
+        const disabled = [];
+        for (const uuid of teardown) {
+            try {
+                const accepted = mgr.disableExtension(uuid);
+                if (accepted === false) {
+                    steps.push(`disable ${uuid} REJECTED`);
+                    continue;
+                }
+                const settled = await this._waitState(mgr, uuid, s => this._isDown(s));
+                steps.push(settled ? `disable ${uuid}` : `disable ${uuid} TIMEOUT`);
+                disabled.push(uuid);
+            } catch (e) {
+                steps.push(`disable ${uuid} ERR ${e}`);
+            }
+        }
+        // Drain any idles the last disable() queued.
+        await this._sleep(100);
+
+        logHelper(`BeginSwitch done: ${steps.join(' | ')}`);
+        return {ok: true, steps, disabled, error: ''};
+    }
+
+    // payload (JSON):
+    //   enabled:      [uuid…]  target extension set, in layout (enable) order
+    //   theme_reload: bool     call Main.loadTheme() before enabling (default true)
+    // result (JSON): { ok, steps:[…], error }
+    CompleteSwitchAsync(params, invocation) {
+        const [payload] = params;
+        if (!this._switching) {
+            this._returnJson(invocation, {
+                ok: false, steps: [], error: 'no switch in progress (BeginSwitch first)',
+            });
+            return;
+        }
+        this._cancelRollbackTimer();
+        this._completeSwitch(payload)
+            .then(result => this._returnJson(invocation, result))
+            .catch(err => {
+                logHelper(`CompleteSwitch fatal: ${err}`);
+                this._switching = false;
+                this._destroyCurtain();
+                this._returnJson(invocation, {ok: false, steps: [], error: String(err)});
+            });
+    }
+
+    async _completeSwitch(payload) {
+        const steps = [];
+        const req = JSON.parse(payload || '{}');
+        const order = (req.enabled || []).filter(Boolean);
+        const target = new Set(order);
+        const mgr = Main.extensionManager;
+
+        // Self-protection: we must stay exported through the whole switch.
+        const self = this._selfUuid();
+        target.add(self);
+
+        // The state is final on disk and nothing re-themes behind us: repair
+        // the color scheme and rebuild the base stylesheet exactly once,
+        // BEFORE the appearance extensions enable on top of it.
+        if (ensureValidColorScheme())
+            steps.push('fix colorScheme');
+        if (req.theme_reload !== false) {
+            try {
+                Main.loadTheme();
+                steps.push('loadTheme');
+            } catch (e) {
+                steps.push(`loadTheme ERR ${e}`);
+            }
+            await this._sleep(50);
+        }
+
+        // Build up the target set in layout order — a fresh enable() reading
+        // the final dconf state, exactly like a login. user-theme is expected
+        // first in `order` (its enable() re-runs loadTheme with the named
+        // stylesheet; anything enabled before it would be re-themed over).
+        for (const uuid of order) {
+            const state = mgr.lookup(uuid)?.state;
+            if (LIVE_STATES.has(state))
+                continue;
+            try {
+                const accepted = mgr.enableExtension(uuid);
+                if (accepted === false) {
+                    steps.push(`enable ${uuid} REJECTED`);
+                    continue;
+                }
+                const settled = await this._waitState(mgr, uuid, s => this._isSettledUp(s));
+                const finalState = mgr.lookup(uuid)?.state;
+                if (finalState === STATE_ERROR)
+                    steps.push(`enable ${uuid} ERROR`);
+                else
+                    steps.push(settled ? `enable ${uuid}` : `enable ${uuid} TIMEOUT`);
+            } catch (e) {
+                steps.push(`enable ${uuid} ERR ${e}`);
+            }
+        }
+
+        // Reconcile: anything still live that the target does not want
+        // (defensive — persist uuids are part of the target by contract).
+        for (const uuid of this._orderedLive(mgr).reverse()) {
+            if (target.has(uuid))
+                continue;
+            try {
+                mgr.disableExtension(uuid);
+                await this._waitState(mgr, uuid, s => this._isDown(s));
+                steps.push(`reconcile-off ${uuid}`);
+            } catch (e) {
+                steps.push(`reconcile-off ${uuid} ERR ${e}`);
+            }
+        }
+
+        await this._panelRepaint();
+        steps.push('panel repaint');
+
+        this._curtainCheckmark();
+        await this._sleep(CURTAIN_CHECK_MS);
+        this._curtainDown();
+
+        this._prevEnabled = null;
+        this._switching = false;
+        logHelper(`CompleteSwitch done: ${steps.join(' | ')}`);
+        return {ok: true, steps, error: ''};
+    }
+
+    AbortSwitchAsync(params, invocation) {
+        if (!this._switching) {
+            this._returnJson(invocation, {ok: true, restored: 0, error: ''});
+            return;
+        }
+        this._cancelRollbackTimer();
+        const count = this._prevEnabled?.length ?? 0;
+        this._rollback()
+            .then(() => this._returnJson(invocation, {ok: true, restored: count, error: ''}))
+            .catch(err => {
+                logHelper(`AbortSwitch fatal: ${err}`);
+                this._switching = false;
+                this._destroyCurtain();
+                this._returnJson(invocation, {ok: false, restored: 0, error: String(err)});
+            });
+    }
+
+    // ── Legacy incremental protocol (v6) — kept for older app versions ─────
+
     // Re-initialise one extension so it re-reads its config / destroys+rebuilds
-    // its actors. Prefers trulyReloadExtension (drops the JS module cache),
-    // falls back to reloadExtension, then to a plain disable+enable.
-    _reloadOne(mgr, uuid) {
+    // its actors. `reloadExtension` is async in GNOME 45+ — await it, or the
+    // subsequent disable races the in-flight reload and can be silently lost.
+    async _reloadOne(mgr, uuid) {
         const ext = mgr.lookup(uuid);
         if (!ext)
             return false;
         try {
-            if (typeof mgr.trulyReloadExtension === 'function')
-                mgr.trulyReloadExtension(uuid);
-            else if (typeof mgr.reloadExtension === 'function')
-                mgr.reloadExtension(ext);
-            else {
+            if (typeof mgr.reloadExtension === 'function') {
+                await mgr.reloadExtension(ext);
+            } else {
                 mgr.disableExtension(uuid);
+                await this._waitState(mgr, uuid, s => this._isDown(s));
                 mgr.enableExtension(uuid);
             }
+            await this._waitState(mgr, uuid, s => this._isSettledUp(s));
             return true;
         } catch (e) {
             logHelper(`reloadOne ${uuid} failed: ${e}`);
@@ -169,10 +1129,11 @@ export default class LayoutSwitcherHelper extends Extension {
         // finishes (rapid switching, a wedged caller) interleaves extension
         // manager mutations and can spin the main loop to a hang. One switch
         // runs at a time — reject overlapping calls instead of racing them.
-        if (this._applying) {
-            invocation.return_value(new GLib.Variant('(s)', [
-                JSON.stringify({ok: false, steps: [], error: 'busy: a layout switch is already in progress'}),
-            ]));
+        if (this._busy()) {
+            this._returnJson(invocation, {
+                ok: false, steps: [],
+                error: 'busy: a layout switch is already in progress',
+            });
             return;
         }
         this._applying = true;
@@ -182,9 +1143,7 @@ export default class LayoutSwitcherHelper extends Extension {
             })
             .catch(err => {
                 logHelper(`ApplyLayout fatal: ${err}`);
-                invocation.return_value(new GLib.Variant('(s)', [
-                    JSON.stringify({ok: false, steps: [], error: String(err)}),
-                ]));
+                this._returnJson(invocation, {ok: false, steps: [], error: String(err)});
             })
             .finally(() => {
                 this._applying = false;
@@ -194,18 +1153,18 @@ export default class LayoutSwitcherHelper extends Extension {
     ReloadExtensionAsync(params, invocation) {
         const [uuid] = params;
         // A reload mutates the extension manager too; don't run it concurrently
-        // with an in-flight ApplyLayout (post-apply self-heal/theme re-assert
-        // calls land right after, but the apply promise has already settled).
-        if (this._applying) {
-            invocation.return_value(new GLib.Variant('(s)', [
-                JSON.stringify({ok: false, uuid, error: 'busy'}),
-            ]));
+        // with an in-flight switch.
+        if (this._busy()) {
+            this._returnJson(invocation, {ok: false, uuid, error: 'busy'});
             return;
         }
-        const ok = this._reloadOne(Main.extensionManager, uuid);
-        invocation.return_value(new GLib.Variant('(s)', [
-            JSON.stringify({ok, uuid}),
-        ]));
+        this._applying = true;
+        this._reloadOne(Main.extensionManager, uuid)
+            .then(ok => this._returnJson(invocation, {ok, uuid}))
+            .catch(err => this._returnJson(invocation, {ok: false, uuid, error: String(err)}))
+            .finally(() => {
+                this._applying = false;
+            });
     }
 
     // payload (JSON):
@@ -244,29 +1203,31 @@ export default class LayoutSwitcherHelper extends Extension {
         for (const uuid of leaving) {
             try {
                 if (teardown.has(uuid)) {
-                    this._reloadOne(mgr, uuid);
+                    await this._reloadOne(mgr, uuid);
                     steps.push(`teardown-reload ${uuid}`);
-                    await sleep(stepMs);
+                    await this._sleep(stepMs);
                 }
-                mgr.disableExtension(uuid);
-                steps.push(`disable ${uuid}`);
+                const accepted = mgr.disableExtension(uuid);
+                await this._waitState(mgr, uuid, s => this._isDown(s));
+                steps.push(accepted === false ? `disable ${uuid} REJECTED` : `disable ${uuid}`);
             } catch (e) {
                 steps.push(`disable ${uuid} ERR ${e}`);
             }
-            await sleep(stepMs);
+            await this._sleep(stepMs);
         }
 
-        // 2. Disable the staying-but-reload set so step 3 re-enables them and
+        // 2. Disable the staying-but-reload set so step 4 re-enables them and
         //    their enable() re-reads the (already loaded) dconf appearance.
         for (const uuid of order) {
             if (reload.has(uuid) && live.has(uuid) && target.has(uuid)) {
                 try {
                     mgr.disableExtension(uuid);
+                    await this._waitState(mgr, uuid, s => this._isDown(s));
                     steps.push(`reload-off ${uuid}`);
                 } catch (e) {
                     steps.push(`reload-off ${uuid} ERR ${e}`);
                 }
-                await sleep(stepMs);
+                await this._sleep(stepMs);
             }
         }
 
@@ -276,12 +1237,7 @@ export default class LayoutSwitcherHelper extends Extension {
         //    live), which CLOBBERS any panel styling an extension applied on
         //    enable. Extensions that paint the shell themselves (kiwi,
         //    light-style) must therefore enable *after* this, so their theming
-        //    lands on top and survives. (Ordering bug fixed in v3: previously
-        //    loadTheme ran last and wiped kiwi's panel — minimal/g-unity bar.)
-        // Repair a colorScheme left invalid by light-style's enable/disable
-        // churn *before* loadTheme() reads it — otherwise getStyleVariant()=''
-        // → null default stylesheet → "Argument file may not be null" → the
-        // shell renders unstyled (white panel). See ensureValidColorScheme.
+        //    lands on top and survives.
         if (ensureValidColorScheme())
             steps.push('fix colorScheme');
 
@@ -292,7 +1248,7 @@ export default class LayoutSwitcherHelper extends Extension {
             } catch (e) {
                 steps.push(`loadTheme ERR ${e}`);
             }
-            await sleep(stepMs);
+            await this._sleep(stepMs);
         }
 
         // 4. Enable every target extension not currently live, in target order,
@@ -302,13 +1258,16 @@ export default class LayoutSwitcherHelper extends Extension {
             if (liveNow.has(uuid))
                 continue;
             try {
-                mgr.enableExtension(uuid);
-                steps.push(`enable ${uuid}`);
+                const accepted = mgr.enableExtension(uuid);
+                await this._waitState(mgr, uuid, s => this._isSettledUp(s));
+                steps.push(accepted === false ? `enable ${uuid} REJECTED` : `enable ${uuid}`);
             } catch (e) {
                 steps.push(`enable ${uuid} ERR ${e}`);
             }
-            await sleep(stepMs);
+            await this._sleep(stepMs);
         }
+
+        this._panelStyleRecompute();
 
         logHelper(`ApplyLayout done: ${steps.join(' | ')}`);
         return JSON.stringify({ok: true, steps, error: ''});

@@ -1,0 +1,185 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: community-menu 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:10-0300\n"
+"PO-Revision-Date: 2025-09-25 17:04+0000\n"
+"Last-Translator: jzwalliser <jzwalliser@outlook.com>\n"
+"Language-Team: Chinese (Simplified) <https://translations.zorin.com/projects/zorin-menu/zorin-menu/zh_Hans/>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.18.1\n"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/appsbackend.js:48
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:200
+msgid "All Apps"
+msgstr "所有应用程序"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/menu.js:184
+msgid "Community Menu"
+msgstr ""
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:32
+msgid "List of open windows across all workspaces"
+msgstr "所有工作区中打开的窗口列表"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:33
+msgid "Open Windows"
+msgstr "打开的窗口"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/openWindowsSearchProvider.js:47
+#, javascript-format
+msgid "'%s' on Workspace %d"
+msgstr "工作区 %2$d 上的 '%1$s'"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:827
+msgid "Searching…"
+msgstr "正在搜索…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:830
+msgid "No results."
+msgstr "无结果。"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/search.js:957
+#, javascript-format
+msgid "+ %d more"
+msgid_plural "+ %d more"
+msgstr[0] "+ 还有 %d 项"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:109
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/placeMenuItem.js:57
+msgid "Home"
+msgstr "主文件夹"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:158
+msgid "Software"
+msgstr "软件"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:162
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:175
+msgid "Settings"
+msgstr "设置"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:198
+msgid "Categories"
+msgstr "分类"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:461
+msgid "Applications"
+msgstr "应用程序"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/sections.js:660
+msgid "Shortcuts"
+msgstr "快捷方式"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:23
+msgid "Copy"
+msgstr "复制"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:28
+msgid "Paste"
+msgstr "粘贴"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:80
+msgid "Show Text"
+msgstr "显示文本"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/entryMenu.js:82
+msgid "Hide Text"
+msgstr "隐藏文本"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/miscMenuItems.js:28
+msgid "Back"
+msgstr "后退"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/searchEntry.js:28
+msgid "Type to search"
+msgstr "输入以搜索"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:49
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:79
+msgid "Add to Desktop"
+msgstr "添加到桌面"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:78
+msgid "Remove from Desktop"
+msgstr "从桌面移除"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:165
+msgid "System Monitor"
+msgstr "系统监视器"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:170
+msgid "Files"
+msgstr "文件"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:184
+msgid "Edit Menu"
+msgstr "编辑菜单"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:189
+msgid "Search Settings"
+msgstr "搜索设置项"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:222
+msgid "Power Off / Log Out"
+msgstr "关机/注销"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:224
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:94
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:210
+msgid "Suspend"
+msgstr "挂起"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:228
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:106
+msgid "Restart…"
+msgstr "重启…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:232
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:118
+msgid "Power Off…"
+msgstr "关机…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:238
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:182
+msgid "Lock"
+msgstr "锁定"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:242
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:194
+msgid "Switch User…"
+msgstr "切换到其它用户…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:246
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:206
+msgid "Log Out…"
+msgstr "注销…"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/secondaryMenu.js:286
+msgid "Dash to Panel Settings"
+msgstr "Dash to Panel 设置"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:68
+msgid "Power"
+msgstr "电源"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:173
+msgid "Power Off"
+msgstr "关机"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:192
+msgid "Restart"
+msgstr "重启"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/sessionButtons.js:228
+msgid "Log Out"
+msgstr "注销"
+
+#: usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/widgets/userWidgets.js:171
+msgid "Account Settings"
+msgstr "帐号设置"

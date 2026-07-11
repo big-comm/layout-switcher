@@ -1,0 +1,15 @@
+# Re-apply layout-switcher's dash-to-panel focused-label patch whenever the
+# dash-to-panel extension is installed or upgraded (a plain upgrade would
+# otherwise ship the unpatched appIcons.js back). The patch script is
+# idempotent and shape-guarded, so running it on every dash-to-panel
+# transaction is safe.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/appIcons.js
+
+[Action]
+Description = Re-applying layout-switcher's dash-to-panel label patch...
+When = PostTransaction
+Exec = /usr/share/layout-switcher/patches/patch-dash-to-panel-labels.sh

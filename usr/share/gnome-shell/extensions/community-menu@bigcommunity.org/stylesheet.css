@@ -1,0 +1,216 @@
+/* Modified by Community Big, 2026-07-10: renamed, de-Zorinized, and adapted for GNOME Shell 50. */
+/*
+ * Zorin Menu: The official applications menu for Zorin OS.
+ *
+ * Copyright (C) 2016-2025 Zorin OS Technologies Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.community-menu-tooltip {
+    max-width: 400px;
+    min-height: 0px;
+}
+
+#panel .panel-button.community-menu-panel-button {
+    -natural-hpadding: 0px;
+    -minimum-hpadding: 0px;
+    border-width: 0px;
+    padding: 0px;
+    margin: 0px;
+}
+
+#panel .panel-button.community-menu-panel-button .panel-status-menu-box {
+    spacing: 0px;
+    padding: 0px;
+    margin: 0px;
+}
+
+#panel .panel-button.community-menu-panel-button .community-menu-button-icon {
+    icon-size: 36px;
+}
+
+/* DTP keeps its light background in overview; keep symbolic items readable. */
+#panel.dashtopanelMainPanel:overview .panel-button {
+    color: inherit;
+}
+
+#panel.dashtopanelMainPanel.community-menu-light-panel:overview .panel-button {
+    color: #222226;
+}
+
+#panel.dashtopanelMainPanel.community-menu-light-panel:overview
+.panel-button#panelActivities .workspace-dot {
+    background-color: #222226;
+}
+
+#panel.dashtopanelMainPanel:overview .panel-button.screen-recording-indicator,
+#panel.dashtopanelMainPanel:overview .panel-button.screen-sharing-indicator {
+    color: #fafafb;
+}
+
+.community-menu .menu-user-avatar {
+    background-size: contain;
+    border: none;
+    border-radius: 999px;
+}
+
+.community-menu .vertical-separator {
+    width: 1px;
+    margin: 0 12px;
+    border-top-width: 0;
+    border-top-style: none;
+    border-right-width: 0;
+    border-right-style: solid;
+    border-bottom-width: 0;
+    border-bottom-style: none;
+    border-left-width: 0;
+    border-left-style: none;
+}
+
+.community-menu .session-buttons-section {
+    spacing: 0;
+    padding: 0 0 12px 0;
+}
+
+.community-menu .session-buttons-section .system-menu-action {
+    -st-icon-style: symbolic;
+    border-radius: 999px;
+    padding: 7px 0.7em !important;
+    margin: 0 12px !important;
+    spacing: 0 !important;
+    box-shadow: none;
+}
+
+.community-menu .session-buttons-section .system-menu-action > StIcon {
+    icon-size: 16px;
+}
+
+.community-menu .search-entry {
+    margin: 12px 0 0 0;
+}
+
+.community-menu .apps-box {
+    width: 20em;
+}
+
+.community-menu .mint-layout-box .search-entry {
+    margin: 1em 0 0 0;
+}
+
+.community-menu .mint-layout-box .categories-apps-box {
+    width: 36em;
+}
+
+.community-menu .mint-layout-box .apps-list {
+    width: 20em;
+}
+
+.community-menu .mint-layout-box .categories-list {
+    width: 15em;
+}
+.community-menu .mint-layout-box .categories-list:ltr {
+    margin-left: 0;
+    margin-right: 1em;
+}
+.community-menu .mint-layout-box .categories-list:rtl {
+    margin-left: 1em;
+    margin-right: 0;
+}
+
+.community-menu .shortcuts-box {
+    width: 15em;
+}
+
+.community-menu .shortcuts-box .popup-separator-menu-item .popup-separator-menu-item-separator {		
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.community-menu .search-statusbox .search-statustext {
+    font-size: 13pt;
+}
+
+.community-menu .list-search-result {
+    padding: 0;
+    spacing: 0;
+    border: none;
+    text-align: left;
+}
+
+.community-menu .all-layout-box,
+.community-menu .mint-layout-box,
+.community-menu .apps-only-layout-box,
+.community-menu .shortcuts-only-layout-box {
+    padding: 6px;
+}
+
+.community-menu .grid-box {
+    width: 52.314em;
+}
+
+.community-menu .grid-layout-box {
+    padding: 8px;
+}
+
+.community-menu .grid-layout-box .search-entry {
+    margin: 0 0 14px 0;
+}
+
+.community-menu .grid-layout-box .apps-grid {
+    padding-bottom: 8px;
+}
+
+.community-menu .grid-layout-box .app-item {
+    height: 6.5em;
+    width: 6.5em;
+    text-align: center;
+    padding: 8px;
+    spacing: 4px;
+    margin: 0;
+    border: none;
+    border-radius: 8px;
+}
+
+.community-menu .grid-layout-box .session-box {
+    spacing: 16px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-top: 8px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 20px;
+    padding-right: 28px;
+}
+
+.community-menu .grid-layout-box .session-box .user-menu-item:ltr {
+    padding-left: 2px;
+}
+.community-menu .grid-layout-box .session-box .user-menu-item:rtl {
+    padding-right: 2px;
+}
+
+.community-menu .grid-layout-box .session-box .system-menu-action {
+    -st-icon-style: symbolic;
+    border-radius: 999px;
+    padding: 13px 15px !important;
+    margin: 0 !important;
+    spacing: 0 !important;
+    box-shadow: none;
+}
+
+.community-menu .grid-layout-box .session-box .system-menu-action > StIcon {
+    icon-size: 16px;
+}

@@ -122,6 +122,7 @@ _DTP_MONITOR_KEYED = (
     "panel-lengths",
 )
 _ARCMENU_UUID = "arcmenu@arcmenu.com"
+_COMMUNITY_MENU_UUID = "community-menu@bigcommunity.org"
 _DASH_TO_PANEL_UUID = "dash-to-panel@jderose9.github.com"
 _DASH_TO_DOCK_UUID = "dash-to-dock@micxgx.gmail.com"
 _LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
@@ -135,6 +136,7 @@ _HELPER_RELOAD_UUIDS = frozenset(
         "dash-to-panel@jderose9.github.com",
         "dash-to-dock@micxgx.gmail.com",
         "arcmenu@arcmenu.com",
+        "community-menu@bigcommunity.org",
         "kiwi@kemma",
         "light-style@gnome-shell-extensions.gcampax.github.com",
         "blur-my-shell@aunetx",
@@ -177,10 +179,28 @@ _HELPER_SHELL_THEME_UUIDS = frozenset(
 # First helper protocol version that loads the theme before re-enabling the
 # appearance extensions; at/above this the post-reload workaround is a no-op.
 _HELPER_THEME_ORDER_FIXED_VERSION = 3
+# First helper protocol version with the clean-room switch (BeginSwitch /
+# CompleteSwitch under a transition curtain). See _apply_via_helper_v7.
+_HELPER_CLEANROOM_VERSION = 7
+# Display names shown on the helper's transition curtain (proper nouns, not
+# translated). Unknown stems fall back to a prettified stem.
+_LAYOUT_DISPLAY_NAMES = {
+    "biggnome": "BigGnome",
+    "classic": "Classic",
+    "desk-ux": "Desk-UX",
+    "g-unity": "G-Unity",
+    "hybrid": "Hybrid",
+    "minimal": "Minimal",
+}
 _LIVE_EXTENSION_STATES = {1, 8}
 _SHELL_EXTENSION_SWITCH_KEYS = ("disabled-extensions", "enabled-extensions")
 _INTERFACE_SECTION = "/org/gnome/desktop/interface"
 _COLOR_SCHEME_KEY = (_INTERFACE_SECTION, "color-scheme")
+
+# Settings branches owned by layouts from an earlier package version. They
+# remain managed during migration even after their sections leave every dump,
+# otherwise stale live dconf is dumped back into authoritative settings.gnome.
+_LEGACY_MANAGED_EXTENSION_SUBDIRS = frozenset({"arcmenu"})
 
 # Paths where we're allowed to reset orphan keys (keys present in live
 # dconf but absent from the target layout). Restricted to extension
@@ -194,6 +214,7 @@ _ORPHAN_RESET_PREFIXES = ("/org/gnome/shell/extensions/",)
 _FRAGILE_LIVE_LEAVING = frozenset(
     {
         _ARCMENU_UUID,
+        _COMMUNITY_MENU_UUID,
         _DASH_TO_DOCK_UUID,
         _DASH_TO_PANEL_UUID,
         _KIWI_UUID,
@@ -211,6 +232,7 @@ _SHELL_MODE_DEPENDENT_ENTERING = (
 )
 _EXTENSION_SETTINGS_SUBDIRS = {
     _ARCMENU_UUID: "/org/gnome/shell/extensions/arcmenu/",
+    _COMMUNITY_MENU_UUID: "/org/gnome/shell/extensions/community-menu/",
     _DASH_TO_PANEL_UUID: "/org/gnome/shell/extensions/dash-to-panel/",
     _USER_THEME_UUID: "/org/gnome/shell/extensions/user-theme/",
 }
@@ -252,6 +274,11 @@ class LayoutApplier:
     # four lookups per apply (sync service + qt theme watcher, twice each)
     # collapse to two. Reset at the start of every ``load_dconf_safely``.
     _unit_cache: Dict[str, bool] = {}
+
+    # True when the last successful apply ran the clean-room protocol
+    # (helper v7): live state == fresh-session state, so the UI can skip
+    # the "restart the session for the 100% clean state" toast.
+    last_apply_cleanroom: bool = False
 
     @classmethod
     def _has_user_unit(cls, unit: str) -> bool:
@@ -334,7 +361,10 @@ class LayoutApplier:
         enabled = cls._string_list(shell_values.get("enabled-extensions"))
         if HELPER_UUID in enabled:
             return data
-        enabled.append(HELPER_UUID)
+        # Prepend: loading FIRST keeps the helper out of every Shell rebase
+        # slice (rebases only re-toggle extensions loaded after the one
+        # being disabled), so no switch step can ever bounce it.
+        enabled.insert(0, HELPER_UUID)
         return cls._replace_or_add_dconf_key(
             data,
             "/org/gnome/shell",
@@ -431,6 +461,225 @@ class LayoutApplier:
 
         log.info("helper apply ok: %s", info)
         return True, info
+
+    @staticmethod
+    def _layout_display_label(stem: str) -> str:
+        """Human-readable layout name for the helper's transition curtain."""
+        return _LAYOUT_DISPLAY_NAMES.get(stem, stem.replace("-", " ").title())
+
+    @classmethod
+    def _managed_extension_subdirs(
+        cls,
+        data: str,
+        layouts_dir: Optional[Path] = None,
+    ) -> List[str]:
+        """
+        The extension settings subdirs the layouts collectively own — the
+        branches the clean-room switch may ``dconf reset -f`` while every
+        managed extension is down.
+
+        Computed as the union of ``[org/gnome/shell/extensions/<subdir>…]``
+        sections across every bundled layout file (plus the target text), so a
+        branch written by the PREVIOUS layout is reset even when the target
+        doesn't mention it. Restricting to layout-declared subdirs keeps user
+        data safe: personal extensions (and the persist indicators — gsconnect
+        pairing state lives in gsettings!) are never touched.
+        """
+        prefix = "[org/gnome/shell/extensions/"
+        texts = [data]
+        if layouts_dir is not None and layouts_dir.is_dir():
+            for path in sorted(layouts_dir.glob("*.txt")):
+                try:
+                    texts.append(path.read_text(encoding="utf-8"))
+                except OSError as exc:
+                    log.debug("managed-subdirs: cannot read %s: %s", path, exc)
+        subdirs: Set[str] = set(_LEGACY_MANAGED_EXTENSION_SUBDIRS)
+        for text in texts:
+            for line in text.splitlines():
+                line = line.strip()
+                if not line.startswith(prefix) or not line.endswith("]"):
+                    continue
+                inner = line[len(prefix):-1]
+                subdir = inner.split("/", 1)[0].strip()
+                if subdir:
+                    subdirs.add(subdir)
+        persist_stems = {
+            uuid.split("@", 1)[0]
+            for uuid in (*_HELPER_PERSIST_UUIDS, HELPER_UUID)
+        }
+        return sorted(s for s in subdirs if s not in persist_stems)
+
+    @classmethod
+    def _restore_settings_backup(cls) -> bool:
+        """
+        Roll ``settings.gnome`` back to the ``.bak`` written by
+        ``_persist_to_settings_file`` — used when a clean-room switch fails
+        after the target layout was already persisted, so the next login
+        matches the (restored) live session instead of the failed target.
+        """
+        bak = SETTINGS_GNOME.parent / (SETTINGS_GNOME.name + ".bak")
+        try:
+            if not bak.exists() or bak.stat().st_size < cls._MIN_DUMP_BYTES:
+                return False
+            previous = bak.read_text(encoding="utf-8")
+        except OSError as exc:
+            log.warning("cannot read settings backup: %s", exc)
+            return False
+        ok, info = cls._persist_to_settings_file(previous)
+        if not ok:
+            log.warning("could not restore settings backup: %s", info)
+        return ok
+
+    @classmethod
+    def _apply_via_helper_v7(
+        cls,
+        data: str,
+        layout_label: str = "",
+        layout_label_from: str = "",
+        layouts_dir: Optional[Path] = None,
+        icon_from: str = "",
+        icon_to: str = "",
+    ) -> Tuple[bool, str]:
+        """
+        Clean-room switch (helper protocol v7).
+
+        A login always renders a layout perfectly because it applies an
+        ABSOLUTE state: ``dconf reset`` + ``load``, then every extension
+        builds from scratch in order with nothing listening. This reproduces
+        that inside the session, under the helper's fullscreen curtain:
+
+          1. ``BeginSwitch``  — curtain up, every managed extension torn down
+             (awaited, reverse load order; system indicators persist)
+          2. reset the layout-owned extension branches + ``dconf load`` the
+             full layout — nothing is live, so no Notify storm, no residue
+          3. ``CompleteSwitch`` — colorScheme repair, one ``loadTheme()``,
+             target set enabled in layout order (awaited), panel style
+             recompute, checkmark, curtain down
+
+        Any failure after phase 1 triggers ``AbortSwitch`` (the helper
+        restores the pre-switch extension set) and rolls ``settings.gnome``
+        back to its ``.bak`` — live session and next login never diverge.
+        """
+        info = HelperClient.ping_info()
+        if info.get("busy"):
+            return False, "a layout switch is already in progress"
+
+        settings_data, _switch = cls._split_shell_extension_switch_keys(data)
+
+        shell_values = cls._section_key_values(data, "/org/gnome/shell")
+        target_enabled = cls._string_list(shell_values.get("enabled-extensions"))
+
+        # user-theme with an empty name throws on GNOME 50 ("Argument file may
+        # not be null") and lands in ERROR. Layouts that theme the Shell with
+        # kiwi (minimal, g-unity) ship user-theme enabled but nameless — treat
+        # it as disabled so it doesn't error and clobber the Shell style.
+        ut_values = cls._section_key_values(data, "/org/gnome/shell/extensions/user-theme")
+        ut_name = cls._gvariant_string(ut_values.get("name"))
+        if _USER_THEME_UUID in target_enabled and not ut_name:
+            target_enabled = [u for u in target_enabled if u != _USER_THEME_UUID]
+        # Shell-theme owners enable FIRST: user-theme's enable() re-runs
+        # loadTheme with the named stylesheet, and light-style flips the
+        # shell variant — anything built BEFORE them (dash-to-panel bakes its
+        # label colors from the theme at construction time) would render for
+        # the wrong theme. Shipped layouts already order them early — enforce
+        # it in code: user-theme, then light-style, then the rest.
+        for uuid in (_LIGHT_STYLE_UUID, _USER_THEME_UUID):
+            if uuid in target_enabled:
+                target_enabled = [
+                    uuid,
+                    *[u for u in target_enabled if u != uuid],
+                ]
+
+        # Keep system indicators (pamac-updates, tray, gsconnect, drive-menu)
+        # stable across switches. Toggling them off/on leaves orphan timers
+        # firing into disposed objects — pamac-updates re-notifies "updates
+        # available" forever until relogin.
+        currently_enabled = set(cls._enabled_extensions())
+        for uuid in _HELPER_PERSIST_UUIDS:
+            if uuid in currently_enabled and uuid not in target_enabled:
+                target_enabled.append(uuid)
+        # Helper FIRST: the final dconf write of enabled-extensions defines
+        # the next login's load order, and with the helper loaded before
+        # everything else the Shell's rebase cascade can never touch it.
+        target_enabled = [
+            HELPER_UUID,
+            *[u for u in target_enabled if u != HELPER_UUID],
+        ]
+
+        persist = [*_HELPER_PERSIST_UUIDS, HELPER_UUID]
+        ok, msg = HelperClient.begin_switch(
+            persist,
+            layout_label,
+            label_from=layout_label_from,
+            icon_from=icon_from,
+            icon_to=icon_to,
+        )
+        if not ok:
+            # The helper may have partially torn extensions down before
+            # failing (or timing out) — restore the pre-switch set and roll
+            # settings.gnome back so live and next-login never diverge.
+            log.warning("helper BeginSwitch failed: %s", msg)
+            HelperClient.abort_switch()
+            cls._restore_settings_backup()
+            return False, msg
+
+        # Curtain up, managed extensions down: apply the ABSOLUTE state.
+        try:
+            for subdir in cls._managed_extension_subdirs(data, layouts_dir):
+                ok_reset, msg_reset = run_cmd(
+                    ["dconf", "reset", "-f", f"/org/gnome/shell/extensions/{subdir}/"],
+                    timeout=15,
+                )
+                if not ok_reset:
+                    log.warning("dconf reset %s failed: %s", subdir, msg_reset)
+            ok_load, msg_load = run_cmd(
+                ["dconf", "load", "/"], stdin_text=settings_data, timeout=30
+            )
+            if not ok_load:
+                raise RuntimeError(f"dconf load failed: {msg_load}")
+        except Exception as exc:
+            log.warning("clean-room dconf phase failed: %s — aborting", exc)
+            HelperClient.abort_switch()
+            cls._restore_settings_backup()
+            return False, str(exc)
+
+        ok, steps = HelperClient.complete_switch(target_enabled)
+        if not ok:
+            log.warning("helper CompleteSwitch failed: %s", steps)
+            HelperClient.abort_switch()
+            cls._restore_settings_backup()
+            return False, steps
+
+        # Converge the dconf switch keys with what is now live so the
+        # comm-gnome-config watcher's next dump records the layout's lists.
+        # The Shell's listener sees only already-true state — a near-no-op.
+        disabled_list = cls._string_list(shell_values.get("disabled-extensions"))
+        run_cmd(
+            [
+                "dconf", "write", "/org/gnome/shell/disabled-extensions",
+                cls._quote_string_list(disabled_list),
+            ],
+            timeout=10,
+        )
+        run_cmd(
+            [
+                "dconf", "write", "/org/gnome/shell/enabled-extensions",
+                cls._quote_string_list(target_enabled),
+            ],
+            timeout=10,
+        )
+
+        # Self-heal: a target extension stuck in ERROR (state 3) won't recover
+        # from a plain enable — trulyReload clears the dead module.
+        states = ShellReloader.list_extensions_state()
+        for uuid in target_enabled:
+            if states.get(uuid) == 3:
+                log.info("self-heal: reloading ERROR extension %s", uuid)
+                HelperClient.reload_extension(uuid)
+
+        log.info("clean-room apply ok: %s", steps)
+        cls.last_apply_cleanroom = True
+        return True, steps
 
     @staticmethod
     def _parse_target_enabled_extensions(text: str) -> Set[str]:
@@ -698,6 +947,7 @@ class LayoutApplier:
         text: str,
         *,
         prefer_dark: Optional[bool],
+        desk_ux_shell: bool = False,
     ) -> str:
         """Keep Shell light/dark helper extensions aligned with user mode."""
         if prefer_dark is None:
@@ -712,11 +962,20 @@ class LayoutApplier:
         )
         user_theme_name = cls._gvariant_string(user_theme_values.get("name"))
 
+        if desk_ux_shell:
+            user_theme_name = "Big-Blue" if prefer_dark else "Big-Blue-Light"
+            text = cls._replace_or_add_dconf_key(
+                text,
+                "/org/gnome/shell/extensions/user-theme",
+                "name",
+                repr(user_theme_name),
+            )
+
         def add_once(values: List[str], uuid: str) -> None:
             if uuid not in values:
                 values.append(uuid)
 
-        if prefer_dark:
+        if prefer_dark or desk_ux_shell:
             enabled = [uuid for uuid in enabled if uuid != _LIGHT_STYLE_UUID]
             add_once(disabled, _LIGHT_STYLE_UUID)
             if user_theme_name:
@@ -750,6 +1009,7 @@ class LayoutApplier:
         text: str,
         *,
         force_shell_dark: bool = False,
+        desk_ux_shell: bool = False,
     ) -> str:
         """
         Keep only the user's light/dark preference out of layout switching.
@@ -779,7 +1039,86 @@ class LayoutApplier:
 
         section, key = _COLOR_SCHEME_KEY
         out = cls._replace_or_add_dconf_key(text, section, key, value)
-        return cls._rewrite_shell_theme_mode(out, prefer_dark=shell_dark)
+        return cls._rewrite_shell_theme_mode(
+            out,
+            prefer_dark=shell_dark,
+            desk_ux_shell=desk_ux_shell,
+        )
+
+    @classmethod
+    def _adjust_icon_theme_for_scheme(
+        cls,
+        text: str,
+        *,
+        light_variant: bool = False,
+    ) -> str:
+        """
+        Select the matching Papient icon variant for the target layout.
+
+        Every layout uses ``-dark`` in dark mode. Classic/Hybrid use ``-light``
+        in light mode; the other four use the unsuffixed base theme.
+        Unrelated/custom icon designs are untouched.
+        """
+        values = cls._section_key_values(text, _INTERFACE_SECTION)
+        icon = cls._gvariant_string(values.get("icon-theme"))
+        variants = {
+            "bigicons-papient",
+            "bigicons-papient-dark",
+            "bigicons-papient-light",
+        }
+        if icon not in variants:
+            return text
+        # Only 'prefer-dark' is dark here: 'default' means LIGHT apps (the
+        # dark-shell reading of 'default' applies to the Shell, not to apps).
+        scheme = cls._gvariant_string(cls._current_color_scheme_value() or "''")
+        target = (
+            "'bigicons-papient-dark'"
+            if scheme == "prefer-dark"
+            else (
+                "'bigicons-papient-light'"
+                if light_variant
+                else "'bigicons-papient'"
+            )
+        )
+        return cls._replace_or_add_dconf_key(
+            text, _INTERFACE_SECTION, "icon-theme", target
+        )
+
+    # dash-to-panel window-title label colors in LIGHT mode: the focused
+    # window label sits on the blue focus highlight (white text), while the
+    # unfocused/minimized labels sit directly on the light bar — DTP's
+    # 'inherit' resolves to WHITE for both, unreadable for the unfocused
+    # ones. Explicit per-state colors fix the contrast.
+    _DTP_LABEL_LIGHT_COLORS = {
+        "group-apps-label-font-color": "'#ffffff'",            # focused, on blue
+        "group-apps-label-font-color-minimized": "'#000000'",  # unfocused, on bar
+    }
+
+    @classmethod
+    def _adjust_dtp_label_colors_for_scheme(cls, text: str) -> str:
+        """
+        Black window-title labels in light mode (classic): only ``inherit``
+        values are rewritten, so custom-designed label colors (hybrid) are
+        never touched; a dark preference keeps ``inherit`` (white on dark is
+        correct).
+        """
+        section = _DTP_BASE
+        values = cls._section_key_values(text, section)
+        targets = {
+            key: color
+            for key, color in cls._DTP_LABEL_LIGHT_COLORS.items()
+            if cls._gvariant_string(values.get(key)) == "inherit"
+        }
+        if not targets:
+            return text
+        # Only 'prefer-dark' is dark here: 'default' means LIGHT apps/bar
+        # (light-style keeps the bar light under 'default' on these layouts).
+        scheme = cls._gvariant_string(cls._current_color_scheme_value() or "''")
+        if scheme == "prefer-dark":
+            return text
+        for key, color in targets.items():
+            text = cls._replace_or_add_dconf_key(text, section, key, color)
+        return text
 
     @staticmethod
     def _parse_dconf_dump_paths(text: str) -> Set[str]:
@@ -1599,6 +1938,11 @@ class LayoutApplier:
         persist: bool = True,
         before_uuids: Optional[Iterable[str]] = None,
         progress_cb: Optional[Callable[[str], None]] = None,
+        layout_label: str = "",
+        layout_label_from: str = "",
+        layouts_dir: Optional[Path] = None,
+        icon_from: str = "",
+        icon_to: str = "",
     ) -> Tuple[bool, str]:
         """
         Apply ``data`` (a full dconf dump) to live dconf, and atomically
@@ -1657,6 +2001,7 @@ class LayoutApplier:
             return False, "empty dconf data"
 
         cls._unit_cache = {}
+        cls.last_apply_cleanroom = False
 
         def progress(label: str) -> None:
             if progress_cb is None:
@@ -1683,9 +2028,22 @@ class LayoutApplier:
             # Prefer the in-shell helper extension when present: it performs
             # the switch from inside gnome-shell, avoiding the cross-process
             # race that hangs the shell on heavy transitions and re-theming
-            # appearance-owning extensions live. The legacy external path
+            # appearance-owning extensions live. v7+ runs the clean-room
+            # protocol (login semantics under a transition curtain); older
+            # helpers get the incremental protocol; the legacy external path
             # below is the fallback when the helper isn't installed/enabled.
-            if HelperClient.is_available():
+            helper_version = HelperClient.helper_version()
+            if helper_version >= _HELPER_CLEANROOM_VERSION:
+                progress("Applying layout…")
+                return cls._apply_via_helper_v7(
+                    data,
+                    layout_label=layout_label,
+                    layout_label_from=layout_label_from,
+                    layouts_dir=layouts_dir,
+                    icon_from=icon_from,
+                    icon_to=icon_to,
+                )
+            if helper_version > 0:
                 progress("Applying layout…")
                 return cls._apply_via_helper(data)
 
@@ -1746,9 +2104,13 @@ class LayoutApplier:
                     "name",
                 )
             target_uses_dtp = _DASH_TO_PANEL_UUID in target_enabled
-            target_uses_arcmenu = _ARCMENU_UUID in target_enabled
+            target_panel_menus = [
+                uuid
+                for uuid in (_COMMUNITY_MENU_UUID, _ARCMENU_UUID)
+                if uuid in target_enabled
+            ]
             target_uses_light_style = _LIGHT_STYLE_UUID in target_enabled
-            target_arcmenu_after_dtp = target_uses_dtp and target_uses_arcmenu
+            target_panel_menus_after_dtp = target_panel_menus if target_uses_dtp else []
             light_style_leaving = _LIGHT_STYLE_UUID in before_set and not target_uses_light_style
             leaving = before_set - live_target_enabled
             fragile_live_leaving = {uuid for uuid in leaving if uuid in _FRAGILE_LIVE_LEAVING}
@@ -1825,12 +2187,12 @@ class LayoutApplier:
                     extension_switch_data,
                     _DASH_TO_PANEL_UUID,
                 )
-            if target_arcmenu_after_dtp:
+            for uuid in target_panel_menus_after_dtp:
                 extension_switch_data = cls._remove_enabled_extension_from_switch_data(
                     extension_switch_data,
-                    _ARCMENU_UUID,
+                    uuid,
                 )
-                post_dtp_enabled.append(_ARCMENU_UUID)
+                post_dtp_enabled.append(uuid)
             if light_style_leaving:
                 for uuid in target_enabled_order:
                     if uuid in _SHELL_MODE_DEPENDENT_ENTERING and uuid not in before_set:
@@ -1973,6 +2335,9 @@ class LayoutApplier:
         cls,
         config_path: Path,
         progress_cb: Optional[Callable[[str], None]] = None,
+        label_from: str = "",
+        icon_from: str = "",
+        icon_to: str = "",
     ) -> Tuple[bool, str]:
         """
         Apply a layout file as the complete next-login dconf state, and
@@ -2001,17 +2366,32 @@ class LayoutApplier:
         layout_text = cls._rewrite_dtp_keys_in_text(layout_text, local_dtp_monitors)
 
         before = cls._enabled_extensions()
+        force_shell_dark = config_path.stem in {"biggnome", "g-unity", "minimal"}
+        desk_ux_shell = config_path.stem == "desk-ux"
         layout_text = cls._preserve_user_color_scheme(
             layout_text,
             # biggnome (Big-Blue) and the kiwi layouts (minimal, g-unity) keep a
             # dark Shell panel in every color-scheme — only the GTK apps follow
             # light/dark. Without this, light mode enables light-style and the
             # top bar turns white.
-            force_shell_dark=config_path.stem in {"biggnome", "g-unity", "minimal"},
+            force_shell_dark=force_shell_dark,
+            desk_ux_shell=desk_ux_shell,
         )
+        layout_text = cls._adjust_icon_theme_for_scheme(
+            layout_text,
+            light_variant=config_path.stem in {"classic", "hybrid"},
+        )
+        if not force_shell_dark:
+            # classic in light mode: black window-title labels (contrast).
+            layout_text = cls._adjust_dtp_label_colors_for_scheme(layout_text)
         return cls.load_dconf_safely(
             layout_text,
             persist=True,
             before_uuids=before,
             progress_cb=progress_cb,
+            layout_label=cls._layout_display_label(config_path.stem),
+            layout_label_from=label_from,
+            layouts_dir=config_path.parent,
+            icon_from=icon_from,
+            icon_to=icon_to,
         )

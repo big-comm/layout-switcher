@@ -161,7 +161,7 @@ class LayoutsPage(Gtk.Box):
         # Check de ativo no canto superior-direito (reforca o glow neon)
         if is_on:
             check = Gtk.Image.new_from_icon_name("emblem-ok-symbolic")
-            check.set_pixel_size(14)
+            check.set_pixel_size(16)
             check.add_css_class("layout-active-check")
             check.set_halign(Gtk.Align.END)
             check.set_valign(Gtk.Align.START)
@@ -277,6 +277,13 @@ class LayoutsPage(Gtk.Box):
         """Dump do dconf atual como snapshot do layout ativo."""
         if not self._active_layout:
             return
+        # Poisoned-snapshot guard: if the LAST apply failed, the live session
+        # may be a half-applied mix — snapshotting it would silently capture
+        # the breakage, and a later "Resume my changes" would restore it.
+        # Skip the save; the previous (healthy) snapshot remains.
+        if self._prefs.get("last_apply_ok") is False:
+            log.info("skipping snapshot: last layout apply failed")
+            return
         for lname, lcfg, *_rest in LAYOUTS:
             if lname == self._active_layout:
                 SnapshotManager.save(self._layout_id(lcfg))
@@ -286,15 +293,11 @@ class LayoutsPage(Gtk.Box):
         """Aplica layout. use_snapshot=True carrega a versao modificada."""
         self._set_status(f"{tr('Applying')} {name}…", "dim-label")
         root = self.get_root()
-        initial_label = f"{tr('Applying')} {name}…"
-        # Preview SVGs so the loading screen draws the switch (current → new).
+        # Preview SVGs are passed to the in-shell curtain. The GTK loading
+        # overlay stays hidden so the switch has one visual owner.
         to_icon = self._icon_path_for(name)
         from_icon = self._icon_path_for(self._active_layout) if self._active_layout else None
         loading_token = None
-        if hasattr(root, "begin_loading"):
-            loading_token = root.begin_loading(initial_label, from_icon=from_icon, to_icon=to_icon)
-        elif hasattr(root, "show_loading"):
-            root.show_loading(initial_label)
         layout_id = self._layout_id(cfg)
 
         # Called from the worker thread by LayoutApplier between stages.
@@ -308,8 +311,6 @@ class LayoutsPage(Gtk.Box):
             text = f"{name} — {translated}"
             if loading_token is not None and hasattr(root, "update_loading"):
                 GLib.idle_add(root.update_loading, loading_token, text)
-            elif hasattr(root, "show_loading"):
-                GLib.idle_add(root.show_loading, text)
 
         def task():
             try:
@@ -334,6 +335,10 @@ class LayoutsPage(Gtk.Box):
                         persist=True,
                         before_uuids=before,
                         progress_cb=progress,
+                        layout_label=name,
+                        layout_label_from=self._active_layout or "",
+                        icon_from=str(from_icon) if from_icon else "",
+                        icon_to=str(to_icon) if to_icon else "",
                     )
                 else:
                     path = find_file(cfg, ["layouts"])
@@ -346,18 +351,21 @@ class LayoutsPage(Gtk.Box):
                             loading_token,
                         )
                         return
-                    ok, err = LayoutApplier.apply(path, progress_cb=progress)
+                    ok, err = LayoutApplier.apply(
+                        path,
+                        progress_cb=progress,
+                        label_from=self._active_layout or "",
+                        # Preview SVGs for the in-shell curtain's from→to art.
+                        icon_from=str(from_icon) if from_icon else "",
+                        icon_to=str(to_icon) if to_icon else "",
+                    )
                 GLib.idle_add(self._done, name, ok, err, loading_token)
             except Exception as exc:
                 log.exception("layout apply failed for %s", name)
                 msg = str(exc).strip() or exc.__class__.__name__
                 GLib.idle_add(self._done, name, False, msg, loading_token)
 
-        # Let the loading overlay's entrance + art slide play smoothly FIRST.
-        # The heavy apply makes gnome-shell (the Wayland compositor) busy, which
-        # stutters the animation if the work starts immediately. A short delay
-        # lets the entrance settle, then the work runs off the main thread.
-        GLib.timeout_add(400, lambda: (self._pool.submit(task), GLib.SOURCE_REMOVE)[1])
+        self._pool.submit(task)
 
     def _done(
         self,
@@ -372,6 +380,8 @@ class LayoutsPage(Gtk.Box):
                 root.hide_loading()
         elif hasattr(root, "hide_loading"):
             root.hide_loading()
+        # Recorded for the poisoned-snapshot guard in _save_current_snapshot.
+        self._prefs.set("last_apply_ok", bool(ok))
         if ok:
             prev = self._active_layout
             self._active_layout = name
@@ -396,12 +406,12 @@ class LayoutsPage(Gtk.Box):
                 self._toast(f"{name} {tr('applied')}")
 
             # Secondary toast: offer a session restart for the 100% clean
-            # state. Live apply skips ``dconf reset -f /`` to avoid crashing
-            # extensions with buggy disable() handlers, so a small subset of
-            # visual artefacts (e.g. opaque panel) may need a relogin.
-            # ``settings.gnome`` was already written cleanly, so the next
-            # session is guaranteed perfect.
-            if overlay:
+            # state — only when the apply fell back to a pre-v7 path. The
+            # clean-room protocol applies the layout with login semantics
+            # (reset + load with every managed extension down), so its live
+            # result IS the fresh-session state and the toast would only
+            # undermine confidence in the switch.
+            if overlay and not getattr(LayoutApplier, "last_apply_cleanroom", False):
                 restart_toast = Adw.Toast(
                     title=tr("Restart the session for the 100% clean state"),
                     timeout=20,

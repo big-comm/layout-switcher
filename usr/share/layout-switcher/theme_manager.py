@@ -23,7 +23,9 @@ from utils import gsettings_get, gsettings_set, run_cmd
 _SHELL_SCHEMA = "org.gnome.shell"
 _LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
 _USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
-_SHELL_DARK_LAYOUTS = {"BigGnome", "G-Unity"}
+_SHELL_DARK_LAYOUTS = {"BigGnome", "G-Unity", "Minimal"}
+_ORCHIS_SHELL_DARK = "Big-Blue"
+_ORCHIS_SHELL_LIGHT = "Big-Blue-Light"
 
 
 class ThemeMgr:
@@ -175,8 +177,13 @@ class ThemeMgr:
         scheme = "prefer-dark" if dark else "prefer-light"
         ok, msg = gsettings_set("org.gnome.desktop.interface", "color-scheme", scheme)
         if ok:
-            shell_dark = dark or Settings().get("active_layout") in _SHELL_DARK_LAYOUTS
-            ThemeMgr._sync_shell_color_scheme(shell_dark)
+            active_layout = Settings().get("active_layout")
+            shell_dark = dark or active_layout in _SHELL_DARK_LAYOUTS
+            ThemeMgr._sync_shell_color_scheme(
+                shell_dark,
+                native_shell=active_layout in {"Classic", "Hybrid"},
+                desk_ux_shell=active_layout in {"Desk UX", "Desk-UX"},
+            )
             # Notifica o StyleManager do processo atual
             try:
                 import gi
@@ -216,20 +223,37 @@ class ThemeMgr:
         return parsed if isinstance(parsed, str) else ""
 
     @staticmethod
-    def _sync_shell_color_scheme(dark: bool) -> None:
+    def _sync_shell_color_scheme(
+        dark: bool,
+        *,
+        native_shell: bool = False,
+        desk_ux_shell: bool = False,
+    ) -> None:
         enabled = ThemeMgr._string_list(gsettings_get(_SHELL_SCHEMA, "enabled-extensions"))
         disabled = ThemeMgr._string_list(gsettings_get(_SHELL_SCHEMA, "disabled-extensions"))
         user_theme_name = ""
-        if dark:
+        if dark or native_shell or desk_ux_shell:
             user_theme_name = ThemeMgr._string_value(
                 gsettings_get("org.gnome.shell.extensions.user-theme", "name")
             )
+        if native_shell and user_theme_name:
+            gsettings_set("org.gnome.shell.extensions.user-theme", "name", "''")
+            user_theme_name = ""
+        elif desk_ux_shell:
+            target = _ORCHIS_SHELL_DARK if dark else _ORCHIS_SHELL_LIGHT
+            if user_theme_name != target:
+                gsettings_set(
+                    "org.gnome.shell.extensions.user-theme",
+                    "name",
+                    repr(target),
+                )
+            user_theme_name = target
 
         def add_once(values: List[str], uuid: str) -> None:
             if uuid not in values:
                 values.append(uuid)
 
-        if dark:
+        if dark or desk_ux_shell:
             enabled = [uuid for uuid in enabled if uuid != _LIGHT_STYLE_UUID]
             add_once(disabled, _LIGHT_STYLE_UUID)
             if user_theme_name:
@@ -247,7 +271,7 @@ class ThemeMgr:
         gsettings_set(_SHELL_SCHEMA, "disabled-extensions", repr(disabled))
         gsettings_set(_SHELL_SCHEMA, "enabled-extensions", repr(enabled))
         ShellReloader.reload_extension(_LIGHT_STYLE_UUID, timeout=5)
-        if dark and user_theme_name:
+        if (dark or desk_ux_shell) and user_theme_name:
             ShellReloader.reload_extension(_USER_THEME_UUID, timeout=5)
 
     # ── Consultas ─────────────────────────────────────────────────────────────

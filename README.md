@@ -5,14 +5,14 @@ A GTK4 + libadwaita application for switching GNOME desktop layouts, managing sh
 </p>
 
 <p align="center">
-  <img alt="License"    src="https://img.shields.io/badge/License-MIT-green.svg">
+  <img alt="License"    src="https://img.shields.io/badge/License-MIT%20%2B%20GPL--2.0%2B-green.svg">
   <img alt="Platform"   src="https://img.shields.io/badge/Platform-Linux-informational.svg">
   <img alt="Python"     src="https://img.shields.io/badge/Python-3.10%2B-3776ab.svg?logo=python&logoColor=white">
   <img alt="GTK"        src="https://img.shields.io/badge/GTK-4.0-4a86cf.svg">
   <img alt="Libadwaita" src="https://img.shields.io/badge/libadwaita-1.x-3584e4.svg">
   <img alt="GNOME"      src="https://img.shields.io/badge/GNOME-45%2B-4a86cf.svg?logo=gnome&logoColor=white">
-  <img alt="Tests"      src="https://img.shields.io/badge/tests-158%20passing-success.svg">
-  <img alt="i18n"       src="https://img.shields.io/badge/i18n-28%20languages-blueviolet.svg">
+  <img alt="Tests"      src="https://img.shields.io/badge/tests-234%20passing-success.svg">
+  <img alt="i18n"       src="https://img.shields.io/badge/i18n-29%20languages-blueviolet.svg">
 </p>
 
 ---
@@ -24,6 +24,7 @@ Community Layout Switcher is the appearance-management tool for [BigCommunity Li
 ## Features
 
 - **Layouts** — Apply curated desktop layouts (BigGnome, Desk UX, Hybrid, G-Unity, Classic, Minimal) with one click. Automatic pre-apply backup; per-layout user snapshots with a Plasma-style *Resume your changes* or *Apply original* prompt when revisiting a customized layout.
+- **Community Menu** — Bundled GNOME Shell 50 menu used independently from ArcMenu: application list in Classic, application grid in Desk UX, and Mint-style categories in Hybrid.
 - **Fonts** — Interface / document / monospace / legacy title selectors via `Gtk.FontDialog`, plus hinting and antialiasing controls, a searchable list of installed families with live previews, and quick access to Google Fonts.
 - **Themes** — GTK, icon and shell themes with real previews (actual `folder` icon from each icon theme; accent color parsed from each theme's CSS), search filter and one-click apply.
 - **Effects** — Dedicated page for visual extensions (Desktop Cube, Magic Lamp, Compiz Windows, Desktop Icons NG). Installs prefer `pacman` for stability and fall back to extensions.gnome.org.
@@ -89,7 +90,7 @@ python usr/share/layout-switcher/main.py
 ruff check .
 ruff format .
 
-# tests (158 unit tests, no display required)
+# tests (234 unit tests, no display required)
 python -m pytest tests/ -q
 ```
 
@@ -131,7 +132,7 @@ pkgbuild/                            # Arch PKGBUILD
 
 ## Translations
 
-User-facing strings are wrapped with `tr()` and extracted to `usr/share/locale/layout-switcher.pot`. The catalog is compiled to `.mo` files for **28 languages**:
+User-facing strings are wrapped with `tr()` and extracted to `usr/share/locale/layout-switcher.pot`. The catalog is compiled to `.mo` files for **29 languages**:
 
 > bg · cs · da · de · el · en · es · et · fi · fr · he · hr · hu · is · it · ja · ko · nl · no · pl · pt · pt_BR · ro · ru · sk · sv · tr · uk · zh
 
@@ -154,4 +155,5 @@ msgfmt -o usr/share/locale/<lang>/LC_MESSAGES/layout-switcher.mo \
 
 ## License
 
-[MIT](LICENSE) © Big Community & Contributors
+The layout switcher is [MIT](LICENSE). The bundled Community Menu is a modified
+GPL-2.0-or-later derivative; see its `COPYING` and `UPSTREAM.md` files.
