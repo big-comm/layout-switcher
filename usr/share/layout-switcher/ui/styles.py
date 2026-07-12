@@ -111,11 +111,21 @@ APP_CSS = """
 
 /* ── Extension cards em destaque ─────────────────────────────────────── */
 .ext-card {
-    outline: 2px solid transparent;
-    outline-offset: -2px;
-    transition: outline-color 120ms ease;
+    outline: 1px solid alpha(@card_fg_color, 0.12);
+    outline-offset: -1px;
+    border-radius: 14px;
+    background-color: alpha(@card_bg_color, 0.52);
+    transition: outline-color 120ms ease, background-color 120ms ease;
 }
-.ext-card.ext-on            { outline-color: @accent_color; }
+.ext-card:hover             { background-color: alpha(@card_bg_color, 0.78); }
+.ext-card.ext-on            { outline: 2px solid @accent_color; outline-offset: -2px; }
+.effect-preview-image       { border-radius: 10px; background-color: #080b12; }
+.effect-icon-frame {
+    border-radius: 11px;
+    background-color: alpha(@card_bg_color, 0.42);
+    outline: 1px solid alpha(@card_fg_color, 0.14);
+    outline-offset: -1px;
+}
 
 /* ── Lista de extensões instaladas (boxed-list nativo) ───────────────── */
 /* As linhas usam Gtk.ListBoxRow dentro de .boxed-list — sem esticar.    */
@@ -135,14 +145,37 @@ APP_CSS = """
 .theme-name-active          { color: @accent_color; font-weight: 600; }
 
 /* ── Grid de temas (GTK / Shell) ─────────────────────────────────────── */
-.theme-tile {
-    outline: 2px solid transparent;
-    outline-offset: -2px;
-    border-radius: 10px;
-    transition: outline-color 120ms ease, background-color 120ms ease;
+.theme-surface {
+    border-radius: 14px;
+    background-color: alpha(@card_bg_color, 0.34);
+    outline: 1px solid alpha(@card_fg_color, 0.08);
+    outline-offset: -1px;
 }
-.theme-tile:hover           { background-color: alpha(@accent_bg_color, 0.05); }
-.theme-tile.theme-tile-active { outline-color: @accent_color; }
+.theme-tile {
+    outline: 1px solid alpha(@card_fg_color, 0.10);
+    outline-offset: -1px;
+    border-radius: 10px;
+    background-color: alpha(@card_bg_color, 0.46);
+    transition: outline-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+.theme-tile:hover {
+    background-color: alpha(@card_bg_color, 0.78);
+    box-shadow: 0 5px 14px alpha(black, 0.13);
+}
+.theme-tile.theme-tile-active { outline: 2px solid @accent_color; outline-offset: -2px; }
+.theme-active-check {
+    color: white;
+    background-color: @accent_bg_color;
+    border-radius: 50%;
+    padding: 3px;
+    box-shadow: 0 2px 6px alpha(black, 0.28);
+}
+.theme-icon-preview {
+    border-radius: 7px;
+    background-color: alpha(@window_bg_color, 0.72);
+    outline: 1px solid alpha(@window_fg_color, 0.08);
+    outline-offset: -1px;
+}
 
 /* ── Sub-abas de tipo de tema ────────────────────────────────────────── */
 .kind-tab                   { border-radius: 8px; padding: 5px 14px; font-weight: 500; }

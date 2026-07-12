@@ -48,7 +48,7 @@ tr = gettext.translation(_DOMAIN, _LOCALE_DIR, fallback=True).gettext  # purpose
 
 # ── Aplicação ─────────────────────────────────────────────────────────────────
 APP_ID = "org.communitybig.layout-switcher"
-APP_VERSION = "2.12.0"
+APP_VERSION = "2.13.0"
 APP_LICENSE = "MIT"
 APP_NAME = "Community Layout Switcher"
 ICON_NAME = "layout-switcher"  # SVG em icons/layout-switcher.svg
@@ -138,7 +138,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "uuid": "desktop-cube@schneegans.github.com",
         "ego_id": 4648,
         "pkg": "gnome-shell-extension-desktop-cube",
-        "icon": "desktop-cube-symbolic",
+        "icon": "layout-effect-cube-symbolic",
         "author": "Simon Schneegans",
         "has_settings": False,
         "preview": "cube",
@@ -149,7 +149,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "uuid": "compiz-alike-magic-lamp-effect@hermes83.github.com",
         "ego_id": 3740,
         "pkg": "gnome-shell-extension-compiz-alike-magic-lamp-effect",
-        "icon": "view-paged-symbolic",
+        "icon": "layout-effect-lamp-symbolic",
         "author": "hermes83",
         "has_settings": False,
         "preview": "lamp",
@@ -160,7 +160,7 @@ FEATURED_EXTENSIONS: List[Dict] = [
         "uuid": "compiz-windows-effect@hermes83.github.com",
         "ego_id": 3210,
         "pkg": "gnome-shell-extension-compiz-windows-effect",
-        "icon": "window-symbolic",
+        "icon": "layout-effect-wobbly-symbolic",
         "author": "hermes83",
         "has_settings": False,
         "preview": "wobbly",

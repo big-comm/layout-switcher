@@ -29,8 +29,8 @@ from theme_preview import (
 from ui.widgets import IconStrip, MiniPanelPreview, MiniWindowPreview
 from utils import color_from_name, run_cmd
 
-# Largura máxima confortável para a lista de temas
-_LIST_MAX_WIDTH = 620
+# Wide enough for five compact theme cards at the default window size.
+_LIST_MAX_WIDTH = 940
 
 
 class ThemeRow(Gtk.ListBoxRow):
@@ -86,8 +86,16 @@ class ThemesPage(Gtk.Box):
     # ── Construção ────────────────────────────────────────────────────────────
 
     def _build(self) -> None:
+        surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        surface.add_css_class("theme-surface")
+        surface.set_margin_start(14)
+        surface.set_margin_end(14)
+        surface.set_margin_top(10)
+        surface.set_margin_bottom(10)
+        surface.set_vexpand(True)
+
         # ── Sub-abas de tipo ──────────────────────────────────────────────────
-        self.append(self._build_kind_tabs())
+        surface.append(self._build_kind_tabs())
 
         # ── Search / filter ───────────────────────────────────────────────────
         self._search_entry = Gtk.SearchEntry()
@@ -96,7 +104,7 @@ class ThemesPage(Gtk.Box):
         self._search_entry.set_margin_end(26)
         self._search_entry.set_margin_bottom(8)
         self._search_entry.connect("search-changed", self._on_search_changed)
-        self.append(self._search_entry)
+        surface.append(self._search_entry)
 
         # ── Área de scroll com conteúdo centrado e limitado ───────────────────
         sc = Gtk.ScrolledWindow()
@@ -117,13 +125,15 @@ class ThemesPage(Gtk.Box):
 
         self._clamp.set_child(self._list_container)
         sc.set_child(self._clamp)
-        self.append(sc)
+        surface.append(sc)
+        self.append(surface)
 
         self.refresh_themes()
 
     def _build_kind_tabs(self) -> Gtk.Widget:
         """Sub-abas GTK / Ícones / Shell."""
         kb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        kb.add_css_class("linked")
         kb.set_margin_start(26)
         kb.set_margin_bottom(8)
         self._kind_btns: Dict[str, Gtk.Button] = {}
@@ -222,10 +232,7 @@ class ThemesPage(Gtk.Box):
         count_lbl.set_margin_bottom(8)
         self._list_container.append(count_lbl)
 
-        if kind in ("gtk", "shell"):
-            self._list_container.append(self._build_theme_grid(kind, active, names))
-        else:
-            self._list_container.append(self._build_theme_list(kind, active, names))
+        self._list_container.append(self._build_theme_grid(kind, active, names))
 
     def _build_theme_list(self, kind: str, active: str, names: List[str]) -> Gtk.Widget:
         """Lista boxed-list — usado para a aba Ícones (preview horizontal compacto)."""
@@ -244,10 +251,10 @@ class ThemesPage(Gtk.Box):
         """FlowBox em grid — preview grande no topo, nome embaixo. Usado em GTK/Shell."""
         fb = Gtk.FlowBox()
         fb.set_selection_mode(Gtk.SelectionMode.NONE)
-        fb.set_max_children_per_line(4)
+        fb.set_max_children_per_line(5)
         fb.set_min_children_per_line(1)
-        fb.set_row_spacing(12)
-        fb.set_column_spacing(12)
+        fb.set_row_spacing(10)
+        fb.set_column_spacing(10)
         fb.set_homogeneous(True)
         fb.connect(
             "child-activated",
@@ -318,18 +325,32 @@ class ThemesPage(Gtk.Box):
 
         tile = ThemeTile(theme_name=name, theme_kind=kind)
         tile.add_css_class("theme-tile")
+        tile.set_size_request(142, -1)
         if is_on:
             tile.add_css_class("theme-tile-active")
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        box.set_margin_start(6)
-        box.set_margin_end(6)
-        box.set_margin_top(8)
-        box.set_margin_bottom(8)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        box.set_margin_start(7)
+        box.set_margin_end(7)
+        box.set_margin_top(7)
+        box.set_margin_bottom(7)
 
         preview = self._build_preview_large(name, kind)
         preview.set_halign(Gtk.Align.CENTER)
-        box.append(preview)
+        preview_overlay = Gtk.Overlay()
+        preview_overlay.set_child(preview)
+
+        if is_on:
+            chk = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            chk.set_pixel_size(13)
+            chk.add_css_class("theme-active-check")
+            chk.set_halign(Gtk.Align.END)
+            chk.set_valign(Gtk.Align.START)
+            chk.set_margin_top(3)
+            chk.set_margin_end(3)
+            preview_overlay.add_overlay(chk)
+
+        box.append(preview_overlay)
 
         name_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         name_row.set_margin_start(2)
@@ -346,12 +367,6 @@ class ThemesPage(Gtk.Box):
         lbl.set_ellipsize(Pango.EllipsizeMode.END)
         name_row.append(lbl)
 
-        if is_on:
-            chk = Gtk.Image.new_from_icon_name("object-select-symbolic")
-            chk.set_pixel_size(14)
-            chk.add_css_class("accent")
-            name_row.append(chk)
-
         box.append(name_row)
         tile.set_child(box)
 
@@ -363,15 +378,25 @@ class ThemesPage(Gtk.Box):
 
     def _build_preview_large(self, name: str, kind: str) -> Gtk.Widget:
         """Versao grande do mockup — usada nos tiles de grid (GTK/Shell)."""
+        if kind == "icons":
+            frame = Gtk.Box()
+            frame.add_css_class("theme-icon-preview")
+            frame.set_size_request(128, 68)
+            strip = IconStrip(find_theme_icons(name), slot_size=22)
+            strip.set_halign(Gtk.Align.CENTER)
+            strip.set_valign(Gtk.Align.CENTER)
+            frame.append(strip)
+            return frame
+
         accent = extract_theme_color(name, kind) or color_from_name(name)
         if kind == "gtk":
-            return MiniWindowPreview(accent, dark=is_dark_theme_name(name), width=170, height=104)
+            return MiniWindowPreview(accent, dark=is_dark_theme_name(name), width=128, height=68)
         panel_bg = extract_shell_panel_bg(name)
         return MiniPanelPreview(
             panel_bg,
             accent,
-            width=170,
-            height=104,
+            width=128,
+            height=68,
             light=is_light_theme_name(name),
         )
 

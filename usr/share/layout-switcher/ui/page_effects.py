@@ -12,6 +12,7 @@ pacote nao existir no repo.
 DEVELOPER NOTE - DO NOT name any variable `_` in this file.
 """
 
+from pathlib import Path
 from typing import Dict
 
 import gi
@@ -23,8 +24,9 @@ from gi.repository import Adw, GLib, Gtk
 from constants import EFFECT_EXTENSIONS, tr
 from extension_manager import ExtMgr
 from shell_reloader import ShellReloader
-from ui.widgets import EffectPreview
-from utils import color_from_name, run_cmd
+from utils import run_cmd
+
+_PREVIEW_DIR = Path(__file__).resolve().parent.parent / "effects"
 
 
 class EffectsPage(Gtk.Box):
@@ -56,8 +58,8 @@ class EffectsPage(Gtk.Box):
 
         self._flow = Gtk.FlowBox()
         self._flow.set_selection_mode(Gtk.SelectionMode.NONE)
-        self._flow.set_max_children_per_line(3)
-        self._flow.set_min_children_per_line(1)
+        self._flow.set_max_children_per_line(2)
+        self._flow.set_min_children_per_line(2)
         self._flow.set_row_spacing(12)
         self._flow.set_column_spacing(12)
         self._flow.set_margin_start(22)
@@ -92,13 +94,13 @@ class EffectsPage(Gtk.Box):
         card.add_css_class("card")
         if enabled:
             card.add_css_class("ext-on")
-        card.set_size_request(220, -1)
+        card.set_size_request(300, -1)
 
         inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        inner.set_margin_start(14)
-        inner.set_margin_end(14)
-        inner.set_margin_top(14)
-        inner.set_margin_bottom(14)
+        inner.set_margin_start(10)
+        inner.set_margin_end(10)
+        inner.set_margin_top(10)
+        inner.set_margin_bottom(10)
 
         inner.append(self._make_preview(ext))
         inner.append(self._make_header(ext))
@@ -129,23 +131,35 @@ class EffectsPage(Gtk.Box):
         card.update_property([Gtk.AccessibleProperty.LABEL], [card_label])
         return card
 
-    def _make_preview(self, ext: Dict) -> EffectPreview:
-        preview = EffectPreview(
-            ext.get("preview", "wobbly"),
-            color_from_name(ext["uuid"]),
-            width=190,
-            height=106,
-            label=ext["name"],
+    def _make_preview(self, ext: Dict) -> Gtk.Widget:
+        filename = f"{ext.get('preview', 'wobbly')}.png"
+        preview = Gtk.Picture.new_for_filename(str(_PREVIEW_DIR / filename))
+        preview.set_content_fit(Gtk.ContentFit.CONTAIN)
+        preview.set_can_shrink(True)
+        preview.set_hexpand(True)
+        preview.set_size_request(300, 169)
+        preview.set_overflow(Gtk.Overflow.HIDDEN)
+        preview.add_css_class("effect-preview-image")
+        preview.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [tr("{name} effect preview").format(name=ext["name"])],
         )
-        preview.set_halign(Gtk.Align.CENTER)
-        preview.set_margin_bottom(6)
+        preview.set_margin_bottom(2)
         return preview
 
     def _make_header(self, ext: Dict) -> Gtk.Box:
         hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        icon_frame = Gtk.CenterBox()
+        icon_frame.add_css_class("effect-icon-frame")
+        icon_frame.set_size_request(52, 52)
+        icon_frame.set_halign(Gtk.Align.CENTER)
+        icon_frame.set_valign(Gtk.Align.CENTER)
         ico = Gtk.Image.new_from_icon_name(ext.get("icon", "application-x-addon-symbolic"))
         ico.set_pixel_size(28)
-        hdr.append(ico)
+        ico.set_halign(Gtk.Align.CENTER)
+        ico.set_valign(Gtk.Align.CENTER)
+        icon_frame.set_center_widget(ico)
+        hdr.append(icon_frame)
 
         tc = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
         tc.set_hexpand(True)
