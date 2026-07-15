@@ -24,6 +24,7 @@ ARCMENU_UUID = "arcmenu@arcmenu.com"
 DASH_TO_PANEL_UUID = "dash-to-panel@jderose9.github.com"
 USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
 LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
+LAYOUT_SWITCHER_HELPER_UUID = "layout-switcher-helper@bigcommunity.org"
 COMMUNITY_MENU_LAYOUTS = {
     "classic.txt": "APPS_ONLY",
     "desk-ux.txt": "APP_GRID",
@@ -82,6 +83,14 @@ def test_dash_to_panel_monitor_maps_use_neutral_index():
 
             data = json.loads(value.strip().strip("'"))
             assert set(data) in (set(), {"0"}), f"{layout_file.name}:{key} is not neutral"
+
+
+def test_layout_switcher_helper_is_always_first_and_enabled():
+    for layout_file in LAYOUT_DIR.glob("*.txt"):
+        enabled, disabled = _shell_extension_lists(layout_file.read_text())
+        assert enabled[0] == LAYOUT_SWITCHER_HELPER_UUID
+        assert enabled.count(LAYOUT_SWITCHER_HELPER_UUID) == 1
+        assert LAYOUT_SWITCHER_HELPER_UUID not in disabled
 
 
 def test_community_menu_layout_mapping_and_panel_order():

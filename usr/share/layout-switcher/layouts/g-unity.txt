@@ -241,7 +241,7 @@ app-picker-layout=[{'AudioVideo': <{'position': <0>}>, 'Office': <{'position': <
 command-history=['ajustes', 'r']
 disable-user-extensions=false
 disabled-extensions=['ddterm@amezin.github.com', 'just-perfection-desktop@just-perfection', 'GPaste@gnome-shell-extensions.gnome.org', 'light-style@gnome-shell-extensions.gcampax.github.com', 'no-startup-overview@bigcommunity.org', 'arcmenu@arcmenu.com', 'community-menu@bigcommunity.org', 'dash-to-panel@jderose9.github.com']
-enabled-extensions=['user-theme@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'blur-my-shell@aunetx', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'kiwi@kemma']
+enabled-extensions=['layout-switcher-helper@bigcommunity.org', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com', 'gsconnect@andyholmes.github.io', 'pamac-updates@manjaro.org', 'blur-my-shell@aunetx', 'legacyschemeautoswitcher@joshimukul29.gmail.com', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'copyous@boerdereinar.dev', 'big-shot@bigcommunity.org', 'kiwi@kemma']
 favorite-apps=['org.gnome.Nautilus.desktop', 'brave-browser.desktop', 'org.gnome.Calculator.desktop', 'org.gnome.TextEditor.desktop', 'org.communitybig.ashyterm.desktop']
 welcome-dialog-last-shown-version='43.2'
 
