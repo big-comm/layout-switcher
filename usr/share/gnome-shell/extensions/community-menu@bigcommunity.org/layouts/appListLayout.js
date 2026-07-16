@@ -40,8 +40,22 @@ export const AppListLayout = GObject.registerClass({
 
     _loadLayout() {
         // Create Sections and Widgets
-        this._categoriesSection = new Sections.CategoriesListSection(this._appsBackend);
-        this._appsSection = new Sections.AppsListSection(this._appsBackend, false, this._monitorIndex);
+        this._sidebar = new Sections.ClassicSidebarSection();
+        this._categoriesSection = new Sections.CategoriesListSection(
+            this._appsBackend,
+            {
+                cascadeMenus: true,
+                cascadeExitActor: this._sidebar,
+                iconSize: Constants.COMPACT_CATEGORY_ICON_SIZE,
+                monitorIndex: this._monitorIndex,
+            });
+        this._appsSection = new Sections.AppsListSection(
+            this._appsBackend,
+            false,
+            this._monitorIndex,
+            null,
+            Constants.APP_LIST_ICON_SIZE,
+            true);
         this._searchResults = this._appsSection.searchResults;
         this._searchEntry = new SearchEntry.SearchEntry(this._searchResults);
         this._allAppsButton = new MiscMenuItems.AllAppsMenuItem();
@@ -60,18 +74,21 @@ export const AppListLayout = GObject.registerClass({
         this._box.add_child(this._backButton);
         this._box.add_child(this._searchEntry);
 
-        // Add Box
+        // Add sidebar and main box
+        this.add_child(this._sidebar);
         this.add_child(this._box);
     }
 
     _connectSignals() {
         this._categoriesSection.connectObject('selected', this._onSelectCategory.bind(this), this);
+        this._categoriesSection.connectObject('activated', this._activated.bind(this), this);
         this._appsSection.connectObject('activated', this._activated.bind(this), this);
         this._searchEntry.connectObject('notify::search-active', this._onSearchChanged.bind(this), this);
         this._searchEntry.connectObject('entry-key-press', this._onSearchEntryKeyPress.bind(this), this);
         this._searchResults.connectObject('screenshot-activated', this._onScreenshotActivated.bind(this), this);
         this._allAppsButton.connectObject('activated', this._onAllApps.bind(this), this);
         this._backButton.connectObject('activated', this.reset.bind(this), this);
+        this._sidebar.connectObject('activated', this._activated.bind(this), this);
     }
 
     _onSearchChanged() {
@@ -110,8 +127,13 @@ export const AppListLayout = GObject.registerClass({
     }
 
     reset(){
+        this.closePopups();
         this._searchEntry.clear();
         this._onSearchChanged();
+    }
+
+    closePopups() {
+        this._categoriesSection?.closePopups();
     }
 
     updateHeight() {
@@ -137,6 +159,9 @@ export const AppListLayout = GObject.registerClass({
 
         this._backButton?.destroy();
         this._backButton = null;
+
+        this._sidebar?.destroy();
+        this._sidebar = null;
 
         this._box?.destroy();
         this._box = null;

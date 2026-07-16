@@ -143,12 +143,14 @@ export const SearchEntry = GObject.registerClass({
     }
 
     _onStageKeyFocusChanged() {
-        if (!this._searchResults) {
+        if (!this._searchResults || !this._text) {
             return;
         }
 
-        let focus = global.stage.get_key_focus();
-        let appearFocused = this.contains(focus) || this._searchResults.contains(focus);
+        const focus = global.stage.get_key_focus();
+        const appearFocused = focus
+            ? this.contains(focus) || this._searchResults.contains(focus)
+            : false;
 
         this._text.set_cursor_visible(appearFocused);
 

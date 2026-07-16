@@ -20,10 +20,10 @@ export const AppMenuItem = GObject.registerClass({
         'activated': {},
     }
 }, class AppMenuItem extends BaseMenuItem.BaseMenuItem {
-    _init(app, isGrid) {
+    _init(app, isGrid, iconSize = Constants.APP_LIST_ICON_SIZE) {
         super._init();
         this._isGrid = isGrid;
-        this._iconSize = Constants.APP_LIST_ICON_SIZE;
+        this._iconSize = iconSize;
         this.app = app;
         this.hasContextMenu = !!this.app;
         this.useTooltip = true;

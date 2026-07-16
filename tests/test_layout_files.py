@@ -114,6 +114,7 @@ def test_community_menu_layout_mapping_and_panel_order():
         assert ARCMENU_UUID in disabled
         assert enabled.index(DASH_TO_PANEL_UUID) < enabled.index(COMMUNITY_MENU_UUID)
         if filename == "classic.txt":
+            assert dtp_values["leftbox-padding"] == "3"
             assert interface_values["icon-theme"] == "'bigicons-papient-light'"
             user_theme_values = _section_key_values(
                 text,

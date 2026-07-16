@@ -18,7 +18,7 @@ export const SessionButton = GObject.registerClass({
         'activated': {},
     }
 }, class SessionButton extends BaseMenuItem.BaseMenuItem {
-    _init(systemActions, accessible_name, icon_name) {        
+    _init(systemActions, accessible_name, icon_name, gicon = null) {
         super._init({
             style_class: "button system-menu-action"
         });
@@ -34,7 +34,7 @@ export const SessionButton = GObject.registerClass({
 
         this._systemActions = systemActions;
         this._icon = new St.Icon({
-            icon_name: icon_name,
+            ...(gicon ? {gicon} : {icon_name}),
             x_expand: true,
             x_align: Clutter.ActorAlign.CENTER,
         });
@@ -58,6 +58,24 @@ export const SessionButton = GObject.registerClass({
         this._icon?.destroy();
         this._icon = null;
 
+        super._onDestroy();
+    }
+});
+
+export const ApplicationButton = GObject.registerClass({
+}, class ApplicationButton extends SessionButton {
+    _init(app) {
+        super._init(null, app.get_name(), null, app.get_app_info().get_icon());
+        this._app = app;
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._app.activate();
+    }
+
+    _onDestroy() {
+        this._app = null;
         super._onDestroy();
     }
 });

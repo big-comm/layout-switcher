@@ -156,6 +156,9 @@ export default class CommunityMenuExtension extends Extension {
     }
 
     _clearPanelColorClass() {
+        for (const menuButton of this.menuButtons ?? [])
+            menuButton.setLightStyle(false);
+
         for (const panel of this._styledPanels ?? []) {
             try {
                 panel.remove_style_class_name(LIGHT_PANEL_STYLE_CLASS);
@@ -173,6 +176,7 @@ export default class CommunityMenuExtension extends Extension {
             return;
 
         for (const menuButton of this.menuButtons ?? []) {
+            menuButton.setLightStyle(true);
             const panel = menuButton.panel;
             if (!panel || this._styledPanels.has(panel))
                 continue;

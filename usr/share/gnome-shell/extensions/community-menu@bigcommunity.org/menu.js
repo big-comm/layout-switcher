@@ -129,6 +129,7 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
     close(animate) {
         const monitor = Main.layoutManager.monitors[this._monitorIndex];
 
+        this._layout?.closePopups?.();
         super.close(animate);
 
         if (this._panelParent?.intellihide?.enabled) {
@@ -229,6 +230,13 @@ export const ApplicationsButton = GObject.registerClass({
         } else {
             this._setMenuArrowSides(St.Side.TOP);
         }
+    }
+
+    setLightStyle(enabled) {
+        if (enabled)
+            this._menu?.actor.add_style_class_name('community-menu-light');
+        else
+            this._menu?.actor.remove_style_class_name('community-menu-light');
     }
 
     _setMenuArrowSides(side) {

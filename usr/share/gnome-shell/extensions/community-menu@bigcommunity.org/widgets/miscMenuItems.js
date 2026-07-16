@@ -95,14 +95,14 @@ export const CategoryMenuItem = GObject.registerClass({
         'selected': { param_types: [GObject.TYPE_STRING] },
     }
 }, class CategoryMenuItem extends BaseMenuItem.BaseMenuItem {
-    _init(category) {
+    _init(category, iconSize = Constants.APP_LIST_ICON_SIZE) {
         super._init();
         this._category = category;
         let name = this._category?.get_name();
         this._icon = new St.Icon({
             gicon: this._category?.get_icon(),
             style_class: 'popup-menu-icon',
-            icon_size: Constants.APP_LIST_ICON_SIZE
+            icon_size: iconSize
         });
         this.add_child(this._icon);
         let categoryLabel = new St.Label({

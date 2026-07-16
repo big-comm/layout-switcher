@@ -101,8 +101,74 @@
     margin: 12px 0 0 0;
 }
 
+.community-menu.community-menu-light .search-entry {
+    color: #2e2e33;
+    caret-color: #2e2e33;
+    selected-color: #ffffff;
+    selection-background-color: #3584e4;
+    background-color: rgba(128, 128, 128, 0.14);
+    border-color: rgba(46, 46, 51, 0.18);
+}
+
+.community-menu.community-menu-light .search-entry .search-entry-icon,
+.community-menu.community-menu-light .search-entry StLabel.hint-text {
+    color: rgba(46, 46, 51, 0.78);
+}
+
 .community-menu .apps-box {
     width: 20em;
+}
+
+.community-menu .classic-sidebar {
+    width: 3.25em;
+    padding: 6px 4px;
+    margin: 4px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(128, 128, 128, 0.14);
+}
+
+.community-menu .classic-sidebar-button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 6px;
+    spacing: 0;
+    box-shadow: none;
+}
+
+.community-menu .classic-sidebar-button > StIcon {
+    icon-size: 26px;
+}
+
+.community-menu.community-menu-light .classic-sidebar-button:hover,
+.community-menu.community-menu-light .classic-sidebar-button:focus,
+.community-menu.community-menu-light .classic-sidebar-button:active {
+    color: #2e2e33;
+    background-color: rgba(46, 46, 51, 0.18);
+}
+
+.community-menu .classic-sidebar-separator {
+    height: 1px;
+    margin: 6px 5px;
+    background-color: rgba(128, 128, 128, 0.35);
+}
+
+.community-menu .apps-only-layout-box .categories-list .popup-menu-item {
+    min-height: 0;
+    padding: 6px 10px;
+    spacing: 8px;
+}
+
+.community-menu.community-category-submenu .apps-list {
+    width: 18em;
+}
+
+.community-menu.community-category-submenu .app-item {
+    min-height: 0;
+    padding: 5px 8px;
+    spacing: 6px;
 }
 
 .community-menu .mint-layout-box .search-entry {
@@ -142,11 +208,17 @@
     font-size: 13pt;
 }
 
-.community-menu .list-search-result {
+.community-menu .community-list-search-result-labels {
     padding: 0;
     spacing: 0;
     border: none;
     text-align: left;
+}
+
+.community-menu .apps-only-layout-box .compact-search-results .popup-menu-item {
+    min-height: 30px;
+    padding: 3px 8px;
+    spacing: 8px;
 }
 
 .community-menu .all-layout-box,

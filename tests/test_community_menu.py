@@ -22,6 +22,7 @@ def test_community_menu_metadata_is_independent():
     assert metadata["gettext-domain"] == "community-menu"
     assert metadata["settings-schema"] == "org.gnome.shell.extensions.community-menu"
     assert "50" in metadata["shell-version"]
+    assert metadata["version"] == 17
 
 
 def test_community_menu_schema_exposes_only_supported_layouts():
@@ -77,3 +78,109 @@ def test_menu_button_active_highlight_is_not_stretched_by_shell_padding():
     assert "changed::color-scheme" in extension_source
     assert "community-menu-light-panel" in stylesheet
     assert "background-color: #222226" in stylesheet
+
+
+def test_classic_categories_are_compact_and_open_cascade_on_hover():
+    layout = (EXTENSION_DIR / "layouts/appListLayout.js").read_text()
+    menu = (EXTENSION_DIR / "menu.js").read_text()
+    sections = (EXTENSION_DIR / "sections.js").read_text()
+    app_items = (EXTENSION_DIR / "widgets/appMenuItem.js").read_text()
+    items = (EXTENSION_DIR / "widgets/miscMenuItems.js").read_text()
+    constants = (EXTENSION_DIR / "constants.js").read_text()
+    stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
+
+    assert "cascadeMenus: true" in layout
+    assert "iconSize: Constants.COMPACT_CATEGORY_ICON_SIZE" in layout
+    assert "monitorIndex: this._monitorIndex" in layout
+    assert "COMPACT_CATEGORY_ICON_SIZE = 24" in constants
+    assert "COMPACT_SUBMENU_ICON_SIZE = 18" in constants
+    assert "APPS_ONLY_MENU_HEIGHT = 502" in constants
+    assert "button.connectObject('notify::hover'" in sections
+    assert "if (button.hover)" in sections
+    assert "this._ensureCategoryMenu(button, category.get_menu_id())" in sections
+    assert "this._openCategoryMenu(button, category.get_menu_id())" in sections
+    assert "const CategoryAppsMenu = class extends PopupMenu.PopupMenu" in sections
+    assert "St.Side.RIGHT" in sections
+    assert "class CascadePopupMenuManager extends PopupMenu.PopupMenuManager" in sections
+    assert "new CascadePopupMenuManager(this, params.cascadeExitActor)" in sections
+    assert "event.get_coords()" in sections
+    assert "this.activeMenu?.close(PopupAnimation.NONE)" in sections
+    assert "this._ensureContent()" in sections
+    assert "this._layout?.closePopups?.()" in menu
+    assert "_init(app, isGrid, iconSize = Constants.APP_LIST_ICON_SIZE)" in app_items
+    assert "_init(category, iconSize = Constants.APP_LIST_ICON_SIZE)" in items
+    assert "icon_size: iconSize" in items
+    assert ".apps-only-layout-box .categories-list .popup-menu-item" in stylesheet
+    assert ".community-category-submenu .apps-list" in stylesheet
+    assert "max-height: 24em" not in stylesheet
+    assert "padding: 6px 10px" in stylesheet
+    assert "spacing: 8px" in stylesheet
+
+
+def test_classic_sidebar_uses_native_apps_and_session_actions():
+    layout = (EXTENSION_DIR / "layouts/appListLayout.js").read_text()
+    sections = (EXTENSION_DIR / "sections.js").read_text()
+    session_buttons = (EXTENSION_DIR / "widgets/sessionButtons.js").read_text()
+    stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
+
+    assert "new Sections.ClassicSidebarSection()" in layout
+    assert "cascadeExitActor: this._sidebar" in layout
+    assert "'org.bigcommunity.CommRelease.desktop'" in sections
+    assert "'org.communitybig.layout-switcher.desktop'" in sections
+    assert "'br.com.biglinux-settings.desktop'" in sections
+    assert "'org.gnome.Calculator.desktop'" in sections
+    assert "'org.gnome.TextEditor.desktop'" in sections
+    assert "new SessionButtons.LogoutButton" in sections
+    assert "new SessionButtons.RestartButton" in sections
+    assert "new SessionButtons.PowerButton" in sections
+    assert "appSystem.lookup_app(desktopId)" in sections
+    assert "export const ApplicationButton" in session_buttons
+    assert "this._app.activate()" in session_buttons
+    assert ".classic-sidebar" in stylesheet
+    assert ".classic-sidebar-separator" in stylesheet
+    assert "icon-size: 26px" in stylesheet
+    assert "border-radius: 10px" in stylesheet
+    assert "background-color: rgba(128, 128, 128, 0.14)" in stylesheet
+    assert ".community-menu-light .classic-sidebar-button:hover" in stylesheet
+    assert "background-color: rgba(46, 46, 51, 0.18)" in stylesheet
+
+
+def test_search_entry_tracks_light_color_scheme():
+    extension_source = (EXTENSION_DIR / "extension.js").read_text()
+    menu_source = (EXTENSION_DIR / "menu.js").read_text()
+    stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
+
+    assert "menuButton.setLightStyle(true)" in extension_source
+    assert "menuButton.setLightStyle(false)" in extension_source
+    assert "setLightStyle(enabled)" in menu_source
+    assert "community-menu-light" in menu_source
+    assert ".community-menu.community-menu-light .search-entry" in stylesheet
+    assert "background-color: rgba(128, 128, 128, 0.14)" in stylesheet
+    assert "color: #2e2e33" in stylesheet
+
+
+def test_classic_search_results_are_compact_without_description_tooltips():
+    layout = (EXTENSION_DIR / "layouts/appListLayout.js").read_text()
+    sections = (EXTENSION_DIR / "sections.js").read_text()
+    search = (EXTENSION_DIR / "search.js").read_text()
+    stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
+
+    assert "Constants.APP_LIST_ICON_SIZE,\n            true" in layout
+    assert "compactSearch = false" in sections
+    assert "isGrid, monitorIndex, compactSearch" in sections
+    assert "this.useTooltip = !compact" in search
+    assert "this.description = null" in search
+    assert "ellipsize: Pango.EllipsizeMode.END" in search
+    assert "community-list-search-result-labels" in search
+    assert "style_class: 'list-search-result'" not in search
+    assert "compact-search-results" in search
+    assert ".compact-search-results .popup-menu-item" in stylesheet
+    assert "min-height: 30px" in stylesheet
+
+
+def test_search_entry_handles_temporarily_missing_stage_focus():
+    source = (EXTENSION_DIR / "widgets/searchEntry.js").read_text()
+
+    assert "const appearFocused = focus" in source
+    assert "!this._searchResults || !this._text" in source
+    assert "this.contains(focus) || this._searchResults.contains(focus)" in source

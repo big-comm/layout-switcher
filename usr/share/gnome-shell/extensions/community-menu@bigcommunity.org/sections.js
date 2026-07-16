@@ -22,10 +22,13 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {PopupAnimation} from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import * as AppMenuItem from './widgets/appMenuItem.js';
@@ -38,6 +41,75 @@ import * as UserWidgets from './widgets/userWidgets.js';
 import * as Utils from './utils.js';
 import * as Widgets from './widgets/widgets.js';
 import {getOrientationProp} from './utils.js';
+
+const CLASSIC_SHORTCUT_IDS = [
+    'org.bigcommunity.CommRelease.desktop',
+    'org.communitybig.layout-switcher.desktop',
+    'br.com.biglinux-settings.desktop',
+    'org.gnome.Calculator.desktop',
+    'org.gnome.TextEditor.desktop',
+];
+
+export const ClassicSidebarSection = GObject.registerClass({
+    Signals: {
+        'activated': {},
+    }
+}, class ClassicSidebarSection extends St.BoxLayout {
+    _init() {
+        super._init({
+            ...getOrientationProp(true),
+            style_class: 'classic-sidebar',
+            y_expand: true,
+        });
+
+        this._buttons = [];
+        this._systemActions = SystemActions.getDefault();
+        this._systemActions.forceUpdate();
+
+        const shortcuts = new St.BoxLayout({
+            ...getOrientationProp(true),
+            style_class: 'classic-sidebar-shortcuts',
+            y_expand: true,
+            y_align: Clutter.ActorAlign.START,
+        });
+        this.add_child(shortcuts);
+
+        const appSystem = Shell.AppSystem.get_default();
+        for (const desktopId of CLASSIC_SHORTCUT_IDS) {
+            const app = appSystem.lookup_app(desktopId);
+            if (!app)
+                continue;
+
+            const button = new SessionButtons.ApplicationButton(app);
+            this._addButton(button, shortcuts);
+        }
+
+        this._separator = new St.Widget({
+            style_class: 'classic-sidebar-separator',
+            x_expand: true,
+        });
+        this.add_child(this._separator);
+
+        this._addButton(new SessionButtons.LogoutButton(this._systemActions), this);
+        this._addButton(new SessionButtons.RestartButton(this._systemActions), this);
+        this._addButton(new SessionButtons.PowerButton(this._systemActions), this);
+
+        this.connect('destroy', () => this._onDestroy());
+    }
+
+    _addButton(button, parent) {
+        button.add_style_class_name('classic-sidebar-button');
+        button.connectObject('activated', () => this.emit('activated'), this);
+        parent.add_child(button);
+        this._buttons.push(button);
+    }
+
+    _onDestroy() {
+        this._buttons = null;
+        this._separator = null;
+        this._systemActions = null;
+    }
+});
 
 export const SessionButtonsSection = GObject.registerClass({
     Signals: {
@@ -188,15 +260,47 @@ export const ShortcutsSection = GObject.registerClass({
     }
 });
 
+class CascadePopupMenuManager extends PopupMenu.PopupMenuManager {
+    constructor(owner, exitActor) {
+        super(owner);
+        this._exitActor = exitActor;
+    }
+
+    _onCapturedEvent(actor, event) {
+        if (event.type() === Clutter.EventType.ENTER ||
+            event.type() === Clutter.EventType.MOTION) {
+            const [x, y] = event.get_coords();
+            const [actorX, actorY] = this._exitActor.get_transformed_position();
+            const actorWidth = this._exitActor.get_width();
+            const actorHeight = this._exitActor.get_height();
+            const insideExitActor = x >= actorX && x <= actorX + actorWidth &&
+                y >= actorY && y <= actorY + actorHeight;
+
+            if (insideExitActor)
+                this.activeMenu?.close(PopupAnimation.NONE);
+        }
+
+        return super._onCapturedEvent(actor, event);
+    }
+}
+
 export const CategoriesListSection = GObject.registerClass({
     Signals: {
         'selected': { param_types: [GObject.TYPE_STRING] },
+        'activated': {},
     }
 }, class CategoriesListSection extends St.Bin {
     // Initialize the button
-    _init(appsBackend) {
+    _init(appsBackend, params = {}) {
         super._init({ x_expand: true, y_expand: true, style_class: 'categories-list', accessible_name: _('Categories')});
         this._appsBackend = appsBackend;
+        this._cascadeMenus = params.cascadeMenus ?? false;
+        this._iconSize = params.iconSize ?? Constants.APP_LIST_ICON_SIZE;
+        this._monitorIndex = params.monitorIndex ?? 0;
+        this._categoryMenus = new Map();
+        this._submenuManager = this._cascadeMenus
+            ? new CascadePopupMenuManager(this, params.cascadeExitActor)
+            : null;
         this._categoryButtons = new Map();
         this._categoriesBox = new St.BoxLayout({...getOrientationProp(true)});
         this._scrollBox = new Widgets.ScrollView({
@@ -221,6 +325,7 @@ export const CategoriesListSection = GObject.registerClass({
 
     _reload() {
         this._clear();
+        this._clearCategoryMenus();
         this._clearCategoryButtons();
         this._load();
     }
@@ -228,9 +333,16 @@ export const CategoriesListSection = GObject.registerClass({
     _addCategoryButton(category) {
         let button = this._categoryButtons.get(category);
         if (!button) {
-            button = new MiscMenuItems.CategoryMenuItem(category);
+            button = new MiscMenuItems.CategoryMenuItem(category, this._iconSize);
             this._categoryButtons.set(category, button);
             button.connectObject('selected', this._selected.bind(this), this);
+            if (this._cascadeMenus) {
+                this._ensureCategoryMenu(button, category.get_menu_id());
+                button.connectObject('notify::hover', () => {
+                    if (button.hover)
+                        this._openCategoryMenu(button, category.get_menu_id());
+                }, this);
+            }
         }
         if (!button.get_parent()) {
             this._categoriesBox.add_child(button);
@@ -249,7 +361,48 @@ export const CategoriesListSection = GObject.registerClass({
     }
 
     _selected(categoryItem, category_menu_id) {
+        if (this._cascadeMenus) {
+            this._openCategoryMenu(categoryItem, category_menu_id);
+            return;
+        }
         this.emit('selected', category_menu_id);
+    }
+
+    _openCategoryMenu(categoryItem, categoryMenuId) {
+        if (!this._cascadeMenus || !categoryMenuId)
+            return;
+
+        const menu = this._ensureCategoryMenu(categoryItem, categoryMenuId);
+        if (!menu.isOpen)
+            menu.open(PopupAnimation.NONE);
+    }
+
+    _ensureCategoryMenu(categoryItem, categoryMenuId) {
+        let menu = this._categoryMenus.get(categoryItem);
+        if (!menu) {
+            menu = new CategoryAppsMenu(
+                categoryItem,
+                this._appsBackend,
+                categoryMenuId,
+                this._monitorIndex,
+                () => this.emit('activated'));
+            this._categoryMenus.set(categoryItem, menu);
+            this._submenuManager.addMenu(menu);
+        }
+        return menu;
+    }
+
+    closePopups() {
+        this._categoryMenus?.forEach(menu => {
+            if (menu.isOpen)
+                menu.close(PopupAnimation.NONE);
+        });
+    }
+
+    _clearCategoryMenus() {
+        this.closePopups();
+        this._categoryMenus?.forEach(menu => menu.destroy());
+        this._categoryMenus?.clear();
     }
 
     grab_key_focus() {
@@ -269,8 +422,14 @@ export const CategoriesListSection = GObject.registerClass({
     }
 
     _onDestroy() {
+        this._clearCategoryMenus();
         this._appsBackend?.disconnectObject(this);
         this._appsBackend = null;
+        this._cascadeMenus = false;
+        this._iconSize = 0;
+        this._monitorIndex = 0;
+        this._categoryMenus = null;
+        this._submenuManager = null;
 
         this._categoryButtons.clear();
         this._categoryButtons = null;
@@ -452,18 +611,100 @@ export const CategoriesHoverSection = GObject.registerClass({
     }
 });
 
+const CategoryAppsMenu = class extends PopupMenu.PopupMenu {
+    constructor(
+        sourceActor,
+        appsBackend,
+        categoryMenuId,
+        monitorIndex,
+        onActivated) {
+        const side = sourceActor.get_text_direction() === Clutter.TextDirection.RTL
+            ? St.Side.LEFT
+            : St.Side.RIGHT;
+        super(sourceActor, 0.5, side);
+
+        this.actor.add_style_class_name('panel-menu');
+        this.actor.add_style_class_name('community-menu');
+        this.actor.add_style_class_name('community-category-submenu');
+
+        this._appsBackend = appsBackend;
+        this._categoryMenuId = categoryMenuId;
+        this._monitorIndex = monitorIndex;
+        this._onActivated = onActivated;
+        this._section = new PopupMenu.PopupMenuSection();
+        this.addMenuItem(this._section);
+        this.appsSection = null;
+
+        Main.uiGroup.add_child(this.actor);
+        this.actor.hide();
+    }
+
+    open(animate) {
+        this._ensureContent();
+        super.open(animate);
+        this.sourceActor.add_style_pseudo_class('active');
+    }
+
+    _ensureContent() {
+        if (this.appsSection)
+            return;
+
+        this.appsSection = new AppsListSection(
+            this._appsBackend,
+            false,
+            this._monitorIndex,
+            this._categoryMenuId,
+            Constants.COMPACT_SUBMENU_ICON_SIZE);
+        this.appsSection.connectObject('activated', () => {
+            this.close(PopupAnimation.NONE);
+            this._onActivated?.();
+        }, this);
+        this._section.actor.add_child(this.appsSection);
+    }
+
+    close(animate) {
+        const wasOpen = this.isOpen;
+        super.close(animate);
+        if (wasOpen) {
+            this.sourceActor?.remove_style_pseudo_class('active');
+            this.sourceActor?.sync_hover();
+        }
+    }
+
+    destroy() {
+        this.actor?.get_parent()?.remove_child(this.actor);
+        this.appsSection?.destroy();
+        this.appsSection = null;
+        this._appsBackend = null;
+        this._categoryMenuId = null;
+        this._monitorIndex = 0;
+        this._onActivated = null;
+        this._section?.destroy();
+        this._section = null;
+        super.destroy();
+    }
+};
+
 export const AppsListSection = GObject.registerClass({
     Signals: {
         'activated': {},
     }
 }, class AppsListSection extends St.Bin {
-    _init(appsBackend, isGrid, monitorIndex) {
+    _init(
+        appsBackend,
+        isGrid,
+        monitorIndex,
+        initialCategory = null,
+        appIconSize = Constants.APP_LIST_ICON_SIZE,
+        compactSearch = false) {
         super._init({ x_expand: true, y_expand: true, style_class: 'apps-list', accessible_name: _('Applications')});
         this._appsBackend = appsBackend;
         this._appButtons = new Map();
-        this._category = null;
+        this._category = initialCategory;
+        this._appIconSize = appIconSize;
         this._searchTerms = [];
-        this.searchResults = new Search.SearchResults(isGrid, monitorIndex);
+        this.searchResults = new Search.SearchResults(
+            isGrid, monitorIndex, compactSearch);
         this.searchResults.connectObject('activated', this._activated.bind(this), this);
         this._appsBox = new St.BoxLayout({...getOrientationProp(true)});
 
@@ -546,7 +787,10 @@ export const AppsListSection = GObject.registerClass({
     _addAppButton(app) {
         let button = this._appButtons.get(app);
         if (!button) {
-            button = new AppMenuItem.AppMenuItem(app, (this.grid != null));
+            button = new AppMenuItem.AppMenuItem(
+                app,
+                this.grid != null,
+                this._appIconSize);
             this._appButtons.set(app, button);
             button.connectObject('activated', this._activated.bind(this), this);
         }
@@ -593,6 +837,7 @@ export const AppsListSection = GObject.registerClass({
 
     searchActive() {
         this._category = null;
+        this._appIconSize = 0;
         this._scrollBox.resetScroll();
         if (!this._appsBox.contains(this.searchResults)) {
             const terms = this.searchResults.terms;

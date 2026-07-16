@@ -3,6 +3,8 @@ import GLib from 'gi://GLib';
 
 export const TOOLTIP_TIMEOUT = 500;
 export const APP_LIST_ICON_SIZE = 32;
+export const COMPACT_CATEGORY_ICON_SIZE = 24;
+export const COMPACT_SUBMENU_ICON_SIZE = 18;
 export const APP_GRID_ICON_SIZE = 48;
 
 export const TooltipLocation = {
@@ -44,7 +46,7 @@ export const LAYOUTS = {
     MINT: 4
 };
 
-export const APPS_ONLY_MENU_HEIGHT = 542;
+export const APPS_ONLY_MENU_HEIGHT = 502;
 export const GRID_MENU_HEIGHT = 600;
 export const AVAIL_HEIGHT_PADDING = 24;
 export const INTELLIHIDE_TIMEOUT = 750;

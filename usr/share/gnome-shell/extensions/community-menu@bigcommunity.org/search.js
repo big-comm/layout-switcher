@@ -3,6 +3,7 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
@@ -29,11 +30,13 @@ const ListSearchResult = GObject.registerClass({
         'activated': {},
     }
 }, class ListSearchResult extends BaseMenuItem.BaseMenuItem {
-    _init(provider, metaInfo, resultsView) {
+    _init(provider, metaInfo, resultsView, compact = false) {
         super._init();
-        this.useTooltip = true;
+        this.useTooltip = !compact;
 
-        this._iconSize = Constants.APP_LIST_ICON_SIZE;
+        this._iconSize = compact
+            ? Constants.COMPACT_CATEGORY_ICON_SIZE
+            : Constants.APP_LIST_ICON_SIZE;
         this.metaInfo = metaInfo;
         this.provider = provider;
         this.resultsView = resultsView;
@@ -55,12 +58,18 @@ const ListSearchResult = GObject.registerClass({
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.CENTER,
         });
+        if (compact) {
+            this.label.clutter_text.set({
+                ellipsize: Pango.EllipsizeMode.END,
+                single_line_mode: true,
+            });
+        }
         this.label_actor = this.label;
 
-        if (this.metaInfo['description']) {
+        if (this.metaInfo['description'] && !compact) {
             this.description = this.metaInfo['description'];
             const labelBox = new St.BoxLayout({
-                style_class: 'list-search-result',
+                style_class: 'community-list-search-result-labels',
                 ...getOrientationProp(true),
                 x_expand: true,
                 x_align: Clutter.ActorAlign.FILL,
@@ -142,7 +151,7 @@ const ListSearchResult = GObject.registerClass({
 
 const AppSearchResult = GObject.registerClass({
 }, class AppSearchResult extends AppMenuItem.AppMenuItem {
-    _init(provider, metaInfo, resultsView, isGrid) {
+    _init(provider, metaInfo, resultsView, isGrid, compact = false) {
         this.metaInfo = metaInfo;
         this.provider = provider;
         this.resultsView = resultsView;
@@ -150,7 +159,18 @@ const AppSearchResult = GObject.registerClass({
         const appSys = Shell.AppSystem.get_default();
         const app = appSys.lookup_app(this.metaInfo['id']) || appSys.lookup_app(this.provider.id);
 
-        super._init(app, isGrid);
+        super._init(
+            app,
+            isGrid,
+            compact ? Constants.COMPACT_CATEGORY_ICON_SIZE : Constants.APP_LIST_ICON_SIZE);
+        if (compact) {
+            this.useTooltip = false;
+            this.description = null;
+            this.label_actor.clutter_text.set({
+                ellipsize: Pango.EllipsizeMode.END,
+                single_line_mode: true,
+            });
+        }
         St.TextureCache.get_default().connectObject(
             'icon-theme-changed', this._updateIcon.bind(this), this);
 
@@ -341,8 +361,9 @@ const SearchResultsBase = GObject.registerClass({
 
 const ListSearchResults = GObject.registerClass({
 }, class ListSearchResults extends SearchResultsBase {
-    _init(provider, resultsView) {
+    _init(provider, resultsView, compact = false) {
         super._init(provider, resultsView);
+        this._compact = compact;
 
         this._container = new St.BoxLayout({
             ...getOrientationProp(true),
@@ -353,7 +374,7 @@ const ListSearchResults = GObject.registerClass({
             style: 'margin-top: 8px;',
         });
 
-        this.providerInfo = new ProviderInfo(provider);
+        this.providerInfo = new ProviderInfo(provider, compact);
         this.providerInfo.connect('activated', () => {
             this.emit('activated');
         });
@@ -389,7 +410,8 @@ const ListSearchResults = GObject.registerClass({
     }
 
     _createResultDisplay(meta) {
-        return new ListSearchResult(this.provider, meta, this._resultsView);
+        return new ListSearchResult(
+            this.provider, meta, this._resultsView, this._compact);
     }
 
     _addItem(display) {
@@ -408,8 +430,9 @@ const ListSearchResults = GObject.registerClass({
 
 const AppSearchResults = GObject.registerClass({
 }, class AppSearchResults extends SearchResultsBase {
-    _init(provider, resultsView, isGrid) {
+    _init(provider, resultsView, isGrid, compact = false) {
         super._init(provider, resultsView);
+        this._compact = compact;
 
         if (isGrid) {
             this._grid = new Widgets.Grid(Constants.COLUMN_COUNT, Constants.COLUMN_SPACING, Constants.ROW_SPACING);
@@ -443,7 +466,8 @@ const AppSearchResults = GObject.registerClass({
     }
 
     _createResultDisplay(meta) {
-        return new AppSearchResult(this.provider, meta, this._resultsView, !!this._grid);
+        return new AppSearchResult(
+            this.provider, meta, this._resultsView, !!this._grid, this._compact);
     }
 
     _addItem(display) {
@@ -481,7 +505,7 @@ export const SearchResults = GObject.registerClass({
         'screenshot-activated': {},
     }
 }, class SearchResults extends St.BoxLayout {
-    _init(isGrid, monitorIndex) {
+    _init(isGrid, monitorIndex, compact = false) {
         super._init({
             ...getOrientationProp(true),
             y_expand: true,
@@ -490,6 +514,9 @@ export const SearchResults = GObject.registerClass({
         });
 
         this._isGrid = isGrid;
+        this._compact = compact;
+        if (compact)
+            this.add_style_class_name('compact-search-results');
         this._displayId = `display_community-menu_${monitorIndex}`;
 
         this._parentalControlsManager = ParentalControlsManager.getDefault();
@@ -762,9 +789,10 @@ export const SearchResults = GObject.registerClass({
 
         let providerDisplay;
         if (provider.appInfo)
-            providerDisplay = new ListSearchResults(provider, this);
+            providerDisplay = new ListSearchResults(provider, this, this._compact);
         else
-            providerDisplay = new AppSearchResults(provider, this, this._isGrid);
+            providerDisplay = new AppSearchResults(
+                provider, this, this._isGrid, this._compact);
 
         providerDisplay.connect('activated', () => {
             this.emit('activated');
@@ -906,16 +934,18 @@ const ProviderInfo = GObject.registerClass({
         'activated': {},
     }
 }, class ProviderInfo extends BaseMenuItem.BaseMenuItem {
-    _init(provider) {
+    _init(provider, compact = false) {
         this.provider = provider;
         this._terms = [];
         super._init();
-        this.useTooltip = true;
+        this.useTooltip = !compact;
         this._appInfo = provider.appInfo;
         this.x_expand = false;
         this.x_align = Clutter.ActorAlign.START;
 
-        this.description = this._appInfo.get_description ? this._appInfo.get_description() : null;
+        this.description = compact
+            ? null
+            : this._appInfo.get_description?.() ?? null;
 
         this.label = new St.Label({
             text: this._appInfo.get_name(),
@@ -923,6 +953,12 @@ const ProviderInfo = GObject.registerClass({
             y_align: Clutter.ActorAlign.CENTER,
             style: 'font-weight: bold;',
         });
+        if (compact) {
+            this.label.clutter_text.set({
+                ellipsize: Pango.EllipsizeMode.END,
+                single_line_mode: true,
+            });
+        }
         this.label_actor = this.label;
 
         this._moreLabel = new St.Label({
