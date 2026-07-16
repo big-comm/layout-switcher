@@ -12,6 +12,7 @@ depends=(
     # GNOME Shell extensions used by the bundled layouts
     'gnome-shell-big-shot'
     'gnome-shell-extension-appindicator'
+    'gnome-shell-extension-arc-menu'
     'gnome-shell-extension-blur-my-shell'
     'gnome-shell-extension-copyous'
     'gnome-shell-extension-dash-to-dock'

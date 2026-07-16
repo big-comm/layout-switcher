@@ -41,10 +41,10 @@ def test_community_menu_schema_exposes_only_supported_layouts():
     assert [key.attrib["name"] for key in schema.findall("key")] == ["layout"]
 
 
-def test_arcmenu_is_not_a_package_dependency():
+def test_arcmenu_is_a_package_dependency_for_hybrid():
     pkgbuild = (ROOT / "pkgbuild/PKGBUILD").read_text()
 
-    assert "gnome-shell-extension-arc-menu" not in pkgbuild
+    assert "gnome-shell-extension-arc-menu" in pkgbuild
     assert "GPL-2.0-or-later" in pkgbuild
 
 

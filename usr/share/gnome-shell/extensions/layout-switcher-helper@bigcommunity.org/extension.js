@@ -69,16 +69,18 @@ const LIGHT_STYLE_UUID = 'light-style@gnome-shell-extensions.gcampax.github.com'
 const DTP_UUID = 'dash-to-panel@jderose9.github.com';
 const KIWI_UUID = 'kiwi@kemma';
 const COMMUNITY_MENU_UUID = 'community-menu@bigcommunity.org';
+const ARCMENU_UUID = 'arcmenu@arcmenu.com';
 const ORCHIS_SHELL_DARK = 'Big-Blue';
 const ORCHIS_SHELL_LIGHT = 'Big-Blue-Light';
 const CLASSIC_MENU_LAYOUT = 1; // APPS_ONLY
 const DESK_UX_MENU_LAYOUT = 3; // APP_GRID
 const HYBRID_MENU_LAYOUT = 4; // MINT
+const ARCMENU_HYBRID_LAYOUT = 'enterprise';
 const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_LAYOUT]);
 // Build marker within a protocol version — lets a deploy verify over Ping
 // that the RUNNING module is the freshly-installed code (the Shell caches
 // ES modules; only a reload/relogin picks a new file up).
-const HELPER_BUILD = 22;
+const HELPER_BUILD = 23;
 
 // GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
 // DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
@@ -181,10 +183,9 @@ export default class LayoutSwitcherHelper extends Extension {
         }
         this._cancelled = false;
         this._export();
-        // Live appearance follower. Classic uses GNOME's native Shell in both
-        // modes; the other Community layouts use Big-Blue in dark mode and
-        // GNOME's light-style in light mode. Papient variants follow the app
-        // color scheme in all six layouts.
+        // Live appearance follower. Classic/Hybrid use GNOME's native Shell;
+        // the other Community layouts use their configured shell themes.
+        // Papient variants follow the app color scheme in all six layouts.
         if (!this._ifaceSettings) {
             try {
                 this._ifaceSettings = new Gio.Settings({
@@ -423,15 +424,29 @@ export default class LayoutSwitcherHelper extends Extension {
             // four layouts use the unsuffixed design in light mode.
             let explicitLightIcons = false;
             let communityLayout = -1;
-            try {
-                const communitySettings = new Gio.Settings({
-                    schema_id: 'org.gnome.shell.extensions.community-menu',
-                });
-                communityLayout = communitySettings.get_enum('layout');
-                explicitLightIcons = COMMUNITY_LIGHT_ICON_LAYOUTS.has(
-                    communityLayout);
-            } catch (e) {
-                logHelper(`community layout read failed: ${e}`);
+            let hybridArcMenu = false;
+            if (live.has(COMMUNITY_MENU_UUID)) {
+                try {
+                    const communitySettings = new Gio.Settings({
+                        schema_id: 'org.gnome.shell.extensions.community-menu',
+                    });
+                    communityLayout = communitySettings.get_enum('layout');
+                    explicitLightIcons = COMMUNITY_LIGHT_ICON_LAYOUTS.has(
+                        communityLayout);
+                } catch (e) {
+                    logHelper(`community layout read failed: ${e}`);
+                }
+            } else if (live.has(ARCMENU_UUID)) {
+                try {
+                    const arcMenuSettings = new Gio.Settings({
+                        schema_id: 'org.gnome.shell.extensions.arcmenu',
+                    });
+                    hybridArcMenu = arcMenuSettings.get_string('menu-layout') ===
+                        ARCMENU_HYBRID_LAYOUT;
+                    explicitLightIcons = hybridArcMenu;
+                } catch (e) {
+                    logHelper(`ArcMenu layout read failed: ${e}`);
+                }
             }
             try {
                 const icon = this._ifaceSettings.get_string('icon-theme');
@@ -454,11 +469,11 @@ export default class LayoutSwitcherHelper extends Extension {
             // BigGnome and the Kiwi layouts keep an always-dark Shell. Their
             // app/icon preference above still follows light/dark.
             if (live.has(KIWI_UUID) || !live.has(DTP_UUID) ||
-                !live.has(COMMUNITY_MENU_UUID))
+                (!live.has(COMMUNITY_MENU_UUID) && !hybridArcMenu))
                 return;
 
             const nativeShell = communityLayout === CLASSIC_MENU_LAYOUT ||
-                communityLayout === HYBRID_MENU_LAYOUT;
+                communityLayout === HYBRID_MENU_LAYOUT || hybridArcMenu;
             const deskUxOrchisShell = communityLayout === DESK_UX_MENU_LAYOUT;
             const wantOn = deskUxOrchisShell
                 ? USER_THEME_UUID

@@ -28,9 +28,8 @@ LAYOUT_SWITCHER_HELPER_UUID = "layout-switcher-helper@bigcommunity.org"
 COMMUNITY_MENU_LAYOUTS = {
     "classic.txt": "APPS_ONLY",
     "desk-ux.txt": "APP_GRID",
-    "hybrid.txt": "MINT",
 }
-NON_COMMUNITY_MENU_LAYOUTS = {"biggnome.txt", "g-unity.txt", "minimal.txt"}
+NO_PANEL_MENU_LAYOUTS = {"biggnome.txt", "g-unity.txt", "minimal.txt"}
 
 
 def _read_key_values(layout_text: str):
@@ -114,7 +113,7 @@ def test_community_menu_layout_mapping_and_panel_order():
         assert ARCMENU_UUID not in enabled
         assert ARCMENU_UUID in disabled
         assert enabled.index(DASH_TO_PANEL_UUID) < enabled.index(COMMUNITY_MENU_UUID)
-        if filename in {"classic.txt", "hybrid.txt"}:
+        if filename == "classic.txt":
             assert interface_values["icon-theme"] == "'bigicons-papient-light'"
             user_theme_values = _section_key_values(
                 text,
@@ -128,18 +127,52 @@ def test_community_menu_layout_mapping_and_panel_order():
         elif filename == "desk-ux.txt":
             assert interface_values["icon-theme"] == "'bigicons-papient-dark'"
 
-        if filename == "hybrid.txt":
-            assert dtp_values["appicon-margin"] == "0"
-            assert dtp_values["appicon-padding"] == "1"
-            assert dtp_values["panel-sizes"] == "'{\"0\":38}'"
-            assert dtp_values["leftbox-padding"] == "6"
-            assert dtp_values["animate-appicon-hover-animation-type"] == "'SIMPLE'"
-            assert "'SIMPLE': uint32 220" in dtp_values[
-                "animate-appicon-hover-animation-duration"
-            ]
-            assert "'SIMPLE': 0.080000000000000002" in dtp_values[
-                "animate-appicon-hover-animation-travel"
-            ]
+
+
+def test_hybrid_uses_enterprise_arcmenu_and_compact_panel():
+    text = (LAYOUT_DIR / "hybrid.txt").read_text()
+    enabled, disabled = _shell_extension_lists(text)
+    menu_values = _section_key_values(
+        text,
+        "org/gnome/shell/extensions/arcmenu",
+    )
+    dtp_values = _section_key_values(
+        text,
+        "org/gnome/shell/extensions/dash-to-panel",
+    )
+    interface_values = _section_key_values(text, "org/gnome/desktop/interface")
+
+    assert ARCMENU_UUID in enabled
+    assert ARCMENU_UUID not in disabled
+    assert COMMUNITY_MENU_UUID not in enabled
+    assert COMMUNITY_MENU_UUID in disabled
+    assert enabled.index(DASH_TO_PANEL_UUID) < enabled.index(ARCMENU_UUID)
+    assert menu_values["menu-layout"] == "'enterprise'"
+    assert menu_values["menu-height"] == "630"
+    assert menu_values["menu-width-adjustment"] == "325"
+    assert menu_values["left-panel-width"] == "290"
+    assert menu_values["menu-button-icon-size"] == "36"
+    assert menu_values["menu-button-icon"] == (
+        "'/usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/"
+        "community-menu.svg'"
+    )
+    assert menu_values["override-menu-theme"] == "false"
+    assert interface_values["icon-theme"] == "'bigicons-papient-light'"
+    assert USER_THEME_UUID not in enabled
+    assert USER_THEME_UUID in disabled
+    assert LIGHT_STYLE_UUID in enabled
+    assert LIGHT_STYLE_UUID not in disabled
+    assert dtp_values["appicon-margin"] == "0"
+    assert dtp_values["appicon-padding"] == "1"
+    assert dtp_values["panel-sizes"] == "'{\"0\":38}'"
+    assert dtp_values["leftbox-padding"] == "3"
+    assert dtp_values["animate-appicon-hover-animation-type"] == "'SIMPLE'"
+    assert "'SIMPLE': uint32 220" in dtp_values[
+        "animate-appicon-hover-animation-duration"
+    ]
+    assert "'SIMPLE': 0.080000000000000002" in dtp_values[
+        "animate-appicon-hover-animation-travel"
+    ]
 
 
 def test_normal_layout_switch_uses_only_shell_curtain():
@@ -171,8 +204,8 @@ def test_only_desk_ux_uses_floating_panel_geometry():
             assert values.get("panel-top-bottom-margins", "0") == "0"
 
 
-def test_community_menu_is_disabled_outside_its_three_layouts():
-    for filename in NON_COMMUNITY_MENU_LAYOUTS:
+def test_panel_menus_are_disabled_in_shell_native_layouts():
+    for filename in NO_PANEL_MENU_LAYOUTS:
         text = (LAYOUT_DIR / filename).read_text()
         enabled, disabled = _shell_extension_lists(text)
 
@@ -182,7 +215,10 @@ def test_community_menu_is_disabled_outside_its_three_layouts():
         assert ARCMENU_UUID in disabled
 
 
-def test_layouts_do_not_ship_arcmenu_settings():
+def test_only_hybrid_ships_arcmenu_settings():
     section = "[org/gnome/shell/extensions/arcmenu]"
     for layout_file in LAYOUT_DIR.glob("*.txt"):
-        assert section not in layout_file.read_text()
+        if layout_file.name == "hybrid.txt":
+            assert section in layout_file.read_text()
+        else:
+            assert section not in layout_file.read_text()

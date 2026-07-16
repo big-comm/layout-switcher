@@ -4,5 +4,5 @@
   "description": "In-shell helper for the Community Layout Switcher. Performs live layout switches (extension enable/disable/reload + shell stylesheet reload) from inside GNOME Shell, driven over D-Bus by the layout-switcher app. Running inside the shell avoids the cross-process race that hangs gnome-shell during a switch and lets appearance-owning extensions (dash-to-panel, arcmenu, kiwi, light-style, user-theme) re-apply without a logout.",
   "shell-version": ["45", "46", "47", "48", "49", "50"],
   "url": "https://github.com/BigCommunity/layout-switcher",
-  "version": 22
+  "version": 23
 }
