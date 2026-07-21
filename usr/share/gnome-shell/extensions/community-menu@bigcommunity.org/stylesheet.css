@@ -55,6 +55,16 @@
     background-color: #222226;
 }
 
+/* Desk UX keeps a dark panel in both color schemes. */
+#panel.dashtopanelMainPanel.community-menu-dark-panel .panel-button {
+    color: #fafafb;
+}
+
+#panel.dashtopanelMainPanel.community-menu-dark-panel
+.panel-button#panelActivities .workspace-dot {
+    background-color: #fafafb;
+}
+
 #panel.dashtopanelMainPanel:overview .panel-button.screen-recording-indicator,
 #panel.dashtopanelMainPanel:overview .panel-button.screen-sharing-indicator {
     color: #fafafb;

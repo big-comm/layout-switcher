@@ -77,10 +77,11 @@ const DESK_UX_MENU_LAYOUT = 3; // APP_GRID
 const HYBRID_MENU_LAYOUT = 4; // MINT
 const ARCMENU_HYBRID_LAYOUT = 'enterprise';
 const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_LAYOUT]);
+const LIGHT_OVERVIEW_PANEL_CLASS = 'layout-switcher-light-overview-panel';
 // Build marker within a protocol version — lets a deploy verify over Ping
 // that the RUNNING module is the freshly-installed code (the Shell caches
 // ES modules; only a reload/relogin picks a new file up).
-const HELPER_BUILD = 26;
+const HELPER_BUILD = 27;
 
 // GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
 // DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
@@ -197,11 +198,13 @@ export default class LayoutSwitcherHelper extends Extension {
                 });
                 this._schemeSignal = this._ifaceSettings.connect(
                     'changed::color-scheme', () => this._onColorSchemeChanged());
+                this._syncLightOverviewPanelClass();
                 // At login the helper loads before panels/menus. Reconcile
                 // once after the target extension set has finished loading.
                 this._sleep(1000).then(() => {
                     this._onColorSchemeChanged();
                     this._setupPanelSystemIndicator();
+                    this._syncLightOverviewPanelClass();
                 });
             } catch (e) {
                 logHelper(`color-scheme follower unavailable: ${e}`);
@@ -262,6 +265,7 @@ export default class LayoutSwitcherHelper extends Extension {
     // session-mode transition, and never leave the curtain up.
     _hardCancel() {
         this._teardownPanelSystemIndicator();
+        this._clearLightOverviewPanelClass();
         this._unexport();
         if (this._schemeDebounce) {
             GLib.Source.remove(this._schemeDebounce);
@@ -491,6 +495,48 @@ export default class LayoutSwitcherHelper extends Extension {
         indicator?._syncIndicatorsVisible?.();
     }
 
+    _clearLightOverviewPanelClass() {
+        for (const panel of this._lightOverviewPanels ?? []) {
+            try {
+                panel.remove_style_class_name(LIGHT_OVERVIEW_PANEL_CLASS);
+            } catch (e) {
+                logHelper(`light overview panel cleanup failed: ${e}`);
+            }
+        }
+        this._lightOverviewPanels?.clear();
+    }
+
+    _syncLightOverviewPanelClass() {
+        this._clearLightOverviewPanelClass();
+        if (!this._ifaceSettings ||
+            this._ifaceSettings.get_string('color-scheme') === 'prefer-dark' ||
+            !this._extensionWillRun(DTP_UUID) ||
+            !this._extensionWillRun(ARCMENU_UUID))
+            return;
+
+        try {
+            const settings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.arcmenu',
+            });
+            if (settings.get_string('menu-layout') !== ARCMENU_HYBRID_LAYOUT)
+                return;
+        } catch (e) {
+            logHelper(`ArcMenu layout read failed: ${e}`);
+            return;
+        }
+
+        const panels = global.dashToPanel?.panels
+            ?.map(panel => panel?.panel)
+            .filter(Boolean) ?? [];
+        if (panels.length === 0)
+            panels.push(Main.panel);
+        this._lightOverviewPanels ??= new Set();
+        for (const panel of panels) {
+            panel.add_style_class_name(LIGHT_OVERVIEW_PANEL_CLASS);
+            this._lightOverviewPanels.add(panel);
+        }
+    }
+
     // ── Live color-scheme follower ──────────────────────────────────────────
 
     _onColorSchemeChanged() {
@@ -677,6 +723,7 @@ export default class LayoutSwitcherHelper extends Extension {
                 await this._waitState(mgr, DTP_UUID, s => this._isSettledUp(s));
             }
             this._setupPanelSystemIndicator();
+            this._syncLightOverviewPanelClass();
             // Cross-frame style recompute so the panel picks the new theme.
             Main.panel.add_style_class_name('ls-style-recompute');
             await this._sleep(60);
@@ -987,6 +1034,7 @@ export default class LayoutSwitcherHelper extends Extension {
                 logHelper(`rollback enable ${uuid} failed: ${e}`);
             }
         }
+        this._syncLightOverviewPanelClass();
         await this._panelRepaint();
         this._setupPanelSystemIndicator();
         this._curtainDown();
@@ -1180,6 +1228,7 @@ export default class LayoutSwitcherHelper extends Extension {
             }
         }
 
+        this._syncLightOverviewPanelClass();
         await this._panelRepaint();
         steps.push('panel repaint');
         this._setupPanelSystemIndicator();
@@ -1384,6 +1433,7 @@ export default class LayoutSwitcherHelper extends Extension {
 
         this._panelStyleRecompute();
         this._setupPanelSystemIndicator();
+        this._syncLightOverviewPanelClass();
 
         logHelper(`ApplyLayout done: ${steps.join(' | ')}`);
         return JSON.stringify({ok: true, steps, error: ''});

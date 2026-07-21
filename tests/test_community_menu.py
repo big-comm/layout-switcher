@@ -75,8 +75,14 @@ def test_menu_button_active_highlight_is_not_stretched_by_shell_padding():
     assert "#panel.dashtopanelMainPanel:overview .panel-button" in stylesheet
     assert "color: inherit" in stylesheet
     assert "community-menu-light-panel" in extension_source
+    assert "community-menu-dark-panel" in extension_source
     assert "changed::color-scheme" in extension_source
+    assert "Constants.LAYOUTS.APPS_ONLY" in extension_source
+    assert "Constants.LAYOUTS.APP_GRID" in extension_source
+    assert "if (!panelStyleClass)" in extension_source
     assert "community-menu-light-panel" in stylesheet
+    assert "community-menu-dark-panel" in stylesheet
+    assert "color: #fafafb" in stylesheet
     assert "background-color: #222226" in stylesheet
 
 

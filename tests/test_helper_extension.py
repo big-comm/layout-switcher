@@ -7,6 +7,7 @@ HELPER = (
     Path(__file__).resolve().parents[1]
     / "usr/share/gnome-shell/extensions/layout-switcher-helper@bigcommunity.org/extension.js"
 )
+HELPER_STYLESHEET = HELPER.with_name("stylesheet.css")
 
 
 def test_live_color_switch_empties_shell_rebase_slices():
@@ -41,7 +42,7 @@ def test_live_color_switch_empties_shell_rebase_slices():
 def test_menu_layouts_hide_only_the_desktop_power_fallback():
     source = HELPER.read_text()
 
-    assert "const HELPER_BUILD = 26" in source
+    assert "const HELPER_BUILD = 27" in source
     assert "get_strv('enabled-extensions')" in source
     assert "_extensionWillRun(DTP_UUID)" in source
     assert "_usesMenuSessionActions()" in source
@@ -57,3 +58,17 @@ def test_menu_layouts_hide_only_the_desktop_power_fallback():
     assert source.index("this._setupPanelSystemIndicator();") < source.index(
         "this._sleep(1000).then"
     )
+
+
+def test_hybrid_light_panel_keeps_overview_icon_contrast():
+    source = HELPER.read_text()
+    stylesheet = HELPER_STYLESHEET.read_text()
+
+    assert "LIGHT_OVERVIEW_PANEL_CLASS" in source
+    assert "_syncLightOverviewPanelClass()" in source
+    assert "_clearLightOverviewPanelClass()" in source
+    assert "get_string('color-scheme') === 'prefer-dark'" in source
+    assert "settings.get_string('menu-layout') !== ARCMENU_HYBRID_LAYOUT" in source
+    assert "global.dashToPanel?.panels" in source
+    assert "layout-switcher-light-overview-panel:overview" in stylesheet
+    assert "color: #222226" in stylesheet

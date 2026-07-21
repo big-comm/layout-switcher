@@ -34,6 +34,7 @@ export let SETTINGS = null;
 export let SEARCH_EMITTER = null;
 
 const LIGHT_PANEL_STYLE_CLASS = 'community-menu-light-panel';
+const DARK_PANEL_STYLE_CLASS = 'community-menu-dark-panel';
 
 export default class CommunityMenuExtension extends Extension {
     enable() {
@@ -56,8 +57,10 @@ export default class CommunityMenuExtension extends Extension {
             if (!this._changingOverlayKey)
                 this._savedOverlayKey = this._mutterSettings.get_value('overlay-key');
         }, this);
-        SETTINGS.connectObject(
-            'changed::layout', () => this._syncOverlayKeyBinding(), this);
+        SETTINGS.connectObject('changed::layout', () => {
+            this._syncOverlayKeyBinding();
+            this._syncPanelColorClass();
+        }, this);
 
         this._getActivePanelExtension();
         this._enableButtons();
@@ -179,6 +182,7 @@ export default class CommunityMenuExtension extends Extension {
         for (const panel of this._styledPanels ?? []) {
             try {
                 panel.remove_style_class_name(LIGHT_PANEL_STYLE_CLASS);
+                panel.remove_style_class_name(DARK_PANEL_STYLE_CLASS);
             } catch (e) {
                 console.debug(`Community Menu: panel style cleanup failed: ${e}`);
             }
@@ -192,12 +196,20 @@ export default class CommunityMenuExtension extends Extension {
             this._interfaceSettings.get_string('color-scheme') === 'prefer-dark')
             return;
 
+        const layout = SETTINGS.get_enum('layout');
+        const panelStyleClass = layout === Constants.LAYOUTS.APPS_ONLY
+            ? LIGHT_PANEL_STYLE_CLASS
+            : (layout === Constants.LAYOUTS.APP_GRID
+                ? DARK_PANEL_STYLE_CLASS
+                : null);
         for (const menuButton of this.menuButtons ?? []) {
             menuButton.setLightStyle(true);
+            if (!panelStyleClass)
+                continue;
             const panel = menuButton.panel;
             if (!panel || this._styledPanels.has(panel))
                 continue;
-            panel.add_style_class_name(LIGHT_PANEL_STYLE_CLASS);
+            panel.add_style_class_name(panelStyleClass);
             this._styledPanels.add(panel);
         }
     }

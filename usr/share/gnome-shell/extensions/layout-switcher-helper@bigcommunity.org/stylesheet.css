@@ -1,0 +1,17 @@
+/* Keep symbolic panel items readable on Hybrid's light panel in Overview. */
+#panel.dashtopanelMainPanel.layout-switcher-light-overview-panel:overview
+.panel-button {
+    color: #222226;
+}
+
+#panel.dashtopanelMainPanel.layout-switcher-light-overview-panel:overview
+.panel-button#panelActivities .workspace-dot {
+    background-color: #222226;
+}
+
+#panel.dashtopanelMainPanel.layout-switcher-light-overview-panel:overview
+.panel-button.screen-recording-indicator,
+#panel.dashtopanelMainPanel.layout-switcher-light-overview-panel:overview
+.panel-button.screen-sharing-indicator {
+    color: #fafafb;
+}
