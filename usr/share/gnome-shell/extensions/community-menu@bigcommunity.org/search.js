@@ -517,7 +517,7 @@ export const SearchResults = GObject.registerClass({
         this._compact = compact;
         if (compact)
             this.add_style_class_name('compact-search-results');
-        this._displayId = `display_community-menu_${monitorIndex}`;
+        this._providerDisplays = new Map();
 
         this._parentalControlsManager = ParentalControlsManager.getDefault();
         this._parentalControlsManager.connectObject('app-filter-changed', this._reloadRemoteProviders.bind(this), this);
@@ -611,12 +611,9 @@ export const SearchResults = GObject.registerClass({
         this._defaultResult = null;
         this._startingSearch = false;
 
-        this._providers.forEach(provider => {
-            if (provider[this._displayId]) {
-                provider[this._displayId].destroy();
-                delete provider[this._displayId];
-            }
-        });
+        this._providerDisplays.forEach(display => display.destroy());
+        this._providerDisplays.clear();
+        this._providerDisplays = null;
         this._providers = null;
 
         this._highlighter = null;
@@ -668,10 +665,9 @@ export const SearchResults = GObject.registerClass({
             return;
         this._providers.splice(index, 1);
 
-        if (provider[this._displayId]) {
-            provider[this._displayId].destroy();
-            delete provider[this._displayId];
-        }
+        const display = this._providerDisplays.get(provider);
+        display?.destroy();
+        this._providerDisplays.delete(provider);
     }
 
     _clearSearchTimeout() {
@@ -784,7 +780,7 @@ export const SearchResults = GObject.registerClass({
     }
 
     _ensureProviderDisplay(provider) {
-        if (provider[this._displayId])
+        if (this._providerDisplays.has(provider))
             return;
 
         let providerDisplay;
@@ -799,12 +795,12 @@ export const SearchResults = GObject.registerClass({
         });
         providerDisplay.hide();
         this._content.add_child(providerDisplay);
-        provider[this._displayId] = providerDisplay;
+        this._providerDisplays.set(provider, providerDisplay);
     }
 
     _clearDisplay() {
         this._providers.forEach(provider => {
-            provider[this._displayId]?.clear();
+            this._providerDisplays.get(provider)?.clear();
         });
     }
 
@@ -814,9 +810,9 @@ export const SearchResults = GObject.registerClass({
         const providers = this._providers;
         for (let i = 0; i < providers.length; i++) {
             const provider = providers[i];
-            const display = provider[this._displayId];
+            const display = this._providerDisplays.get(provider);
 
-            if (!display.visible)
+            if (!display?.visible)
                 continue;
 
             const firstResult = display.getFirstResult();
@@ -843,8 +839,8 @@ export const SearchResults = GObject.registerClass({
 
     _updateSearchProgress() {
         const haveResults = this._providers.some(provider => {
-            const display = provider[this._displayId];
-            return display.getFirstResult() !== null;
+            const display = this._providerDisplays.get(provider);
+            return display?.getFirstResult() != null;
         });
 
         this._statusContainer.visible = !haveResults;
@@ -865,7 +861,11 @@ export const SearchResults = GObject.registerClass({
 
     _updateResults(provider, results) {
         const terms = this._terms;
-        const display = provider[this._displayId];
+        const display = this._providerDisplays.get(provider);
+        if (!display) {
+            provider.searchInProgress = false;
+            return;
+        }
         display.updateSearch(results, terms, () => {
             provider.searchInProgress = false;
 

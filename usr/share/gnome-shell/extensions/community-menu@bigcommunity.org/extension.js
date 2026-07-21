@@ -19,6 +19,8 @@
  */
 
 import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
@@ -46,9 +48,20 @@ export default class CommunityMenuExtension extends Extension {
         });
         this._interfaceSettings.connectObject(
             'changed::color-scheme', () => this._syncPanelColorClass(), this);
+        this._mutterSettings = new Gio.Settings({
+            schema_id: Constants.MUTTER_SCHEMA,
+        });
+        this._savedOverlayKey = this._mutterSettings.get_value('overlay-key');
+        this._mutterSettings.connectObject('changed::overlay-key', () => {
+            if (!this._changingOverlayKey)
+                this._savedOverlayKey = this._mutterSettings.get_value('overlay-key');
+        }, this);
+        SETTINGS.connectObject(
+            'changed::layout', () => this._syncOverlayKeyBinding(), this);
 
         this._getActivePanelExtension();
         this._enableButtons();
+        this._syncOverlayKeyBinding();
 
         Main.extensionManager.connectObject('extension-state-changed', (data, extension) => {
             if (Utils.isPanelExtension(extension.uuid)) {
@@ -63,10 +76,14 @@ export default class CommunityMenuExtension extends Extension {
     }
 
     disable() {
+        this._disableOverlayKeyBinding();
         SETTINGS?.disconnectObject(this);
         this._interfaceSettings?.disconnectObject(this);
+        this._mutterSettings?.disconnectObject(this);
         this._clearPanelColorClass();
         this._interfaceSettings = null;
+        this._mutterSettings = null;
+        this._savedOverlayKey = null;
 
         this._disconnectExtensionSignals();
         Main.extensionManager.disconnectObject(this);
@@ -241,6 +258,72 @@ export default class CommunityMenuExtension extends Extension {
         } else {
             this._toggleMenuOnMonitor();
         }
+    }
+
+    _syncOverlayKeyBinding() {
+        const layout = SETTINGS.get_enum('layout');
+        const opensWithSuper = layout === Constants.LAYOUTS.APP_GRID ||
+            layout === Constants.LAYOUTS.APPS_ONLY;
+        if (opensWithSuper)
+            this._enableOverlayKeyBinding();
+        else
+            this._disableOverlayKeyBinding();
+    }
+
+    _enableOverlayKeyBinding() {
+        if (this._overlayKeyActive)
+            return;
+
+        this._overlayKeyActive = true;
+        this._changingOverlayKey = true;
+        this._mutterSettings.set_string('overlay-key', 'Super_L');
+        this._changingOverlayKey = false;
+        Main.wm.allowKeybinding('overlay-key', Shell.ActionMode.ALL);
+
+        if (Main.layoutManager._startingUp) {
+            Main.layoutManager.connectObject('startup-complete', () => {
+                if (this._overlayKeyActive)
+                    this._overrideOverlayKey();
+            }, this);
+        } else {
+            this._overrideOverlayKey();
+        }
+    }
+
+    _overrideOverlayKey() {
+        this._defaultOverlayKeyId = GObject.signal_handler_find(
+            global.display, {signalId: 'overlay-key'});
+        if (!this._defaultOverlayKeyId) {
+            console.warn('Community Menu: failed to override the Super key');
+            this._disableOverlayKeyBinding();
+            return;
+        }
+
+        GObject.signal_handler_block(global.display, this._defaultOverlayKeyId);
+        global.display.connectObject('overlay-key', () => {
+            this._toggleMenu();
+            Main.wm.allowKeybinding('overlay-key', Shell.ActionMode.ALL);
+        }, this);
+    }
+
+    _disableOverlayKeyBinding() {
+        Main.layoutManager.disconnectObject(this);
+        global.display.disconnectObject(this);
+
+        if (this._defaultOverlayKeyId) {
+            GObject.signal_handler_unblock(global.display, this._defaultOverlayKeyId);
+            this._defaultOverlayKeyId = 0;
+        }
+
+        if (this._overlayKeyActive && this._mutterSettings && this._savedOverlayKey) {
+            this._changingOverlayKey = true;
+            this._mutterSettings.set_value('overlay-key', this._savedOverlayKey);
+            this._changingOverlayKey = false;
+        }
+
+        this._overlayKeyActive = false;
+        Main.wm.allowKeybinding(
+            'overlay-key', Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW);
     }
 
     _toggleMenuOnMonitor() {

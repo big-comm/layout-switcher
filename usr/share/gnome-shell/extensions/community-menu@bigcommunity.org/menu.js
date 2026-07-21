@@ -43,6 +43,7 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
     // Initialize the menu
     constructor(sourceActor, panelInfo) {
         super(sourceActor, 0.5, St.Side.TOP);
+        this._buttonActor = sourceActor;
         this._panelBox = panelInfo.panelBox;
         this._panelParent = panelInfo.panelParent;
         this._monitorIndex = panelInfo.monitorIndex;
@@ -82,6 +83,34 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
         this._loadLayout();
     }
 
+    _syncPositionSource() {
+        if (SETTINGS.get_enum('layout') !== Constants.LAYOUTS.APP_GRID) {
+            this._boxPointer.setPosition(this._buttonActor, 0.5);
+            return;
+        }
+
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(this._monitorIndex);
+        const sourceExtents = this._buttonActor.get_transformed_extents();
+        const sourceTopLeft = sourceExtents.get_top_left();
+        const sourceBottomRight = sourceExtents.get_bottom_right();
+
+        if (!this._centerAnchor) {
+            this._centerAnchor = new Clutter.Actor({
+                reactive: false,
+                opacity: 0,
+                width: 1,
+            });
+            Main.uiGroup.add_child(this._centerAnchor);
+        }
+
+        this._centerAnchor.set_position(
+            Math.floor(workArea.x + workArea.width / 2),
+            Math.floor(sourceTopLeft.y));
+        this._centerAnchor.set_height(
+            Math.max(1, Math.ceil(sourceBottomRight.y - sourceTopLeft.y)));
+        this._boxPointer.setPosition(this._centerAnchor, 0.5);
+    }
+
     _maybeShowPanel() {
         if (this._panelParent.intellihide && this._panelParent.intellihide.enabled) {
             // Hold.TEMPORARY = 1, immediate = true
@@ -107,6 +136,7 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
         }
         this._layout.reset();
         this._layout.updateHeight();
+        this._syncPositionSource();
     }
 
     // Handle menu item activation
@@ -158,6 +188,9 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
     destroy() {
         this.actor?.get_parent()?.remove_child(this.actor);
 
+        this._centerAnchor?.destroy();
+        this._centerAnchor = null;
+
         SETTINGS?.disconnectObject(this);
 
         this._layout?.destroy();
@@ -172,6 +205,7 @@ const ApplicationsMenu = class extends PopupMenu.PopupMenu {
         super.destroy();
 
         this._panelBox = null;
+        this._buttonActor = null;
         this._panelParent = null;
         this._monitorIndex = null;
         this._panelNeedsHiding = null;

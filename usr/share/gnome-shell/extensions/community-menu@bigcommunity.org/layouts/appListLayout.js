@@ -58,7 +58,6 @@ export const AppListLayout = GObject.registerClass({
             true);
         this._searchResults = this._appsSection.searchResults;
         this._searchEntry = new SearchEntry.SearchEntry(this._searchResults);
-        this._allAppsButton = new MiscMenuItems.AllAppsMenuItem();
         this._backButton = new MiscMenuItems.BackMenuItem();
 
         // Create Box
@@ -70,7 +69,6 @@ export const AppListLayout = GObject.registerClass({
         // Fill Box
         this._box.add_child(this._categoriesSection);
         this._box.add_child(this._appsSection);
-        this._box.add_child(this._allAppsButton);
         this._box.add_child(this._backButton);
         this._box.add_child(this._searchEntry);
 
@@ -86,7 +84,6 @@ export const AppListLayout = GObject.registerClass({
         this._searchEntry.connectObject('notify::search-active', this._onSearchChanged.bind(this), this);
         this._searchEntry.connectObject('entry-key-press', this._onSearchEntryKeyPress.bind(this), this);
         this._searchResults.connectObject('screenshot-activated', this._onScreenshotActivated.bind(this), this);
-        this._allAppsButton.connectObject('activated', this._onAllApps.bind(this), this);
         this._backButton.connectObject('activated', this.reset.bind(this), this);
         this._sidebar.connectObject('activated', this._activated.bind(this), this);
     }
@@ -97,7 +94,6 @@ export const AppListLayout = GObject.registerClass({
         if (searchActive) {
             this._appsSection.searchActive();
             this._categoriesSection.hide();
-            this._allAppsButton.hide();
             this._appsSection.show();
             this._backButton.show();
             this._searchEntry.grab_key_focus();
@@ -105,13 +101,8 @@ export const AppListLayout = GObject.registerClass({
             this._appsSection.hide();
             this._backButton.hide();
             this._categoriesSection.show();
-            this._allAppsButton.show();
             this._categoriesSection.grab_key_focus();
         }
-    }
-
-    _onAllApps(actor) {
-        this._onSelectCategory(actor, "all_apps");
     }
 
     _onSelectCategory(actor, category_menu_id){
@@ -119,7 +110,6 @@ export const AppListLayout = GObject.registerClass({
             Utils.blockHover();
             this._appsSection.selectCategory(category_menu_id);
             this._categoriesSection.hide();
-            this._allAppsButton.hide();
             this._appsSection.show();
             this._backButton.show();
             this._appsSection.grab_key_focus();
@@ -153,9 +143,6 @@ export const AppListLayout = GObject.registerClass({
         this._appsSection?.destroy();
         this._appsSection = null;
         this._searchResults = null;
-
-        this._allAppsButton?.destroy();
-        this._allAppsButton = null;
 
         this._backButton?.destroy();
         this._backButton = null;

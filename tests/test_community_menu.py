@@ -117,6 +117,14 @@ def test_classic_categories_are_compact_and_open_cascade_on_hover():
     assert "spacing: 8px" in stylesheet
 
 
+def test_classic_menu_omits_all_apps_entry():
+    layout = (EXTENSION_DIR / "layouts/appListLayout.js").read_text()
+
+    assert "new MiscMenuItems.AllAppsMenuItem()" not in layout
+    assert "this._allAppsButton" not in layout
+    assert "new MiscMenuItems.BackMenuItem()" in layout
+
+
 def test_classic_sidebar_uses_native_apps_and_session_actions():
     layout = (EXTENSION_DIR / "layouts/appListLayout.js").read_text()
     sections = (EXTENSION_DIR / "sections.js").read_text()
@@ -178,9 +186,60 @@ def test_classic_search_results_are_compact_without_description_tooltips():
     assert "min-height: 30px" in stylesheet
 
 
+def test_app_grid_menu_uses_monitor_center_anchor():
+    source = (EXTENSION_DIR / "menu.js").read_text()
+    assert "SETTINGS.get_enum('layout') !== Constants.LAYOUTS.APP_GRID" in source
+    assert "Main.layoutManager.getWorkAreaForMonitor(this._monitorIndex)" in source
+    assert "workArea.x + workArea.width / 2" in source
+    assert "this._boxPointer.setPosition(this._centerAnchor, 0.5)" in source
+
+
+def test_app_grid_uses_compact_windows_style_header_and_session_footer():
+    layout = (EXTENSION_DIR / "layouts/appGridLayout.js").read_text()
+    stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
+
+    assert "style_class: 'grid-header-box'" in layout
+    assert "this._searchEntry.x_align = Clutter.ActorAlign.CENTER" in layout
+    assert "new SessionButtons.SuspendButton" in layout
+    assert "new SessionButtons.LogoutButton" in layout
+    assert "new SessionButtons.RestartButton" in layout
+    assert "new SessionButtons.PowerButton" in layout
+    assert "new SessionButtons.PowerMenuButton" not in layout
+    assert "style_class: 'session-actions-box'" in layout
+    assert ".grid-header-box .search-entry" in stylesheet
+    assert "width: 44em" in stylesheet
+    assert "background-color: transparent" in stylesheet
+    assert ".apps-menu StScrollBar" in stylesheet
+    assert "min-width: 6px" in stylesheet
+    assert ".session-actions-box" in stylesheet
+
+
+def test_app_grid_super_key_toggles_menu_and_restores_default_handler():
+    source = (EXTENSION_DIR / "extension.js").read_text()
+
+    assert "layout === Constants.LAYOUTS.APP_GRID" in source
+    assert "layout === Constants.LAYOUTS.APPS_ONLY" in source
+    assert "GObject.signal_handler_find(" in source
+    assert "{signalId: 'overlay-key'}" in source
+    assert "GObject.signal_handler_block" in source
+    assert "global.display.connectObject('overlay-key'" in source
+    assert "this._toggleMenu()" in source
+    assert "GObject.signal_handler_unblock" in source
+    assert "this._mutterSettings.set_value('overlay-key', this._savedOverlayKey)" in source
+
+
 def test_search_entry_handles_temporarily_missing_stage_focus():
     source = (EXTENSION_DIR / "widgets/searchEntry.js").read_text()
 
     assert "const appearFocused = focus" in source
     assert "!this._searchResults || !this._text" in source
     assert "this.contains(focus) || this._searchResults.contains(focus)" in source
+
+
+def test_search_results_own_provider_displays_without_shared_provider_state():
+    source = (EXTENSION_DIR / "search.js").read_text()
+
+    assert "this._providerDisplays = new Map()" in source
+    assert "this._providerDisplays.set(provider, providerDisplay)" in source
+    assert "this._providerDisplays.get(provider)" in source
+    assert "provider[this._displayId]" not in source

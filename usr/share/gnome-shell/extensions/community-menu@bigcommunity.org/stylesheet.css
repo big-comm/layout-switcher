@@ -236,8 +236,34 @@
     padding: 8px;
 }
 
-.community-menu .grid-layout-box .search-entry {
-    margin: 0 0 14px 0;
+.community-menu .grid-layout-box .grid-header-box {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9px 9px 0 0;
+    background-color: rgba(255, 255, 255, 0.055);
+}
+
+.community-menu.community-menu-light .grid-layout-box .grid-header-box {
+    border-bottom-color: rgba(46, 46, 51, 0.12);
+    background-color: rgba(46, 46, 51, 0.06);
+}
+
+.community-menu .grid-layout-box .grid-header-box .search-entry {
+    width: 44em;
+    margin: 0;
+    background-color: transparent;
+}
+
+.community-menu .grid-layout-box .apps-list {
+    margin: 10px 0 8px 0;
+}
+
+.community-menu .grid-layout-box .apps-menu StScrollBar {
+    min-width: 6px;
+}
+
+.community-menu .grid-layout-box .apps-menu StScrollBar > .vhandle {
+    border-width: 2px;
 }
 
 .community-menu .grid-layout-box .apps-grid {
@@ -256,15 +282,24 @@
 }
 
 .community-menu .grid-layout-box .session-box {
-    spacing: 16px;
+    spacing: 12px;
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 0;
-    margin-top: 8px;
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 20px;
-    padding-right: 28px;
+    margin-top: 0;
+    padding: 8px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0 0 9px 9px;
+    background-color: rgba(255, 255, 255, 0.055);
+}
+
+.community-menu.community-menu-light .grid-layout-box .session-box {
+    border-top-color: rgba(46, 46, 51, 0.12);
+    background-color: rgba(46, 46, 51, 0.06);
+}
+
+.community-menu .grid-layout-box .session-actions-box {
+    spacing: 4px;
 }
 
 .community-menu .grid-layout-box .session-box .user-menu-item:ltr {
@@ -277,7 +312,7 @@
 .community-menu .grid-layout-box .session-box .system-menu-action {
     -st-icon-style: symbolic;
     border-radius: 999px;
-    padding: 13px 15px !important;
+    padding: 10px 12px !important;
     margin: 0 !important;
     spacing: 0 !important;
     box-shadow: none;

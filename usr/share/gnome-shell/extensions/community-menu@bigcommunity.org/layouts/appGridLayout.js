@@ -22,7 +22,6 @@ import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 
-import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
 
 import * as BaseLayout from './baseLayout.js'
@@ -48,14 +47,34 @@ export const AppGridLayout = GObject.registerClass({
         this._appsSection = new Sections.AppsListSection(this._appsBackend, true, this._monitorIndex);
         this._searchResults = this._appsSection.searchResults;
         this._searchEntry = new SearchEntry.SearchEntry(this._searchResults);
+        this._searchEntry.x_expand = false;
+        this._searchEntry.x_align = Clutter.ActorAlign.CENTER;
+        this._headerBox = new St.BoxLayout({
+            ...getOrientationProp(false),
+            x_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+            style_class: 'grid-header-box',
+        });
+        this._headerBox.add_child(this._searchEntry);
+
         this._systemActions = new SystemActions.getDefault();
         this._systemActions.forceUpdate();
         this._userButton = new UserWidgets.UserMenuButton(this._systemActions);
         this._userButton.x_align = Clutter.ActorAlign.START;
-        this._separator = new PopupMenu.PopupSeparatorMenuItem();
-        this._power = new SessionButtons.PowerMenuButton(this._systemActions);
-        this._power.x_align = Clutter.ActorAlign.END;
-        this._power.x_expand = true;
+        this._sessionActions = [
+            new SessionButtons.SuspendButton(this._systemActions),
+            new SessionButtons.LogoutButton(this._systemActions),
+            new SessionButtons.RestartButton(this._systemActions),
+            new SessionButtons.PowerButton(this._systemActions),
+        ];
+        this._sessionActionsBox = new St.BoxLayout({
+            ...getOrientationProp(false),
+            x_expand: true,
+            x_align: Clutter.ActorAlign.END,
+            style_class: 'session-actions-box',
+        });
+        for (const button of this._sessionActions)
+            this._sessionActionsBox.add_child(button);
 
         // Create and Fill Session Box
         this._sessionBox = new St.BoxLayout({
@@ -64,7 +83,7 @@ export const AppGridLayout = GObject.registerClass({
             style_class: 'session-box'
         });
         this._sessionBox.add_child(this._userButton);
-        this._sessionBox.add_child(this._power);
+        this._sessionBox.add_child(this._sessionActionsBox);
 
         // Create Box
         this._box = new St.BoxLayout({
@@ -73,9 +92,8 @@ export const AppGridLayout = GObject.registerClass({
         });
 
         // Fill Box
-        this._box.add_child(this._searchEntry);
+        this._box.add_child(this._headerBox);
         this._box.add_child(this._appsSection);
-        this._box.add_child(this._separator);
         this._box.add_child(this._sessionBox);
 
         // Add Box
@@ -88,7 +106,8 @@ export const AppGridLayout = GObject.registerClass({
         this._searchEntry.connectObject('entry-key-press', this._onSearchEntryKeyPress.bind(this), this);
         this._searchResults.connectObject('screenshot-activated', this._onScreenshotActivated.bind(this), this);
         this._userButton.connectObject('activated', this._activated.bind(this), this);
-        this._power.connectObject('activated', this._activated.bind(this), this);
+        for (const button of this._sessionActions)
+            button.connectObject('activated', this._activated.bind(this), this);
     }
 
     _onSearchChanged() {
@@ -121,18 +140,22 @@ export const AppGridLayout = GObject.registerClass({
         this._searchEntry?.destroy();
         this._searchEntry = null;
 
+        this._headerBox?.destroy();
+        this._headerBox = null;
+
         this._appsSection?.destroy();
         this._appsSection = null;
         this._searchResults = null;
 
-        this._separator?.destroy();
-        this._separator = null;
-
         this._userButton?.destroy();
         this._userButton = null;
 
-        this._power?.destroy();
-        this._power = null;
+        for (const button of this._sessionActions ?? [])
+            button?.destroy();
+        this._sessionActions = null;
+
+        this._sessionActionsBox?.destroy();
+        this._sessionActionsBox = null;
 
         this._sessionBox?.destroy();
         this._sessionBox = null;
