@@ -80,7 +80,7 @@ const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_L
 // Build marker within a protocol version — lets a deploy verify over Ping
 // that the RUNNING module is the freshly-installed code (the Shell caches
 // ES modules; only a reload/relogin picks a new file up).
-const HELPER_BUILD = 23;
+const HELPER_BUILD = 26;
 
 // GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
 // DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
@@ -183,6 +183,10 @@ export default class LayoutSwitcherHelper extends Extension {
         }
         this._cancelled = false;
         this._export();
+        // Panel actors already exist when extensions are enabled. Connect to
+        // UPower immediately so the desktop fallback never reaches a frame;
+        // the delayed pass below only covers unusually late panel startup.
+        this._setupPanelSystemIndicator();
         // Live appearance follower. Classic/Hybrid use GNOME's native Shell;
         // the other Community layouts use their configured shell themes.
         // Papient variants follow the app color scheme in all six layouts.
@@ -195,7 +199,10 @@ export default class LayoutSwitcherHelper extends Extension {
                     'changed::color-scheme', () => this._onColorSchemeChanged());
                 // At login the helper loads before panels/menus. Reconcile
                 // once after the target extension set has finished loading.
-                this._sleep(1000).then(() => this._onColorSchemeChanged());
+                this._sleep(1000).then(() => {
+                    this._onColorSchemeChanged();
+                    this._setupPanelSystemIndicator();
+                });
             } catch (e) {
                 logHelper(`color-scheme follower unavailable: ${e}`);
                 this._ifaceSettings = null;
@@ -254,6 +261,7 @@ export default class LayoutSwitcherHelper extends Extension {
     // Stop every pending timer so no step of an in-flight switch fires into a
     // session-mode transition, and never leave the curtain up.
     _hardCancel() {
+        this._teardownPanelSystemIndicator();
         this._unexport();
         if (this._schemeDebounce) {
             GLib.Source.remove(this._schemeDebounce);
@@ -392,6 +400,95 @@ export default class LayoutSwitcherHelper extends Extension {
             order.push(uuid);
         }
         return true;
+    }
+
+    _extensionWillRun(uuid) {
+        const mgr = Main.extensionManager;
+        if (LIVE_STATES.has(mgr.lookup(uuid)?.state))
+            return true;
+
+        try {
+            this._shellSettings ??= new Gio.Settings({
+                schema_id: 'org.gnome.shell',
+            });
+            return this._shellSettings.get_strv('enabled-extensions')
+                .includes(uuid);
+        } catch (e) {
+            logHelper(`enabled extension read failed: ${e}`);
+            return false;
+        }
+    }
+
+    _usesMenuSessionActions() {
+        if (!this._extensionWillRun(DTP_UUID))
+            return false;
+
+        if (this._extensionWillRun(COMMUNITY_MENU_UUID)) {
+            try {
+                const settings = new Gio.Settings({
+                    schema_id: 'org.gnome.shell.extensions.community-menu',
+                });
+                const layout = settings.get_enum('layout');
+                return layout === CLASSIC_MENU_LAYOUT ||
+                    layout === DESK_UX_MENU_LAYOUT;
+            } catch (e) {
+                logHelper(`community layout read failed: ${e}`);
+            }
+        }
+
+        if (this._extensionWillRun(ARCMENU_UUID)) {
+            try {
+                const settings = new Gio.Settings({
+                    schema_id: 'org.gnome.shell.extensions.arcmenu',
+                });
+                return settings.get_string('menu-layout') ===
+                    ARCMENU_HYBRID_LAYOUT;
+            } catch (e) {
+                logHelper(`ArcMenu layout read failed: ${e}`);
+            }
+        }
+        return false;
+    }
+
+    _syncPanelSystemIndicator() {
+        const indicator = Main.panel.statusArea.quickSettings?._system;
+        const powerToggle = indicator?._systemItem?.powerToggle;
+        if (!indicator || !powerToggle)
+            return false;
+
+        const hidePowerFallback = this._usesMenuSessionActions() &&
+            !powerToggle.visible;
+        if (hidePowerFallback)
+            indicator.hide();
+        else
+            indicator._syncIndicatorsVisible?.();
+        return hidePowerFallback;
+    }
+
+    _setupPanelSystemIndicator() {
+        const indicator = Main.panel.statusArea.quickSettings?._system;
+        const powerToggle = indicator?._systemItem?.powerToggle;
+        if (!powerToggle)
+            return;
+
+        if (this._panelPowerToggle !== powerToggle) {
+            if (this._panelPowerToggle && this._panelPowerSignal)
+                this._panelPowerToggle.disconnect(this._panelPowerSignal);
+            this._panelPowerToggle = powerToggle;
+            this._panelPowerSignal = powerToggle.connect(
+                'notify::visible', () => this._syncPanelSystemIndicator());
+        }
+        this._syncPanelSystemIndicator();
+    }
+
+    _teardownPanelSystemIndicator() {
+        if (this._panelPowerToggle && this._panelPowerSignal)
+            this._panelPowerToggle.disconnect(this._panelPowerSignal);
+        this._panelPowerToggle = null;
+        this._panelPowerSignal = 0;
+
+        const indicator = Main.panel.statusArea.quickSettings?._system;
+        indicator?._syncIndicatorsVisible?.();
     }
 
     // ── Live color-scheme follower ──────────────────────────────────────────
@@ -579,6 +676,7 @@ export default class LayoutSwitcherHelper extends Extension {
                 mgr.enableExtension(DTP_UUID);
                 await this._waitState(mgr, DTP_UUID, s => this._isSettledUp(s));
             }
+            this._setupPanelSystemIndicator();
             // Cross-frame style recompute so the panel picks the new theme.
             Main.panel.add_style_class_name('ls-style-recompute');
             await this._sleep(60);
@@ -890,6 +988,7 @@ export default class LayoutSwitcherHelper extends Extension {
             }
         }
         await this._panelRepaint();
+        this._setupPanelSystemIndicator();
         this._curtainDown();
         this._switching = false;
         logHelper(`rollback done (${prev.length} extensions restored)`);
@@ -1083,6 +1182,7 @@ export default class LayoutSwitcherHelper extends Extension {
 
         await this._panelRepaint();
         steps.push('panel repaint');
+        this._setupPanelSystemIndicator();
 
         this._curtainCheckmark();
         await this._sleep(CURTAIN_CHECK_MS);
@@ -1283,6 +1383,7 @@ export default class LayoutSwitcherHelper extends Extension {
         }
 
         this._panelStyleRecompute();
+        this._setupPanelSystemIndicator();
 
         logHelper(`ApplyLayout done: ${steps.join(' | ')}`);
         return JSON.stringify({ok: true, steps, error: ''});

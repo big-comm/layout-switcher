@@ -36,3 +36,24 @@ def test_live_color_switch_empties_shell_rebase_slices():
     assert "? [LIGHT_STYLE_UUID, USER_THEME_UUID]" in source
     assert "if (!(nativeShell && dark) && !isLive(wantOn))" in source
     assert "Main.setThemeStylesheet(null)" in source
+
+
+def test_menu_layouts_hide_only_the_desktop_power_fallback():
+    source = HELPER.read_text()
+
+    assert "const HELPER_BUILD = 26" in source
+    assert "get_strv('enabled-extensions')" in source
+    assert "_extensionWillRun(DTP_UUID)" in source
+    assert "_usesMenuSessionActions()" in source
+    assert "layout === CLASSIC_MENU_LAYOUT" in source
+    assert "layout === DESK_UX_MENU_LAYOUT" in source
+    assert "ARCMENU_HYBRID_LAYOUT" in source
+    assert "Main.panel.statusArea.quickSettings?._system" in source
+    assert "indicator?._systemItem?.powerToggle" in source
+    assert "!powerToggle.visible" in source
+    assert "indicator.hide()" in source
+    assert "indicator._syncIndicatorsVisible?.()" in source
+    assert "'notify::visible', () => this._syncPanelSystemIndicator()" in source
+    assert source.index("this._setupPanelSystemIndicator();") < source.index(
+        "this._sleep(1000).then"
+    )
