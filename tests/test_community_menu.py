@@ -215,6 +215,9 @@ def test_app_grid_uses_compact_windows_style_header_and_session_footer():
     assert ".grid-header-box .search-entry" in stylesheet
     assert "width: 44em" in stylesheet
     assert "background-color: transparent" in stylesheet
+    assert ".community-menu-light .grid-layout-box .grid-header-box .search-entry:focus" in stylesheet
+    assert "border-width: 0" in stylesheet
+    assert "box-shadow: none" in stylesheet
     assert ".apps-menu StScrollBar" in stylesheet
     assert "min-width: 6px" in stylesheet
     assert ".session-actions-box" in stylesheet

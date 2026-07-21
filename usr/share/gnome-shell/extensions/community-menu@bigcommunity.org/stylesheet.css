@@ -264,6 +264,14 @@
     background-color: transparent;
 }
 
+.community-menu.community-menu-light .grid-layout-box .grid-header-box .search-entry,
+.community-menu.community-menu-light .grid-layout-box .grid-header-box .search-entry:hover,
+.community-menu.community-menu-light .grid-layout-box .grid-header-box .search-entry:focus {
+    border-width: 0;
+    box-shadow: none;
+    background-color: transparent;
+}
+
 .community-menu .grid-layout-box .apps-list {
     margin: 10px 0 8px 0;
 }
