@@ -42,7 +42,7 @@ def test_live_color_switch_empties_shell_rebase_slices():
 def test_menu_layouts_hide_only_the_desktop_power_fallback():
     source = HELPER.read_text()
 
-    assert "const HELPER_BUILD = 27" in source
+    assert "const HELPER_BUILD = 28" in source
     assert "get_strv('enabled-extensions')" in source
     assert "_extensionWillRun(DTP_UUID)" in source
     assert "_usesMenuSessionActions()" in source
@@ -58,6 +58,19 @@ def test_menu_layouts_hide_only_the_desktop_power_fallback():
     assert source.index("this._setupPanelSystemIndicator();") < source.index(
         "this._sleep(1000).then"
     )
+
+
+def test_menu_layouts_hide_only_quick_settings_shutdown_action():
+    source = HELPER.read_text()
+
+    assert "_findQuickSettingsShutdownItem()" in source
+    assert ".find(item => item?.menu === systemItem.menu)" in source
+    assert "_setupQuickSettingsShutdownItem()" in source
+    assert "_syncQuickSettingsShutdownItem()" in source
+    assert "if (this._usesMenuSessionActions())" in source
+    assert "item.hide()" in source
+    assert "item._sync()" in source
+    assert "_teardownQuickSettingsShutdownItem()" in source
 
 
 def test_hybrid_light_panel_keeps_overview_icon_contrast():
