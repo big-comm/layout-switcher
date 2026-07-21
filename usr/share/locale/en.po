@@ -1146,3 +1146,21 @@ msgstr "Auto-update disabled"
 
 #~ msgid "Click a layout to apply"
 #~ msgstr "Click a layout to apply"
+
+msgid "The required layout helper is not installed."
+msgstr "The required layout helper is not installed."
+
+msgid "The required layout helper did not start."
+msgstr "The required layout helper did not start."
+
+msgid "Layout Switcher Helper is required to apply layouts."
+msgstr "Layout Switcher Helper is required to apply layouts."
+
+msgid "Layout helper restored"
+msgstr "Layout helper restored"
+
+msgid "The required layout helper was re-enabled automatically."
+msgstr "The required layout helper was re-enabled automatically."
+
+msgid "Required for layout switching"
+msgstr "Required for layout switching"

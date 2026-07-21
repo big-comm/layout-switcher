@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Keep the required GNOME Shell helper enabled for the session.
+
+set -euo pipefail
+
+APP_DIR="/usr/share/layout-switcher"
+if [[ ! -f "${APP_DIR}/helper_guard.py" ]]; then
+    SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+    APP_DIR="${SCRIPT_DIR}/../share/layout-switcher"
+fi
+
+exec python3 "${APP_DIR}/helper_guard.py" "$@"

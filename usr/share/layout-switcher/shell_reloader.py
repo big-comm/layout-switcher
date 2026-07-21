@@ -23,6 +23,7 @@ from constants import (
     DBUS_EXT_PATH,
     DBUS_SHELL_NAME,
     DBUS_SHELL_PATH,
+    tr,
 )
 from utils import is_wayland, run_cmd
 
@@ -273,6 +274,11 @@ class ShellReloader:
 
         Retorna (sucesso, mensagem).
         """
+        from helper_client import HELPER_UUID
+
+        if uuid == HELPER_UUID and not enable:
+            return False, tr("Required for layout switching")
+
         # Import aqui para evitar circular import (ExtMgr importa ShellReloader)
         from extension_manager import ExtMgr
 

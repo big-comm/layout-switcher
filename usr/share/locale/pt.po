@@ -1155,3 +1155,21 @@ msgstr "Atualização automática desativada"
 #~ msgstr ""
 #~ "Layouts com marca contêm suas personalizações salvas — clique para retomá-"
 #~ "las ou aplicar o original."
+
+msgid "The required layout helper is not installed."
+msgstr "O auxiliar de layout obrigatório não está instalado."
+
+msgid "The required layout helper did not start."
+msgstr "O auxiliar de layout obrigatório não iniciou."
+
+msgid "Layout Switcher Helper is required to apply layouts."
+msgstr "O Layout Switcher Helper é necessário para aplicar os layouts."
+
+msgid "Layout helper restored"
+msgstr "Auxiliar de layout restaurado"
+
+msgid "The required layout helper was re-enabled automatically."
+msgstr "O auxiliar de layout obrigatório foi reativado automaticamente."
+
+msgid "Required for layout switching"
+msgstr "Necessário para trocar layouts"

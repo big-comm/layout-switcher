@@ -4,7 +4,16 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from layout_applier import LayoutApplier
+
+
+@pytest.fixture(autouse=True)
+def required_helper_available():
+    """Keep layout tests focused on the apply stage after helper preflight."""
+    with patch("layout_applier.HelperClient.ensure_available", return_value=(True, "")):
+        yield
 
 
 class TestLayoutApplier:
@@ -1600,6 +1609,17 @@ class TestShellReloader:
         assert ok is True
         mock_reload.assert_not_called()
 
+    @patch("shell_reloader.ShellReloader.enable_extension_dbus")
+    def test_required_helper_cannot_be_disabled(self, mock_dbus):
+        from helper_client import HELPER_UUID
+        from shell_reloader import ShellReloader
+
+        ok, msg = ShellReloader.apply_extension_state(HELPER_UUID, enable=False)
+
+        assert ok is False
+        assert msg
+        mock_dbus.assert_not_called()
+
 
 class TestHelperIntegration:
     """The in-shell helper path (preferred) vs the legacy external fallback."""
@@ -1629,6 +1649,22 @@ class TestHelperIntegration:
         data = f"[org/gnome/shell]\nenabled-extensions=['{HELPER_UUID}']\n"
         out = LayoutApplier._inject_helper_uuid(data)
         assert out.count(HELPER_UUID) == 1
+
+    @patch(
+        "layout_applier.HelperClient.ensure_available",
+        return_value=(False, "helper missing"),
+    )
+    @patch("layout_applier.run_cmd")
+    def test_aborts_before_writing_when_required_helper_is_unavailable(
+        self,
+        mock_run,
+        _mock_available,
+    ):
+        ok, msg = LayoutApplier.load_dconf_safely("[/]\nfoo='bar'", before_uuids=[])
+
+        assert ok is False
+        assert "helper missing" in msg
+        mock_run.assert_not_called()
 
     @patch("layout_applier.HelperClient.apply_layout", return_value=(True, "steps"))
     @patch("layout_applier.HelperClient.helper_version", return_value=6)

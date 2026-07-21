@@ -1067,3 +1067,28 @@ msgstr ""
 #: usr/share/layout-switcher/ui/window.py:612
 msgid "Auto-update disabled"
 msgstr ""
+
+#: usr/share/layout-switcher/helper_client.py
+msgid "The required layout helper is not installed."
+msgstr ""
+
+#: usr/share/layout-switcher/helper_client.py
+msgid "The required layout helper did not start."
+msgstr ""
+
+#: usr/share/layout-switcher/layout_applier.py
+msgid "Layout Switcher Helper is required to apply layouts."
+msgstr ""
+
+#: usr/share/layout-switcher/helper_guard.py
+msgid "Layout helper restored"
+msgstr ""
+
+#: usr/share/layout-switcher/helper_guard.py
+msgid "The required layout helper was re-enabled automatically."
+msgstr ""
+
+#: usr/share/layout-switcher/shell_reloader.py
+#: usr/share/layout-switcher/ui/page_extensions.py
+msgid "Required for layout switching"
+msgstr ""

@@ -24,7 +24,11 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 
 import json
 import logging
+import time
+from pathlib import Path
 from typing import Iterable, Optional, Tuple
+
+from constants import tr
 
 log = logging.getLogger("layout-switcher")
 
@@ -33,6 +37,12 @@ HELPER_UUID = "layout-switcher-helper@bigcommunity.org"
 _DEST = "org.gnome.Shell"
 _PATH = "/org/bigcommunity/LayoutSwitcherHelper"
 _IFACE = "org.bigcommunity.LayoutSwitcherHelper"
+
+_HELPER_DIRS = (
+    Path.home() / ".local" / "share" / "gnome-shell" / "extensions" / HELPER_UUID,
+    Path("/usr/share/gnome-shell/extensions") / HELPER_UUID,
+    Path("/usr/local/share/gnome-shell/extensions") / HELPER_UUID,
+)
 
 
 class HelperClient:
@@ -82,6 +92,62 @@ class HelperClient:
         """True if the helper extension is loaded and answering Ping."""
         out = cls._call("Ping", None, timeout_ms)
         return bool(out and "layout-switcher" in out)
+
+    @staticmethod
+    def required_extension_lists(
+        enabled: Iterable[str],
+        disabled: Iterable[str],
+    ) -> Tuple[list[str], list[str]]:
+        """Return Shell extension lists with the required helper enabled first."""
+        enabled_out = [HELPER_UUID]
+        enabled_out.extend(uuid for uuid in enabled if uuid and uuid != HELPER_UUID)
+        disabled_out = [uuid for uuid in disabled if uuid and uuid != HELPER_UUID]
+        return enabled_out, disabled_out
+
+    @classmethod
+    def ensure_enabled(cls) -> Tuple[bool, bool, str]:
+        """Repair GNOME's extension lists without touching optional extensions."""
+        if not any(path.is_dir() for path in _HELPER_DIRS):
+            return False, False, tr("The required layout helper is not installed.")
+
+        try:
+            from gi.repository import Gio
+
+            settings = Gio.Settings.new("org.gnome.shell")
+            enabled = list(settings.get_strv("enabled-extensions"))
+            disabled = list(settings.get_strv("disabled-extensions"))
+            enabled_out, disabled_out = cls.required_extension_lists(enabled, disabled)
+            changed = enabled != enabled_out or disabled != disabled_out
+            if disabled != disabled_out:
+                settings.set_strv("disabled-extensions", disabled_out)
+            if enabled != enabled_out:
+                settings.set_strv("enabled-extensions", enabled_out)
+            if changed:
+                Gio.Settings.sync()
+            return True, changed, ""
+        except Exception as exc:
+            log.warning("helper: could not repair extension settings: %s", exc)
+            return False, False, str(exc)
+
+    @classmethod
+    def ensure_available(cls, timeout_ms: int = 6000) -> Tuple[bool, str]:
+        """Enable the required helper and wait until its D-Bus API is ready."""
+        quick_timeout = min(timeout_ms, 800)
+        if cls.is_available(timeout_ms=quick_timeout):
+            return True, ""
+
+        ok, _changed, info = cls.ensure_enabled()
+        if not ok:
+            return False, info
+
+        deadline = time.monotonic() + max(timeout_ms, 0) / 1000.0
+        while time.monotonic() < deadline:
+            remaining_ms = max(100, int((deadline - time.monotonic()) * 1000))
+            if cls.is_available(timeout_ms=min(remaining_ms, 800)):
+                return True, ""
+            time.sleep(0.1)
+
+        return False, tr("The required layout helper did not start.")
 
     @classmethod
     def helper_version(cls, timeout_ms: int = 6000) -> int:

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Layout Switcher Helper Guard
+Comment=Keep the required layout helper enabled
+Exec=/usr/bin/layout-switcher-helper-guard
+Icon=layout-switcher
+OnlyShowIn=GNOME;
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-AutoRestart=true

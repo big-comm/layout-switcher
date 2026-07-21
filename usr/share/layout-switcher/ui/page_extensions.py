@@ -22,6 +22,7 @@ from gi.repository import Adw, GLib, Gtk, Pango
 import update_checker
 from constants import FEATURED_EXTENSIONS, tr
 from extension_manager import ExtMgr
+from helper_client import HELPER_UUID
 from shell_reloader import ShellReloader
 from ui.ext_browse_view import ExtBrowseView
 from ui.ext_detail_view import ExtDetailView
@@ -605,6 +606,7 @@ class ExtensionsPage(Gtk.Box):
         """
         enabled = ext["enabled"]
         is_user = ext["user"]
+        is_required = ext["uuid"] == HELPER_UUID
 
         row = Gtk.ListBoxRow()
         row.set_activatable(False)
@@ -643,6 +645,13 @@ class ExtensionsPage(Gtk.Box):
         ul.set_ellipsize(Pango.EllipsizeMode.END)
         ul.set_xalign(0)
         tc.append(ul)
+        if is_required:
+            required_label = Gtk.Label(label=tr("Required for layout switching"))
+            required_label.add_css_class("caption")
+            required_label.add_css_class("accent")
+            required_label.set_halign(Gtk.Align.START)
+            required_label.set_xalign(0)
+            tc.append(required_label)
         inner.append(tc)
 
         # Right-side controls use fixed slots so every row lines up.
@@ -691,7 +700,13 @@ class ExtensionsPage(Gtk.Box):
         sw = Gtk.Switch()
         sw.set_active(enabled)
         sw.set_valign(Gtk.Align.CENTER)
-        sw.update_property([Gtk.AccessibleProperty.LABEL], [f"{tr('Toggle')} {ext['name']}"])
+        if is_required:
+            sw.set_sensitive(False)
+            sw.set_tooltip_text(tr("Required for layout switching"))
+            switch_label = f"{ext['name']}: {tr('Required for layout switching')}"
+        else:
+            switch_label = f"{tr('Toggle')} {ext['name']}"
+        sw.update_property([Gtk.AccessibleProperty.LABEL], [switch_label])
         uuid_ref = ext["uuid"]
 
         def on_sw(s, p, _uuid=uuid_ref) -> None:
@@ -708,7 +723,8 @@ class ExtensionsPage(Gtk.Box):
 
             self._pool.submit(task)
 
-        sw.connect("notify::active", on_sw)
+        if not is_required:
+            sw.connect("notify::active", on_sw)
         switch_slot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         switch_slot.set_size_request(58, 1)
         switch_slot.set_halign(Gtk.Align.CENTER)

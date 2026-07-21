@@ -80,6 +80,7 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+from constants import tr
 from helper_client import HELPER_UUID, HelperClient
 from shell_reloader import ShellReloader
 from utils import run_cmd
@@ -1999,6 +2000,11 @@ class LayoutApplier:
         """
         if not data or not data.strip():
             return False, "empty dconf data"
+
+        helper_ok, helper_info = HelperClient.ensure_available()
+        if not helper_ok:
+            detail = f": {helper_info}" if helper_info else ""
+            return False, tr("Layout Switcher Helper is required to apply layouts.") + detail
 
         cls._unit_cache = {}
         cls.last_apply_cleanroom = False
