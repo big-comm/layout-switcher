@@ -25,6 +25,7 @@ DASH_TO_PANEL_UUID = "dash-to-panel@jderose9.github.com"
 USER_THEME_UUID = "user-theme@gnome-shell-extensions.gcampax.github.com"
 LIGHT_STYLE_UUID = "light-style@gnome-shell-extensions.gcampax.github.com"
 LAYOUT_SWITCHER_HELPER_UUID = "layout-switcher-helper@bigcommunity.org"
+COPYOUS_SECTION = "org/gnome/shell/extensions/copyous"
 COMMUNITY_MENU_LAYOUTS = {
     "classic.txt": "APPS_ONLY",
     "desk-ux.txt": "APP_GRID",
@@ -90,6 +91,12 @@ def test_layout_switcher_helper_is_always_first_and_enabled():
         assert enabled[0] == LAYOUT_SWITCHER_HELPER_UUID
         assert enabled.count(LAYOUT_SWITCHER_HELPER_UUID) == 1
         assert LAYOUT_SWITCHER_HELPER_UUID not in disabled
+
+
+def test_clipboard_shortcut_is_super_v_in_every_layout():
+    for layout_file in LAYOUT_DIR.glob("*.txt"):
+        values = _section_key_values(layout_file.read_text(), COPYOUS_SECTION)
+        assert values["open-clipboard-dialog-shortcut"] == "['<Super>v']"
 
 
 def test_community_menu_layout_mapping_and_panel_order():

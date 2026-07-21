@@ -317,6 +317,7 @@ vert-separator=false
 [org/gnome/shell/extensions/copyous]
 database-backend='sqlite'
 disable-hljs-dialog=true
+open-clipboard-dialog-shortcut=['<Super>v']
 
 [org/gnome/shell/extensions/dash-to-dock]
 apply-custom-theme=false
