@@ -134,6 +134,14 @@ def test_community_menu_layout_mapping_and_panel_order():
             assert LIGHT_STYLE_UUID not in disabled
         elif filename == "desk-ux.txt":
             assert interface_values["icon-theme"] == "'bigicons-papient-dark'"
+            assert dtp_values["appicon-margin"] == "0"
+            assert dtp_values["appicon-padding"] == "2"
+            assert dtp_values["leftbox-padding"] == "4"
+            assert dtp_values["panel-sizes"] == "'{\"0\":40}'"
+            assert dtp_values["dot-style-focused"] == "'METRO'"
+            assert dtp_values["dot-style-unfocused"] == "'DASHES'"
+            assert dtp_values["focus-highlight"] == "false"
+            assert dtp_values["highlight-appicon-hover"] == "false"
 
 
 

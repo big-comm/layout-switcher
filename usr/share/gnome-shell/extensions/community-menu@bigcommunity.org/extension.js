@@ -18,9 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
+import St from 'gi://St';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
@@ -35,6 +37,7 @@ export let SEARCH_EMITTER = null;
 
 const LIGHT_PANEL_STYLE_CLASS = 'community-menu-light-panel';
 const DARK_PANEL_STYLE_CLASS = 'community-menu-dark-panel';
+const GRID_PANEL_STYLE_CLASS = 'community-menu-grid-panel';
 
 export default class CommunityMenuExtension extends Extension {
     enable() {
@@ -44,6 +47,8 @@ export default class CommunityMenuExtension extends Extension {
 
         this.menuButtons = [];
         this._styledPanels = new Set();
+        this._taskbarBoxes = new Set();
+        this._focusedIndicators = new Map();
         this._interfaceSettings = new Gio.Settings({
             schema_id: 'org.gnome.desktop.interface',
         });
@@ -88,6 +93,7 @@ export default class CommunityMenuExtension extends Extension {
         this._mutterSettings = null;
         this._savedOverlayKey = null;
 
+        this._restoreFocusedIndicators();
         this._disconnectExtensionSignals();
         Main.extensionManager.disconnectObject(this);
 
@@ -115,13 +121,34 @@ export default class CommunityMenuExtension extends Extension {
 
     _connectExtensionSignals() {
         if (this._panelExtension && global[this._panelExtension]) {
-            global[this._panelExtension].connectObject('panels-created', () => this._reload(), this);
+            global[this._panelExtension].connectObject('panels-created', () => {
+                this._connectTaskbarSignals();
+                this._reload();
+            }, this);
+            this._connectTaskbarSignals();
+        }
+    }
+
+    _connectTaskbarSignals() {
+        for (const panel of global.dashToPanel?.panels ?? []) {
+            const taskbarBox = panel?.taskbar?._box;
+            if (!taskbarBox || this._taskbarBoxes.has(taskbarBox))
+                continue;
+
+            taskbarBox.connectObject('child-added', (_box, actor) => {
+                this._syncFocusedIndicators(actor);
+            }, this);
+            this._taskbarBoxes.add(taskbarBox);
+            this._syncFocusedIndicators(taskbarBox);
         }
     }
 
     _disconnectExtensionSignals() {
         if (global.dashToPanel)
             global.dashToPanel.disconnectObject(this);
+        for (const taskbarBox of this._taskbarBoxes ?? [])
+            taskbarBox.disconnectObject(this);
+        this._taskbarBoxes?.clear();
     }
 
     _reload() {
@@ -183,6 +210,7 @@ export default class CommunityMenuExtension extends Extension {
             try {
                 panel.remove_style_class_name(LIGHT_PANEL_STYLE_CLASS);
                 panel.remove_style_class_name(DARK_PANEL_STYLE_CLASS);
+                panel.remove_style_class_name(GRID_PANEL_STYLE_CLASS);
             } catch (e) {
                 console.debug(`Community Menu: panel style cleanup failed: ${e}`);
             }
@@ -192,26 +220,110 @@ export default class CommunityMenuExtension extends Extension {
 
     _syncPanelColorClass() {
         this._clearPanelColorClass();
-        if (!this._interfaceSettings ||
-            this._interfaceSettings.get_string('color-scheme') === 'prefer-dark')
-            return;
-
         const layout = SETTINGS.get_enum('layout');
-        const panelStyleClass = layout === Constants.LAYOUTS.APPS_ONLY
-            ? LIGHT_PANEL_STYLE_CLASS
-            : (layout === Constants.LAYOUTS.APP_GRID
-                ? DARK_PANEL_STYLE_CLASS
-                : null);
+        const lightMode = this._interfaceSettings &&
+            this._interfaceSettings.get_string('color-scheme') !== 'prefer-dark';
+        const panelStyleClass = lightMode
+            ? (layout === Constants.LAYOUTS.APPS_ONLY
+                ? LIGHT_PANEL_STYLE_CLASS
+                : (layout === Constants.LAYOUTS.APP_GRID
+                    ? DARK_PANEL_STYLE_CLASS
+                    : null))
+            : null;
         for (const menuButton of this.menuButtons ?? []) {
-            menuButton.setLightStyle(true);
-            if (!panelStyleClass)
-                continue;
+            menuButton.setLightStyle(lightMode);
             const panel = menuButton.panel;
-            if (!panel || this._styledPanels.has(panel))
+            if (!panel)
                 continue;
-            panel.add_style_class_name(panelStyleClass);
+            if (layout === Constants.LAYOUTS.APP_GRID)
+                panel.add_style_class_name(GRID_PANEL_STYLE_CLASS);
+            if (panelStyleClass)
+                panel.add_style_class_name(panelStyleClass);
             this._styledPanels.add(panel);
         }
+        this._syncFocusedIndicators();
+    }
+
+    _syncFocusedIndicators(root = null) {
+        if (SETTINGS?.get_enum('layout') !== Constants.LAYOUTS.APP_GRID) {
+            this._restoreFocusedIndicators();
+            return;
+        }
+
+        const roots = root ? [root] : [...(this._taskbarBoxes ?? [])];
+        const currentIndicators = new Set();
+
+        const visit = actor => {
+            if (actor.has_style_class_name?.('dtp-dots-container')) {
+                const indicators = actor.get_children()
+                    .filter(child => child instanceof St.DrawingArea);
+                const focusedIndicator = indicators.at(-1);
+                if (focusedIndicator) {
+                    this._configureFocusedIndicator(actor, focusedIndicator);
+                    currentIndicators.add(focusedIndicator);
+                }
+            }
+
+            for (const child of actor.get_children?.() ?? [])
+                visit(child);
+        };
+
+        for (const actor of roots)
+            visit(actor);
+
+        if (!root) {
+            for (const actor of this._focusedIndicators?.keys() ?? []) {
+                if (!currentIndicators.has(actor))
+                    this._restoreFocusedIndicator(actor);
+            }
+        }
+    }
+
+    _configureFocusedIndicator(container, indicator) {
+        if (!this._focusedIndicators.has(indicator)) {
+            const syncWidth = () => {
+                const fullWidth = container.width;
+                if (indicator.width <= 0 || fullWidth <= 1)
+                    return;
+
+                const targetWidth = Math.max(1, Math.round(fullWidth / 2));
+                if (indicator.width !== targetWidth)
+                    indicator.width = targetWidth;
+            };
+
+            indicator.connectObject('notify::width', syncWidth, this);
+            container.connectObject('notify::width', syncWidth, this);
+            indicator.connectObject('destroy', () => {
+                this._focusedIndicators.delete(indicator);
+            }, this);
+            this._focusedIndicators.set(indicator, container);
+        }
+
+        indicator.x_expand = false;
+        indicator.x_align = Clutter.ActorAlign.CENTER;
+        indicator.set_scale(1, 1);
+        const fullWidth = container.width;
+        if (indicator.width > 0 && fullWidth > 1)
+            indicator.width = Math.max(1, Math.round(fullWidth / 2));
+    }
+
+    _restoreFocusedIndicator(indicator) {
+        const container = this._focusedIndicators?.get(indicator);
+        try {
+            indicator.disconnectObject(this);
+            container?.disconnectObject(this);
+            indicator.x_align = Clutter.ActorAlign.FILL;
+            indicator.set_scale(1, 1);
+        } catch (e) {
+            console.debug(`Community Menu: indicator cleanup failed: ${e}`);
+        }
+        this._focusedIndicators?.delete(indicator);
+    }
+
+    _restoreFocusedIndicators() {
+        for (const actor of [...(this._focusedIndicators?.keys() ?? [])])
+            this._restoreFocusedIndicator(actor);
+        this._focusedIndicators?.clear();
     }
 
     _enableButton(menuButton) {

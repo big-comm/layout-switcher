@@ -79,9 +79,23 @@ def test_menu_button_active_highlight_is_not_stretched_by_shell_padding():
     assert "changed::color-scheme" in extension_source
     assert "Constants.LAYOUTS.APPS_ONLY" in extension_source
     assert "Constants.LAYOUTS.APP_GRID" in extension_source
-    assert "if (!panelStyleClass)" in extension_source
+    assert "community-menu-grid-panel" in extension_source
     assert "community-menu-light-panel" in stylesheet
     assert "community-menu-dark-panel" in stylesheet
+    assert "community-menu-grid-panel" in stylesheet
+    assert "icon-size: 38px" in stylesheet
+    assert "padding: 1px" in stylesheet
+    assert "border-radius: 999px !important" in stylesheet
+    assert ".panel-button.community-menu-panel-button:hover" in stylesheet
+    assert "#dashtopanelTaskbar .overview-tile:hover .dtp-container" in stylesheet
+    assert ".panel-button.community-menu-panel-button:hover .panel-status-menu-box" in stylesheet
+    assert ".overview-tile:hover .overview-icon" in stylesheet
+    assert "background-color: rgba(238, 238, 236, 0.12) !important" in stylesheet
+    assert "box-shadow: 0 0 0 2px rgba(238, 238, 236, 0.12) !important" in stylesheet
+    assert "overflow: visible !important" in stylesheet
+    assert "connectObject('child-added'" in extension_source
+    assert "Clutter.ActorAlign.CENTER" in extension_source
+    assert "Math.round(fullWidth / 2)" in extension_source
     assert "color: #fafafb" in stylesheet
     assert "background-color: #222226" in stylesheet
 
@@ -164,7 +178,7 @@ def test_search_entry_tracks_light_color_scheme():
     menu_source = (EXTENSION_DIR / "menu.js").read_text()
     stylesheet = (EXTENSION_DIR / "stylesheet.css").read_text()
 
-    assert "menuButton.setLightStyle(true)" in extension_source
+    assert "menuButton.setLightStyle(lightMode)" in extension_source
     assert "menuButton.setLightStyle(false)" in extension_source
     assert "setLightStyle(enabled)" in menu_source
     assert "community-menu-light" in menu_source

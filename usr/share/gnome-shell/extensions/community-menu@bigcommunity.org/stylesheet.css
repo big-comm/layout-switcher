@@ -41,6 +41,93 @@
     icon-size: 36px;
 }
 
+/* Keep the Desk UX menu distinct inside the common 40px launcher cell. */
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button .community-menu-button-icon {
+    icon-size: 38px;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button .panel-status-menu-box {
+    padding: 1px;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button .panel-status-menu-box,
+#panel.dashtopanelMainPanel.community-menu-grid-panel .dtp-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel .dtp-dots-container {
+    border-radius: 999px !important;
+    overflow: visible !important;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:hover,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:focus,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:hover,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:focus,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:hover .dtp-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:focus .dtp-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:hover .dtp-dots-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:focus .dtp-dots-container {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:active,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:checked,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:active,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:checked,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:active .dtp-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:checked .dtp-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:active .dtp-dots-container,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:checked .dtp-dots-container {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:hover .panel-status-menu-box,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:focus .panel-status-menu-box,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:hover .overview-icon,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:focus .overview-icon,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile.focused .overview-icon {
+    background-color: rgba(238, 238, 236, 0.12) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 0 2px rgba(238, 238, 236, 0.12) !important;
+}
+
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:active .panel-status-menu-box,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+.panel-button.community-menu-panel-button:checked .panel-status-menu-box,
+#panel.dashtopanelMainPanel.community-menu-grid-panel
+#dashtopanelTaskbar .overview-tile:active .overview-icon {
+    background-color: rgba(238, 238, 236, 0.12) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 0 2px rgba(238, 238, 236, 0.12) !important;
+}
+
 /* DTP keeps its light background in overview; keep symbolic items readable. */
 #panel.dashtopanelMainPanel:overview .panel-button {
     color: inherit;
