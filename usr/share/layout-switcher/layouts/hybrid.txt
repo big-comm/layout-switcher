@@ -175,6 +175,7 @@ secondary-color='#000000000000'
 show-desktop-icons=true
 
 [org/gnome/desktop/interface]
+accent-color='blue'
 clock-show-weekday=true
 cursor-theme='Bibata-Modern-Classic'
 document-font-name='Noto Sans Nerd Font Medium 10'

@@ -47,7 +47,7 @@ def test_live_color_switch_empties_shell_rebase_slices():
 def test_menu_layouts_hide_only_the_desktop_power_fallback():
     source = HELPER.read_text()
 
-    assert "const HELPER_BUILD = 31" in source
+    assert "const HELPER_BUILD = 37" in source
     assert "get_strv('enabled-extensions')" in source
     assert "_extensionWillRun(DTP_UUID)" in source
     assert "_usesMenuSessionActions()" in source
@@ -96,7 +96,7 @@ def test_native_shell_running_indicators_follow_shell_accent():
     source = HELPER.read_text()
     stylesheet = HELPER_STYLESHEET.read_text()
 
-    assert "const HELPER_BUILD = 31" in source
+    assert "const HELPER_BUILD = 37" in source
     assert "NATIVE_ACCENT_PANEL_CLASS" in source
     assert "_syncNativeAccentPanelClass()" in source
     assert "_clearNativeAccentPanelClass()" in source
@@ -109,3 +109,27 @@ def test_native_shell_running_indicators_follow_shell_accent():
     assert "layout-switcher-accent-probe" in stylesheet
     assert "layout-switcher-native-accent-panel" in stylesheet
     assert "background-color: -st-accent-color" in stylesheet
+
+
+def test_hybrid_focused_indicator_is_twenty_percent_shorter():
+    source = HELPER.read_text()
+
+    assert "const HYBRID_INDICATOR_SCALE = 0.8" in source
+    assert "_waitDashToPanelReady" in source
+    assert "panel?.taskbar?._box" in source
+    assert "if (target.has(DTP_UUID))" in source
+    assert "await this._waitDashToPanelReady()" in source
+    assert "_syncHybridFocusedIndicators()" in source
+    assert "_teardownHybridFocusedIndicators()" in source
+    assert "actor.has_style_class_name?.('dtp-dots-container')" in source
+    assert "indicator.set_pivot_point(0.5, 0.5)" in source
+    assert "for (const [index, indicator] of indicators.entries())" in source
+    assert "indicator.set_scale(HYBRID_INDICATOR_SCALE, 1)" in source
+    assert "new Clutter.DesaturateEffect({factor: 1})" in source
+    assert "_watchHybridTaskbarTree(taskbarBox)" in source
+    assert "'child-added', (_parent, child)" in source
+    assert "this._watchHybridTaskbarTree(child)" in source
+    assert "_watchHybridIndicatorContainer(actor)" in source
+    assert "'child-removed', (_container, indicator)" in source
+    assert "for (const container of this._hybridIndicatorContainers" in source
+    assert "for (const actor of this._hybridTaskbarActors" in source

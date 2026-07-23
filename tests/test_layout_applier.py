@@ -500,6 +500,19 @@ class TestLayoutApplier:
             "color-scheme",
         ]
 
+    @patch.object(LayoutApplier, "_current_color_scheme_value", return_value="'prefer-dark'")
+    def test_preserve_color_scheme_keeps_original_accent(self, _mock_scheme):
+        data = (
+            "[org/gnome/desktop/interface]\n"
+            "accent-color='blue'\n"
+            "color-scheme='default'\n"
+        )
+
+        out = LayoutApplier._preserve_user_color_scheme(data)
+
+        assert "accent-color='blue'" in out
+        assert "color-scheme='prefer-dark'" in out
+
     @patch("layout_applier.run_cmd")
     def test_g_unity_keeps_shell_dark_with_light_user_scheme(self, mock_run):
         """G-Unity preserves light apps but keeps Shell/top bar dark."""

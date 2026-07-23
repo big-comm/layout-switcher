@@ -169,6 +169,7 @@ primary-color='#000000000000'
 secondary-color='#000000000000'
 
 [org/gnome/desktop/interface]
+accent-color='blue'
 clock-show-weekday=true
 color-scheme='prefer-dark'
 cursor-theme='Bibata-Modern-Classic'

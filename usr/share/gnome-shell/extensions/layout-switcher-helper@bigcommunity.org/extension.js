@@ -80,10 +80,12 @@ const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_L
 const LIGHT_OVERVIEW_PANEL_CLASS = 'layout-switcher-light-overview-panel';
 const NATIVE_ACCENT_PANEL_CLASS = 'layout-switcher-native-accent-panel';
 const ACCENT_PROBE_CLASS = 'layout-switcher-accent-probe';
+const HYBRID_INDICATOR_SCALE = 0.8;
+const HYBRID_UNFOCUSED_EFFECT = 'layout-switcher-hybrid-unfocused';
 // Build marker within a protocol version — lets a deploy verify over Ping
 // that the RUNNING module is the freshly-installed code (the Shell caches
 // ES modules; only a reload/relogin picks a new file up).
-const HELPER_BUILD = 31;
+const HELPER_BUILD = 37;
 
 // GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
 // DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
@@ -275,6 +277,7 @@ export default class LayoutSwitcherHelper extends Extension {
     // session-mode transition, and never leave the curtain up.
     _hardCancel() {
         this._teardownPanelSystemIndicator();
+        this._teardownHybridFocusedIndicators();
         this._clearLightOverviewPanelClass();
         this._clearNativeAccentPanelClass();
         this._unexport();
@@ -354,6 +357,22 @@ export default class LayoutSwitcherHelper extends Extension {
                 return false;
             const state = mgr.lookup(uuid)?.state;
             if (predicate(state))
+                return true;
+            if (GLib.get_monotonic_time() >= deadline)
+                return false;
+            await this._sleep(STATE_POLL_MS);
+        }
+    }
+
+    async _waitDashToPanelReady(timeoutMs = STATE_WAIT_MS) {
+        const deadline = GLib.get_monotonic_time() + timeoutMs * 1000;
+        for (;;) {
+            if (this._cancelled)
+                return false;
+            const ready = global.dashToPanel?.panels?.some(
+                panel => Boolean(panel?.taskbar?._box)
+            );
+            if (ready)
                 return true;
             if (GLib.get_monotonic_time() >= deadline)
                 return false;
@@ -621,13 +640,164 @@ export default class LayoutSwitcherHelper extends Extension {
         }
     }
 
+    _connectHybridTaskbarSignals() {
+        for (const panel of global.dashToPanel?.panels ?? []) {
+            const taskbarBox = panel?.taskbar?._box;
+            if (!taskbarBox || this._hybridTaskbarBoxes?.has(taskbarBox))
+                continue;
+
+            this._hybridTaskbarBoxes ??= new Set();
+            this._hybridTaskbarBoxes.add(taskbarBox);
+            this._watchHybridTaskbarTree(taskbarBox);
+            this._syncHybridFocusedIndicators(taskbarBox);
+        }
+    }
+
+    _watchHybridTaskbarTree(actor) {
+        if (!actor ||
+            actor.has_style_class_name?.('dtp-dots-container') ||
+            this._hybridTaskbarActors?.has(actor))
+            return;
+
+        this._hybridTaskbarActors ??= new Set();
+        this._hybridTaskbarActors.add(actor);
+        actor.connectObject('child-added', (_parent, child) => {
+            this._watchHybridTaskbarTree(child);
+            this._syncHybridFocusedIndicators(child);
+        }, 'destroy', () => {
+            this._hybridTaskbarActors?.delete(actor);
+        }, this);
+
+        for (const child of actor.get_children?.() ?? [])
+            this._watchHybridTaskbarTree(child);
+    }
+
+    _watchHybridIndicatorContainer(container) {
+        this._hybridIndicatorContainers ??= new Set();
+        if (this._hybridIndicatorContainers.has(container))
+            return;
+
+        this._hybridIndicatorContainers.add(container);
+        container.connectObject('child-added', () => {
+            this._syncHybridFocusedIndicators(container);
+        }, 'child-removed', (_container, indicator) => {
+            if (this._hybridFocusedIndicators?.has(indicator))
+                this._restoreHybridFocusedIndicator(indicator);
+        }, 'destroy', () => {
+            this._hybridIndicatorContainers?.delete(container);
+        }, this);
+    }
+
+    _syncHybridFocusedIndicators(root = null) {
+        const dashToPanel = global.dashToPanel;
+        if (!dashToPanel) {
+            this._teardownHybridFocusedIndicators();
+            return;
+        }
+
+        if (this._hybridDashToPanel !== dashToPanel) {
+            this._teardownHybridFocusedIndicators();
+            this._hybridDashToPanel = dashToPanel;
+            dashToPanel.connectObject('panels-created', () => {
+                this._connectHybridTaskbarSignals();
+                this._syncHybridFocusedIndicators();
+            }, this);
+        }
+
+        this._hybridFocusedIndicators ??= new Map();
+        this._hybridTaskbarBoxes ??= new Set();
+        this._connectHybridTaskbarSignals();
+
+        const roots = root ? [root] : [...this._hybridTaskbarBoxes];
+        const currentIndicators = new Set();
+        const visit = actor => {
+            if (actor.has_style_class_name?.('dtp-dots-container')) {
+                this._watchHybridIndicatorContainer(actor);
+                const indicators = actor.get_children()
+                    .filter(child => child instanceof St.DrawingArea);
+                for (const [index, indicator] of indicators.entries()) {
+                    this._configureHybridFocusedIndicator(
+                        actor,
+                        indicator,
+                        index === 0
+                    );
+                    currentIndicators.add(indicator);
+                }
+            }
+
+            for (const child of actor.get_children?.() ?? [])
+                visit(child);
+        };
+
+        for (const actor of roots)
+            visit(actor);
+
+        if (!root) {
+            for (const indicator of [...this._hybridFocusedIndicators.keys()]) {
+                if (!currentIndicators.has(indicator))
+                    this._restoreHybridFocusedIndicator(indicator);
+            }
+        }
+    }
+
+    _configureHybridFocusedIndicator(container, indicator, unfocused) {
+        this._hybridFocusedIndicators ??= new Map();
+        if (!this._hybridFocusedIndicators.has(indicator)) {
+            indicator.connectObject('destroy', () => {
+                this._hybridFocusedIndicators?.delete(indicator);
+            }, this);
+            this._hybridFocusedIndicators.set(indicator, container);
+        }
+
+        indicator.set_pivot_point(0.5, 0.5);
+        indicator.set_scale(HYBRID_INDICATOR_SCALE, 1);
+        if (unfocused && !indicator.get_effect(HYBRID_UNFOCUSED_EFFECT)) {
+            indicator.add_effect_with_name(
+                HYBRID_UNFOCUSED_EFFECT,
+                new Clutter.DesaturateEffect({factor: 1})
+            );
+        } else if (!unfocused) {
+            indicator.remove_effect_by_name(HYBRID_UNFOCUSED_EFFECT);
+        }
+    }
+
+    _restoreHybridFocusedIndicator(indicator) {
+        try {
+            indicator.disconnectObject(this);
+            indicator.set_scale(1, 1);
+            indicator.remove_effect_by_name(HYBRID_UNFOCUSED_EFFECT);
+        } catch (e) {
+            logHelper(`Hybrid indicator cleanup failed: ${e}`);
+        }
+        this._hybridFocusedIndicators?.delete(indicator);
+    }
+
+    _teardownHybridFocusedIndicators() {
+        for (const indicator of [...(this._hybridFocusedIndicators?.keys() ?? [])])
+            this._restoreHybridFocusedIndicator(indicator);
+        for (const container of this._hybridIndicatorContainers ?? [])
+            container.disconnectObject(this);
+        this._hybridIndicatorContainers?.clear();
+        for (const actor of this._hybridTaskbarActors ?? [])
+            actor.disconnectObject(this);
+        this._hybridTaskbarActors?.clear();
+        for (const taskbarBox of this._hybridTaskbarBoxes ?? [])
+            taskbarBox.disconnectObject(this);
+        this._hybridTaskbarBoxes?.clear();
+        this._hybridDashToPanel?.disconnectObject(this);
+        this._hybridDashToPanel = null;
+    }
+
     _syncNativeAccentPanelClass() {
         this._clearNativeAccentPanelClass();
-        if (!this._extensionWillRun(DTP_UUID))
+        if (!this._extensionWillRun(DTP_UUID)) {
+            this._teardownHybridFocusedIndicators();
             return;
+        }
 
         let nativeAccentLayout = false;
         let classicLayout = false;
+        let hybridLayout = false;
         if (this._extensionWillRun(COMMUNITY_MENU_UUID)) {
             try {
                 const settings = new Gio.Settings({
@@ -643,12 +813,17 @@ export default class LayoutSwitcherHelper extends Extension {
                 const settings = new Gio.Settings({
                     schema_id: 'org.gnome.shell.extensions.arcmenu',
                 });
-                nativeAccentLayout = settings.get_string('menu-layout') ===
+                hybridLayout = settings.get_string('menu-layout') ===
                     ARCMENU_HYBRID_LAYOUT;
+                nativeAccentLayout = hybridLayout;
             } catch (e) {
                 logHelper(`ArcMenu layout read failed: ${e}`);
             }
         }
+        if (hybridLayout)
+            this._syncHybridFocusedIndicators();
+        else
+            this._teardownHybridFocusedIndicators();
         if (!nativeAccentLayout)
             return;
 
@@ -1414,6 +1589,10 @@ export default class LayoutSwitcherHelper extends Extension {
             }
         }
 
+        if (target.has(DTP_UUID)) {
+            const ready = await this._waitDashToPanelReady();
+            steps.push(ready ? 'dash-to-panel ready' : 'dash-to-panel readiness TIMEOUT');
+        }
         this._syncLightOverviewPanelClass();
         this._syncNativeAccentPanelClass();
         await this._panelRepaint();

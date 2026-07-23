@@ -99,6 +99,15 @@ def test_clipboard_shortcut_is_super_v_in_every_layout():
         assert values["open-clipboard-dialog-shortcut"] == "['<Super>v']"
 
 
+def test_original_layouts_reset_accent_to_blue():
+    for layout_file in LAYOUT_DIR.glob("*.txt"):
+        values = _section_key_values(
+            layout_file.read_text(),
+            "org/gnome/desktop/interface",
+        )
+        assert values["accent-color"] == "'blue'"
+
+
 def test_community_menu_layout_mapping_and_panel_order():
     for filename, menu_layout in COMMUNITY_MENU_LAYOUTS.items():
         text = (LAYOUT_DIR / filename).read_text()
