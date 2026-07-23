@@ -17,6 +17,7 @@ DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 import logging
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -27,32 +28,41 @@ log = logging.getLogger("layout-switcher")
 
 def atomic_write_text(dest: Path, data: str, encoding: str = "utf-8") -> None:
     """
-    Escreve ``data`` em ``dest`` de forma atômica e durável.
+    Write ``data`` atomically and durably.
 
-    Estratégia: escreve num ``.tmp`` irmão, faz flush+fsync do conteúdo, troca
-    via rename atômico e fsync no diretório pai (durabilidade do metadado em
-    ext4/btrfs/etc.). Levanta OSError em falha — caller decide o que fazer.
+    Use a unique sibling temporary file so concurrent writers cannot rename
+    each other's temporary file. Raise ``OSError`` for the caller to handle.
     """
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = (
-        dest.with_suffix(dest.suffix + ".tmp")
-        if dest.suffix
-        else dest.with_name(dest.name + ".tmp")
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{dest.name}.",
+        suffix=".tmp",
+        dir=dest.parent,
     )
-    with open(tmp, "w", encoding=encoding) as fh:
-        fh.write(data)
-        fh.flush()
-        os.fsync(fh.fileno())
-    os.replace(tmp, dest)
+    tmp = Path(tmp_name)
     try:
-        dir_fd = os.open(str(dest.parent), os.O_DIRECTORY)
+        with os.fdopen(fd, "w", encoding=encoding) as fh:
+            fd = -1
+            fh.write(data)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, dest)
         try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
-    except OSError as exc:
-        log.debug("dir fsync skipped for %s: %s", dest.parent, exc)
+            dir_fd = os.open(str(dest.parent), os.O_DIRECTORY)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
+        except OSError as exc:
+            log.debug("dir fsync skipped for %s: %s", dest.parent, exc)
+    finally:
+        if fd >= 0:
+            os.close(fd)
+        try:
+            tmp.unlink()
+        except FileNotFoundError:
+            pass
 
 
 # ── Subprocess ────────────────────────────────────────────────────────────────

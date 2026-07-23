@@ -83,7 +83,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 from constants import tr
 from helper_client import HELPER_UUID, HelperClient
 from shell_reloader import ShellReloader
-from utils import run_cmd
+from utils import atomic_write_text, run_cmd
 
 log = logging.getLogger("layout-switcher")
 
@@ -1743,38 +1743,21 @@ class LayoutApplier:
 
         try:
             SETTINGS_GNOME.parent.mkdir(parents=True, exist_ok=True)
-            tmp = SETTINGS_GNOME.parent / (SETTINGS_GNOME.name + ".tmp")
-            with open(tmp, "w", encoding="utf-8") as fh:
-                fh.write(data)
-                fh.flush()
-                os.fsync(fh.fileno())
             if SETTINGS_GNOME.exists() and SETTINGS_GNOME.stat().st_size > 0:
                 bak = SETTINGS_GNOME.parent / (SETTINGS_GNOME.name + ".bak")
                 try:
                     bak.write_bytes(SETTINGS_GNOME.read_bytes())
                 except Exception as exc:
                     log.debug("could not create .bak: %s", exc)
-            tmp.replace(SETTINGS_GNOME)
+            atomic_write_text(SETTINGS_GNOME, data)
             digest = hashlib.sha256(data.encode("utf-8")).hexdigest()
             try:
-                marker_tmp = _LAYOUT_SWITCHER_HASH_FILE.with_suffix(
-                    _LAYOUT_SWITCHER_HASH_FILE.suffix + ".tmp"
-                )
-                marker_tmp.write_text(
+                atomic_write_text(
+                    _LAYOUT_SWITCHER_HASH_FILE,
                     f"{digest}  {SETTINGS_GNOME.name}\n",
-                    encoding="utf-8",
                 )
-                marker_tmp.replace(_LAYOUT_SWITCHER_HASH_FILE)
             except Exception as exc:
                 log.warning("could not write layout-switcher hash marker: %s", exc)
-            try:
-                dir_fd = os.open(str(SETTINGS_GNOME.parent), os.O_DIRECTORY)
-                try:
-                    os.fsync(dir_fd)
-                finally:
-                    os.close(dir_fd)
-            except OSError as exc:
-                log.debug("dir fsync skipped: %s", exc)
             return True, str(SETTINGS_GNOME)
         except Exception as exc:
             return False, f"write failed: {exc}"

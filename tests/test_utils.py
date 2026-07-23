@@ -2,10 +2,12 @@
 """Tests for utils.py — run_cmd, gsettings/dconf helpers, find_file, color_from_name."""
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
 from utils import (
+    atomic_write_text,
     color_from_name,
     dconf_read,
     dconf_write,
@@ -16,6 +18,17 @@ from utils import (
     is_wayland,
     run_cmd,
 )
+
+
+def test_atomic_write_text_supports_concurrent_writers(tmp_path):
+    dest = tmp_path / "settings.gnome"
+    payloads = [f"payload-{index}\n" for index in range(32)]
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(lambda payload: atomic_write_text(dest, payload), payloads))
+
+    assert dest.read_text() in payloads
+    assert not list(tmp_path.glob(".settings.gnome.*.tmp"))
 
 # ── run_cmd ───────────────────────────────────────────────────────────────────
 
