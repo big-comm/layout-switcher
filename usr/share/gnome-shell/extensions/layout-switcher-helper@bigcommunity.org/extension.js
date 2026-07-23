@@ -78,10 +78,12 @@ const HYBRID_MENU_LAYOUT = 4; // MINT
 const ARCMENU_HYBRID_LAYOUT = 'enterprise';
 const COMMUNITY_LIGHT_ICON_LAYOUTS = new Set([CLASSIC_MENU_LAYOUT, HYBRID_MENU_LAYOUT]);
 const LIGHT_OVERVIEW_PANEL_CLASS = 'layout-switcher-light-overview-panel';
+const NATIVE_ACCENT_PANEL_CLASS = 'layout-switcher-native-accent-panel';
+const ACCENT_PROBE_CLASS = 'layout-switcher-accent-probe';
 // Build marker within a protocol version — lets a deploy verify over Ping
 // that the RUNNING module is the freshly-installed code (the Shell caches
 // ES modules; only a reload/relogin picks a new file up).
-const HELPER_BUILD = 28;
+const HELPER_BUILD = 31;
 
 // GNOME Shell ExtensionState: ACTIVE=1, INACTIVE=2, ERROR=3, OUT_OF_DATE=4,
 // DOWNLOADING=5, INITIALIZED=6, DEACTIVATING=7, ACTIVATING=8.
@@ -188,6 +190,7 @@ export default class LayoutSwitcherHelper extends Extension {
         // UPower immediately so the desktop fallback never reaches a frame;
         // the delayed pass below only covers unusually late panel startup.
         this._setupPanelSystemIndicator();
+        this._syncNativeAccentPanelClass();
         // Live appearance follower. Classic/Hybrid use GNOME's native Shell;
         // the other Community layouts use their configured shell themes.
         // Papient variants follow the app color scheme in all six layouts.
@@ -198,13 +201,20 @@ export default class LayoutSwitcherHelper extends Extension {
                 });
                 this._schemeSignal = this._ifaceSettings.connect(
                     'changed::color-scheme', () => this._onColorSchemeChanged());
+                this._accentSignal = this._ifaceSettings.connect(
+                    'changed::accent-color',
+                    () => this._syncNativeAccentPanelClass());
+                this._lastColorSchemeDark =
+                    this._ifaceSettings.get_string('color-scheme') === 'prefer-dark';
                 this._syncLightOverviewPanelClass();
-                // At login the helper loads before panels/menus. Reconcile
-                // once after the target extension set has finished loading.
+                this._syncNativeAccentPanelClass();
+                // At login, preserve the saved Shell theme and extension
+                // choices. The delayed pass only refreshes derived visuals.
                 this._sleep(1000).then(() => {
-                    this._onColorSchemeChanged();
+                    this._onColorSchemeChanged(false);
                     this._setupPanelSystemIndicator();
                     this._syncLightOverviewPanelClass();
+                    this._syncNativeAccentPanelClass();
                 });
             } catch (e) {
                 logHelper(`color-scheme follower unavailable: ${e}`);
@@ -266,6 +276,7 @@ export default class LayoutSwitcherHelper extends Extension {
     _hardCancel() {
         this._teardownPanelSystemIndicator();
         this._clearLightOverviewPanelClass();
+        this._clearNativeAccentPanelClass();
         this._unexport();
         if (this._schemeDebounce) {
             GLib.Source.remove(this._schemeDebounce);
@@ -274,7 +285,10 @@ export default class LayoutSwitcherHelper extends Extension {
         if (this._ifaceSettings) {
             if (this._schemeSignal)
                 this._ifaceSettings.disconnect(this._schemeSignal);
+            if (this._accentSignal)
+                this._ifaceSettings.disconnect(this._accentSignal);
             this._schemeSignal = 0;
+            this._accentSignal = 0;
             this._ifaceSettings = null;
         }
         this._cancelled = true;
@@ -562,6 +576,97 @@ export default class LayoutSwitcherHelper extends Extension {
         this._lightOverviewPanels?.clear();
     }
 
+    _clearNativeAccentPanelClass() {
+        for (const panel of this._nativeAccentPanels ?? []) {
+            try {
+                panel.remove_style_class_name(NATIVE_ACCENT_PANEL_CLASS);
+            } catch (e) {
+                logHelper(`native accent panel cleanup failed: ${e}`);
+            }
+        }
+        this._nativeAccentPanels?.clear();
+    }
+
+    _shellAccentColor() {
+        const probe = new St.Widget({style_class: ACCENT_PROBE_CLASS});
+        try {
+            Main.uiGroup.add_child(probe);
+            if (typeof probe.ensure_style === 'function')
+                probe.ensure_style();
+            const color = probe.get_theme_node().get_background_color();
+            return `#${[color.red, color.green, color.blue]
+                .map(channel => channel.toString(16).padStart(2, '0'))
+                .join('')}`;
+        } catch (e) {
+            logHelper(`shell accent read failed: ${e}`);
+            return '';
+        } finally {
+            probe.destroy();
+        }
+    }
+
+    _syncClassicFocusHighlight() {
+        const accent = this._shellAccentColor();
+        if (!accent)
+            return;
+
+        try {
+            const settings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.dash-to-panel',
+            });
+            if (settings.get_string('focus-highlight-color') !== accent)
+                settings.set_string('focus-highlight-color', accent);
+        } catch (e) {
+            logHelper(`Classic focus highlight sync failed: ${e}`);
+        }
+    }
+
+    _syncNativeAccentPanelClass() {
+        this._clearNativeAccentPanelClass();
+        if (!this._extensionWillRun(DTP_UUID))
+            return;
+
+        let nativeAccentLayout = false;
+        let classicLayout = false;
+        if (this._extensionWillRun(COMMUNITY_MENU_UUID)) {
+            try {
+                const settings = new Gio.Settings({
+                    schema_id: 'org.gnome.shell.extensions.community-menu',
+                });
+                classicLayout = settings.get_enum('layout') === CLASSIC_MENU_LAYOUT;
+                nativeAccentLayout = classicLayout;
+            } catch (e) {
+                logHelper(`community layout read failed: ${e}`);
+            }
+        } else if (this._extensionWillRun(ARCMENU_UUID)) {
+            try {
+                const settings = new Gio.Settings({
+                    schema_id: 'org.gnome.shell.extensions.arcmenu',
+                });
+                nativeAccentLayout = settings.get_string('menu-layout') ===
+                    ARCMENU_HYBRID_LAYOUT;
+            } catch (e) {
+                logHelper(`ArcMenu layout read failed: ${e}`);
+            }
+        }
+        if (!nativeAccentLayout)
+            return;
+
+        if (classicLayout)
+            this._syncClassicFocusHighlight();
+
+        const panels = global.dashToPanel?.panels
+            ?.map(panel => panel?.panel)
+            .filter(Boolean) ?? [];
+        if (panels.length === 0)
+            panels.push(Main.panel);
+        this._nativeAccentPanels ??= new Set();
+        for (const panel of panels) {
+            panel.add_style_class_name(NATIVE_ACCENT_PANEL_CLASS);
+            this._nativeAccentPanels.add(panel);
+        }
+    }
+
     _syncLightOverviewPanelClass() {
         this._clearLightOverviewPanelClass();
         if (!this._ifaceSettings ||
@@ -595,7 +700,7 @@ export default class LayoutSwitcherHelper extends Extension {
 
     // ── Live color-scheme follower ──────────────────────────────────────────
 
-    _onColorSchemeChanged() {
+    _onColorSchemeChanged(reconcileShell = true) {
         // Debounce: GNOME Settings can emit several changes in a burst, and
         // the layout apply's own dconf load fires this too (skipped below —
         // the apply already sequences the correct shell theme).
@@ -603,19 +708,20 @@ export default class LayoutSwitcherHelper extends Extension {
             GLib.Source.remove(this._schemeDebounce);
         this._schemeDebounce = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 400, () => {
             this._schemeDebounce = 0;
-            this._followColorScheme()
+            this._followColorScheme(reconcileShell)
                 .catch(e => logHelper(`color-scheme follow failed: ${e}`));
             return GLib.SOURCE_REMOVE;
         });
     }
 
-    async _followColorScheme() {
+    async _followColorScheme(reconcileShell = true) {
         if (this._busy() || this._cancelled || !this._ifaceSettings)
             return;
         const mgr = Main.extensionManager;
         const live = this._liveUuids(mgr);
         const dark =
             this._ifaceSettings.get_string('color-scheme') === 'prefer-dark';
+        const previousDark = this._lastColorSchemeDark ?? dark;
         const isLive = uuid => LIVE_STATES.has(mgr.lookup(uuid)?.state);
         this._applying = true;   // serialize against layout switches
         try {
@@ -674,6 +780,27 @@ export default class LayoutSwitcherHelper extends Extension {
             const nativeShell = communityLayout === CLASSIC_MENU_LAYOUT ||
                 communityLayout === HYBRID_MENU_LAYOUT || hybridArcMenu;
             const deskUxOrchisShell = communityLayout === DESK_UX_MENU_LAYOUT;
+            this._shellSettings ??= new Gio.Settings({schema_id: 'org.gnome.shell'});
+            const enabled = this._shellSettings.get_strv('enabled-extensions');
+            const disabled = this._shellSettings.get_strv('disabled-extensions');
+            const configured = uuid => enabled.includes(uuid) && !disabled.includes(uuid);
+            const userThemeSettings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.user-theme',
+            });
+            const currentShellTheme = userThemeSettings.get_string('name');
+            const managedNativeState = nativeShell &&
+                currentShellTheme === '' &&
+                !configured(USER_THEME_UUID) &&
+                configured(LIGHT_STYLE_UUID) === !previousDark;
+            const previousDeskUxTheme = previousDark
+                ? ORCHIS_SHELL_DARK
+                : ORCHIS_SHELL_LIGHT;
+            const managedDeskUxState = deskUxOrchisShell &&
+                currentShellTheme === previousDeskUxTheme &&
+                configured(USER_THEME_UUID) &&
+                !configured(LIGHT_STYLE_UUID);
+            const manageShell = reconcileShell &&
+                (managedNativeState || managedDeskUxState);
             const wantOn = deskUxOrchisShell
                 ? USER_THEME_UUID
                 : (dark ? USER_THEME_UUID : LIGHT_STYLE_UUID);
@@ -685,47 +812,47 @@ export default class LayoutSwitcherHelper extends Extension {
                 : (deskUxOrchisShell
                     ? (dark ? ORCHIS_SHELL_DARK : ORCHIS_SHELL_LIGHT)
                     : (dark ? ORCHIS_SHELL_DARK : 'light-style'));
-            logHelper(`color-scheme follow: ${dark ? 'dark' : 'light'} (${shellMode})`);
+            logHelper(`color-scheme follow: ${dark ? 'dark' : 'light'} (${shellMode}, ${
+                manageShell ? 'managed' : 'preserved'})`);
 
-            const userThemeSettings = new Gio.Settings({
-                schema_id: 'org.gnome.shell.extensions.user-theme',
-            });
             const shellThemeName = nativeShell
                 ? ''
                 : (deskUxOrchisShell
                     ? (dark ? ORCHIS_SHELL_DARK : ORCHIS_SHELL_LIGHT)
                     : (dark ? ORCHIS_SHELL_DARK : userThemeSettings.get_string('name')));
-            if (userThemeSettings.get_string('name') !== shellThemeName)
-                userThemeSettings.set_string('name', shellThemeName);
+            if (manageShell) {
+                if (currentShellTheme !== shellThemeName)
+                    userThemeSettings.set_string('name', shellThemeName);
 
-            const turnOff = nativeShell && dark
-                ? [LIGHT_STYLE_UUID, USER_THEME_UUID]
-                : [wantOff];
-            for (const uuid of turnOff) {
-                if (!isLive(uuid))
-                    continue;
-                this._moveExtensionLast(mgr, uuid);
-                mgr.disableExtension(uuid);
-                await this._waitState(mgr, uuid, s => this._isDown(s));
-            }
-            if (nativeShell && dark)
-                Main.sessionMode.colorScheme = 'prefer-dark';
-            ensureValidColorScheme();
-            try {
-                if (nativeShell)
-                    Main.setThemeStylesheet(null);
-                Main.loadTheme();
-            } catch (e) {
-                logHelper(`loadTheme ERR ${e}`);
-            }
-            await this._sleep(50);
+                const turnOff = nativeShell && dark
+                    ? [LIGHT_STYLE_UUID, USER_THEME_UUID]
+                    : [wantOff];
+                for (const uuid of turnOff) {
+                    if (!isLive(uuid))
+                        continue;
+                    this._moveExtensionLast(mgr, uuid);
+                    mgr.disableExtension(uuid);
+                    await this._waitState(mgr, uuid, s => this._isDown(s));
+                }
+                if (nativeShell && dark)
+                    Main.sessionMode.colorScheme = 'prefer-dark';
+                ensureValidColorScheme();
+                try {
+                    if (nativeShell)
+                        Main.setThemeStylesheet(null);
+                    Main.loadTheme();
+                } catch (e) {
+                    logHelper(`loadTheme ERR ${e}`);
+                }
+                await this._sleep(50);
 
-            if (!(nativeShell && dark) && !isLive(wantOn)) {
-                mgr.enableExtension(wantOn);
-                await this._waitState(
-                    mgr, wantOn, s => this._isSettledUp(s));
-                if (mgr.lookup(wantOn)?.state === STATE_ERROR)
-                    logHelper(`${wantOn} errored while following color scheme`);
+                if (!(nativeShell && dark) && !isLive(wantOn)) {
+                    mgr.enableExtension(wantOn);
+                    await this._waitState(
+                        mgr, wantOn, s => this._isSettledUp(s));
+                    if (mgr.lookup(wantOn)?.state === STATE_ERROR)
+                        logHelper(`${wantOn} errored while following color scheme`);
+                }
             }
             // Window-title label colors (unfocused + minimized): DTP's
             // 'inherit' resolves to white regardless of the light shell
@@ -780,11 +907,13 @@ export default class LayoutSwitcherHelper extends Extension {
             }
             this._setupPanelSystemIndicator();
             this._syncLightOverviewPanelClass();
+            this._syncNativeAccentPanelClass();
             // Cross-frame style recompute so the panel picks the new theme.
             Main.panel.add_style_class_name('ls-style-recompute');
             await this._sleep(60);
             Main.panel.remove_style_class_name('ls-style-recompute');
         } finally {
+            this._lastColorSchemeDark = dark;
             this._applying = false;
         }
     }
@@ -1091,6 +1220,7 @@ export default class LayoutSwitcherHelper extends Extension {
             }
         }
         this._syncLightOverviewPanelClass();
+        this._syncNativeAccentPanelClass();
         await this._panelRepaint();
         this._setupPanelSystemIndicator();
         this._curtainDown();
@@ -1285,6 +1415,7 @@ export default class LayoutSwitcherHelper extends Extension {
         }
 
         this._syncLightOverviewPanelClass();
+        this._syncNativeAccentPanelClass();
         await this._panelRepaint();
         steps.push('panel repaint');
         this._setupPanelSystemIndicator();
@@ -1490,6 +1621,7 @@ export default class LayoutSwitcherHelper extends Extension {
         this._panelStyleRecompute();
         this._setupPanelSystemIndicator();
         this._syncLightOverviewPanelClass();
+        this._syncNativeAccentPanelClass();
 
         logHelper(`ApplyLayout done: ${steps.join(' | ')}`);
         return JSON.stringify({ok: true, steps, error: ''});

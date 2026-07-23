@@ -122,6 +122,8 @@ def test_community_menu_layout_mapping_and_panel_order():
         assert enabled.index(DASH_TO_PANEL_UUID) < enabled.index(COMMUNITY_MENU_UUID)
         if filename == "classic.txt":
             assert dtp_values["leftbox-padding"] == "3"
+            assert dtp_values["dot-color-override"] == "false"
+            assert dtp_values["dot-size"] == "0"
             assert interface_values["icon-theme"] == "'bigicons-papient-light'"
             user_theme_values = _section_key_values(
                 text,
@@ -156,6 +158,7 @@ def test_hybrid_uses_enterprise_arcmenu_and_compact_panel():
         text,
         "org/gnome/shell/extensions/dash-to-panel",
     )
+    shell_values = _section_key_values(text, "org/gnome/shell")
     interface_values = _section_key_values(text, "org/gnome/desktop/interface")
 
     assert ARCMENU_UUID in enabled
@@ -167,7 +170,7 @@ def test_hybrid_uses_enterprise_arcmenu_and_compact_panel():
     assert menu_values["menu-height"] == "630"
     assert menu_values["menu-width-adjustment"] == "325"
     assert menu_values["left-panel-width"] == "290"
-    assert menu_values["menu-button-icon-size"] == "36"
+    assert menu_values["menu-button-icon-size"] == "38"
     assert menu_values["menu-button-icon"] == (
         "'/usr/share/gnome-shell/extensions/community-menu@bigcommunity.org/"
         "community-menu.svg'"
@@ -181,7 +184,12 @@ def test_hybrid_uses_enterprise_arcmenu_and_compact_panel():
     assert dtp_values["appicon-margin"] == "0"
     assert dtp_values["appicon-padding"] == "1"
     assert dtp_values["panel-sizes"] == "'{\"0\":38}'"
-    assert dtp_values["leftbox-padding"] == "3"
+    assert dtp_values["dot-color-override"] == "false"
+    panel_size = 38
+    app_padding = int(dtp_values["appicon-padding"])
+    assert panel_size - (app_padding * 2) == 36
+    assert dtp_values["leftbox-padding"] == "0"
+    assert "'org.communitybig.ashyterm.desktop'" in shell_values["favorite-apps"]
     assert dtp_values["animate-appicon-hover-animation-type"] == "'SIMPLE'"
     assert "'SIMPLE': uint32 220" in dtp_values[
         "animate-appicon-hover-animation-duration"

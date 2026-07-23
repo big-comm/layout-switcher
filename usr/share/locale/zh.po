@@ -928,6 +928,10 @@ msgid "GTK"
 msgstr "GTK"
 
 #: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "Applications"
+msgstr "应用程序"
+
+#: usr/share/layout-switcher/ui/page_themes.py:130
 msgid "Icons"
 msgstr "图标"
 

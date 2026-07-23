@@ -15,3 +15,13 @@
 .panel-button.screen-sharing-indicator {
     color: #fafafb;
 }
+
+/* Native-shell layouts follow GNOME's active accent. */
+.layout-switcher-accent-probe {
+    background-color: -st-accent-color;
+}
+
+#panel.dashtopanelMainPanel.layout-switcher-native-accent-panel
+.app-grid-running-dot {
+    background-color: -st-accent-color;
+}

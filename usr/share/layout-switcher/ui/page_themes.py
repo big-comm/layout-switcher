@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 """
-ui/page_themes.py — Página de Temas (GTK, ícones, Shell).
+ui/page_themes.py — Theme page (Shell, applications, icons).
 
 Layout: conteúdo centralizado com Adw.Clamp — não estica em telas largas.
 Usa Gtk.ListBox com boxed-list para aparência GNOME nativa e confortável.
@@ -70,7 +70,7 @@ class ThemeTile(Gtk.FlowBoxChild):
 class ThemesPage(Gtk.Box):
     """
     Página de Temas.
-    Sub-abas: GTK | Ícones | Shell  |  Toggle: Claro / Escuro
+    Sub-tabs: Shell | Applications | Icons
     A lista de temas é limitada por Adw.Clamp para não esticar demais.
     """
 
@@ -78,7 +78,7 @@ class ThemesPage(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._pool = pool
         self._toast = toast_cb
-        self._theme_kind = "gtk"
+        self._theme_kind = "shell"
         self._cached_names: List[str] = []
         self._cached_active: str = ""
         self._build()
@@ -131,17 +131,21 @@ class ThemesPage(Gtk.Box):
         self.refresh_themes()
 
     def _build_kind_tabs(self) -> Gtk.Widget:
-        """Sub-abas GTK / Ícones / Shell."""
+        """Build Shell / Applications / Icons sub-tabs."""
         kb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         kb.add_css_class("linked")
         kb.set_margin_start(26)
         kb.set_margin_bottom(8)
         self._kind_btns: Dict[str, Gtk.Button] = {}
-        for kind, label in [("gtk", tr("GTK")), ("icons", tr("Icons")), ("shell", tr("Shell"))]:
+        for kind, label in [
+            ("shell", tr("Shell")),
+            ("gtk", tr("Applications")),
+            ("icons", tr("Icons")),
+        ]:
             btn = Gtk.Button(label=label)
             btn.add_css_class("kind-tab")
             btn.add_css_class("flat")
-            is_default = kind == "gtk"
+            is_default = kind == "shell"
             if is_default:
                 btn.add_css_class("kind-on")
             btn.connect("clicked", lambda b, k=kind: self._switch_kind(k))
@@ -432,7 +436,7 @@ class ThemesPage(Gtk.Box):
             if ok:
                 GLib.idle_add(self._toast, name)
                 GLib.idle_add(self.refresh_themes)
-            elif err in ("user-theme-not-installed", "user-theme-not-enabled"):
+            elif err == "user-theme-not-installed":
                 GLib.idle_add(self._show_user_theme_dialog)
             else:
                 GLib.idle_add(self._toast, tr("Error") + f": {err}")
@@ -443,7 +447,7 @@ class ThemesPage(Gtk.Box):
         parent = self.get_root()
         d = Adw.AlertDialog(
             heading=tr("User Themes required"),
-            body=tr("Install and enable the User Themes extension to apply shell themes."),
+            body=tr("Install the User Themes extension to apply shell themes."),
         )
         d.add_response("cancel", tr("Cancel"))
         d.add_response("install", tr("Open Extensions Page"))

@@ -34,6 +34,11 @@ def test_live_color_switch_empties_shell_rebase_slices():
     assert "explicitLightIcons = hybridArcMenu" in source
     assert "(!live.has(COMMUNITY_MENU_UUID) && !hybridArcMenu)" in source
     assert "const deskUxOrchisShell = communityLayout === DESK_UX_MENU_LAYOUT" in source
+    assert "this._onColorSchemeChanged(false)" in source
+    assert "const managedNativeState = nativeShell" in source
+    assert "const managedDeskUxState = deskUxOrchisShell" in source
+    assert "const manageShell = reconcileShell" in source
+    assert "manageShell ? 'managed' : 'preserved'" in source
     assert "? [LIGHT_STYLE_UUID, USER_THEME_UUID]" in source
     assert "if (!(nativeShell && dark) && !isLive(wantOn))" in source
     assert "Main.setThemeStylesheet(null)" in source
@@ -42,7 +47,7 @@ def test_live_color_switch_empties_shell_rebase_slices():
 def test_menu_layouts_hide_only_the_desktop_power_fallback():
     source = HELPER.read_text()
 
-    assert "const HELPER_BUILD = 28" in source
+    assert "const HELPER_BUILD = 31" in source
     assert "get_strv('enabled-extensions')" in source
     assert "_extensionWillRun(DTP_UUID)" in source
     assert "_usesMenuSessionActions()" in source
@@ -85,3 +90,22 @@ def test_hybrid_light_panel_keeps_overview_icon_contrast():
     assert "global.dashToPanel?.panels" in source
     assert "layout-switcher-light-overview-panel:overview" in stylesheet
     assert "color: #222226" in stylesheet
+
+
+def test_native_shell_running_indicators_follow_shell_accent():
+    source = HELPER.read_text()
+    stylesheet = HELPER_STYLESHEET.read_text()
+
+    assert "const HELPER_BUILD = 31" in source
+    assert "NATIVE_ACCENT_PANEL_CLASS" in source
+    assert "_syncNativeAccentPanelClass()" in source
+    assert "_clearNativeAccentPanelClass()" in source
+    assert "settings.get_enum('layout') === CLASSIC_MENU_LAYOUT" in source
+    assert "ARCMENU_HYBRID_LAYOUT" in source
+    assert "'changed::accent-color'" in source
+    assert "_syncClassicFocusHighlight()" in source
+    assert "get_string('focus-highlight-color')" in source
+    assert "set_string('focus-highlight-color', accent)" in source
+    assert "layout-switcher-accent-probe" in stylesheet
+    assert "layout-switcher-native-accent-panel" in stylesheet
+    assert "background-color: -st-accent-color" in stylesheet

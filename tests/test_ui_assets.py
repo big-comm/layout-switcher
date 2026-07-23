@@ -29,6 +29,13 @@ def test_effect_assets_and_gallery_geometry():
     assert "set_max_children_per_line(5)" in themes_source
     assert "width=128, height=68" in themes_source
     assert 'if kind == "icons"' in themes_source
+    assert 'self._theme_kind = "shell"' in themes_source
+    assert themes_source.index('(\"shell\", tr(\"Shell\"))') < themes_source.index(
+        '(\"gtk\", tr(\"Applications\"))'
+    )
+    assert themes_source.index('(\"gtk\", tr(\"Applications\"))') < themes_source.index(
+        '(\"icons\", tr(\"Icons\"))'
+    )
 
     constants = (ROOT / "usr/share/layout-switcher/constants.py").read_text()
     for icon in (

@@ -944,6 +944,10 @@ msgid "GTK"
 msgstr "GTK"
 
 #: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "Applications"
+msgstr "Aplicativos"
+
+#: usr/share/layout-switcher/ui/page_themes.py:130
 msgid "Icons"
 msgstr "Ícones"
 
@@ -971,8 +975,8 @@ msgid "User Themes required"
 msgstr "Temas do usuário necessários"
 
 #: usr/share/layout-switcher/ui/page_themes.py:421
-msgid "Install and enable the User Themes extension to apply shell themes."
-msgstr "Instale e ative a extensão User Themes para aplicar temas ao shell."
+msgid "Install the User Themes extension to apply shell themes."
+msgstr "Instale a extensão User Themes para aplicar temas ao shell."
 
 #: usr/share/layout-switcher/ui/page_themes.py:424
 msgid "Open Extensions Page"

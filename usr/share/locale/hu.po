@@ -944,6 +944,10 @@ msgid "GTK"
 msgstr "GTK"
 
 #: usr/share/layout-switcher/ui/page_themes.py:130
+msgid "Applications"
+msgstr "Alkalmazások"
+
+#: usr/share/layout-switcher/ui/page_themes.py:130
 msgid "Icons"
 msgstr "Ikonok"
 

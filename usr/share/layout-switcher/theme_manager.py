@@ -4,7 +4,7 @@ theme_manager.py — Gerenciamento de temas GTK, ícones e Shell.
 
 Aplica temas em tempo real via gsettings sem necessidade de logout.
 GTK e ícones propagam imediatamente para todas as janelas abertas.
-Shell requer a extensão User Themes habilitada.
+Shell enables the User Themes extension on demand.
 
 DEVELOPER NOTE — DO NOT name any variable `_` in this file.
 """
@@ -37,6 +37,26 @@ class ThemeMgr:
     """
 
     SHELL_DEFAULT_THEME_LABEL = "Adwaita (Default)"
+
+    @staticmethod
+    def _layout_snapshot_marker() -> Path:
+        """Return the marker for the last layout-managed settings snapshot."""
+        return (
+            Path.home()
+            / ".config"
+            / "dconf"
+            / "settings.gnome.layout-switcher.sha256"
+        )
+
+    @staticmethod
+    def _invalidate_layout_snapshot() -> None:
+        """Mark live settings as user-modified for the next final dconf save."""
+        try:
+            ThemeMgr._layout_snapshot_marker().unlink(missing_ok=True)
+        except OSError:
+            # Theme application must not fail only because persistence
+            # bookkeeping is temporarily unavailable.
+            pass
 
     # ── Listar temas disponíveis ──────────────────────────────────────────────
 
@@ -106,15 +126,25 @@ class ThemeMgr:
         Aplica o tema especificado em tempo real via gsettings.
 
         Para GTK/ícones: propaga imediatamente para todas as janelas abertas.
-        Para Shell: requer User Themes extension habilitada; recarrega via D-Bus.
+        For Shell: enables User Themes when needed and reloads it over D-Bus.
 
         Retorna (True, "") ou (False, código_erro).
         """
         if kind == "gtk":
-            return gsettings_set("org.gnome.desktop.interface", "gtk-theme", name)
+            ok, msg = gsettings_set(
+                "org.gnome.desktop.interface", "gtk-theme", name
+            )
+            if ok:
+                ThemeMgr._invalidate_layout_snapshot()
+            return ok, msg
 
         if kind == "icons":
-            return gsettings_set("org.gnome.desktop.interface", "icon-theme", name)
+            ok, msg = gsettings_set(
+                "org.gnome.desktop.interface", "icon-theme", name
+            )
+            if ok:
+                ThemeMgr._invalidate_layout_snapshot()
+            return ok, msg
 
         if kind == "shell":
             uid = "user-theme@gnome-shell-extensions.gcampax.github.com"
@@ -129,20 +159,29 @@ class ThemeMgr:
                 )
                 if ok and ExtMgr.is_enabled(uid):
                     ThemeMgr._reload_shell_user_theme(uid)
+                if ok:
+                    ThemeMgr._invalidate_layout_snapshot()
                 return ok, msg
 
             if not ExtMgr.is_installed(uid):
                 return False, "user-theme-not-installed"
-            if not ExtMgr.is_enabled(uid):
-                return False, "user-theme-not-enabled"
 
             ok, msg = gsettings_set(
                 "org.gnome.shell.extensions.user-theme", "name", settings_value
             )
-            if ok:
-                # Recarrega shell theme via D-Bus (sem logout)
-                ThemeMgr._reload_shell_user_theme(uid)
-            return ok, msg
+            if not ok:
+                return False, msg
+
+            if not ExtMgr.is_enabled(uid):
+                enabled, enable_msg = ExtMgr.set_enabled(uid, True)
+                if not enabled:
+                    return False, enable_msg or "user-theme-enable-failed"
+
+            # Reload after enabling so the selected CSS is also applied when
+            # User Themes was previously disabled.
+            ThemeMgr._reload_shell_user_theme(uid)
+            ThemeMgr._invalidate_layout_snapshot()
+            return True, ""
 
         return False, f"unknown theme kind: {kind!r}"
 
@@ -183,6 +222,7 @@ class ThemeMgr:
                 shell_dark,
                 native_shell=active_layout in {"Classic", "Hybrid"},
                 desk_ux_shell=active_layout in {"Desk UX", "Desk-UX"},
+                fixed_shell=active_layout in _SHELL_DARK_LAYOUTS,
             )
             # Notifica o StyleManager do processo atual
             try:
@@ -198,6 +238,7 @@ class ThemeMgr:
                     mgr.set_color_scheme(Adw.ColorScheme.PREFER_LIGHT)
             except Exception:
                 pass
+            ThemeMgr._invalidate_layout_snapshot()
         return ok, msg
 
     @staticmethod
@@ -228,6 +269,7 @@ class ThemeMgr:
         *,
         native_shell: bool = False,
         desk_ux_shell: bool = False,
+        fixed_shell: bool = False,
     ) -> None:
         enabled = ThemeMgr._string_list(gsettings_get(_SHELL_SCHEMA, "enabled-extensions"))
         disabled = ThemeMgr._string_list(gsettings_get(_SHELL_SCHEMA, "disabled-extensions"))
@@ -236,10 +278,27 @@ class ThemeMgr:
             user_theme_name = ThemeMgr._string_value(
                 gsettings_get("org.gnome.shell.extensions.user-theme", "name")
             )
-        if native_shell and user_theme_name:
-            gsettings_set("org.gnome.shell.extensions.user-theme", "name", "''")
-            user_theme_name = ""
-        elif desk_ux_shell:
+        user_theme_enabled = (
+            _USER_THEME_UUID in enabled and _USER_THEME_UUID not in disabled
+        )
+        light_style_enabled = (
+            _LIGHT_STYLE_UUID in enabled and _LIGHT_STYLE_UUID not in disabled
+        )
+
+        # Fixed-shell layouts and explicit user overrides are authoritative.
+        # Applying "Original" remains responsible for restoring layout defaults.
+        if fixed_shell:
+            return
+        if native_shell and (user_theme_enabled or user_theme_name):
+            return
+        if desk_ux_shell and not (
+            user_theme_enabled
+            and not light_style_enabled
+            and user_theme_name in {_ORCHIS_SHELL_DARK, _ORCHIS_SHELL_LIGHT}
+        ):
+            return
+
+        if desk_ux_shell:
             target = _ORCHIS_SHELL_DARK if dark else _ORCHIS_SHELL_LIGHT
             if user_theme_name != target:
                 gsettings_set(
